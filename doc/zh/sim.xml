@@ -1,0 +1,18 @@
+﻿<?xml version="1.0"?>
+<!--
+ =======================
+   
+
+ =======================
+
+ [History]
+
+ 2011-06-10 Initial Creation
+-->
+<article lang="zh-cn">
+    <title>SIM卡</title>
+    <para>Hello</para>
+    
+    <!-- Appendix 附录 -->
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="app_howto_make.xml" />
+</article>
