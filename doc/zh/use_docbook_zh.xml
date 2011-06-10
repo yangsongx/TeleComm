@@ -1,0 +1,815 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  ================================================================
+  Copyright (c) 2008~2010 Motorola.  All rights reserved.
+   
+     DocBook使用简介
+  
+  基于English版本
+  How to use DocBook (Compiled with DSSSL)
+  ====================================================================
+  
+  This is a quick note for using DocBook. This book aim to build via DSSL, with docbook2xxx utis, under Linux.
+  It can also be built by FOP, anyway, final book product of this book should be compiled by docbook2xxx utils
+  
+  [revision history]
+  2008-08-26 try to use local DocBook 4.3 DTD(this is pre-built package for RedHat Linux)
+                   DTD path: /usr/share/sgml/docbook/xml-dtd-4.3-1.0-25/docbookx.dtd
+  2008-08-27 For Slackware 12.1, DTD path is:
+                   /usr/share/sgml/docbook/sgml-dtd-4.5/docbook.dtd
+  2008-09-04 It seems docbook2xxx utils don't support image's depth, width, etc parameters,
+                   so, I removed the tested parameter values, to avoid FOP generate ugly image pdf output.
+  2008-09-05 Can make it build under Windows, but anyway, this book's final product should use docbook2xxx utils.
+                   file:///D:/usr/bin/docbook/dtd_4.5/docbookx.dtd
+  2008-10-06 Begin the second round of modification.
+  2008-10-14 Add LibXML2 content, as the book's appendix.
+  2008-10-15 Know how to generate Index by using docbook2pdf.
+  2008-10-16 [Milestone] Finished the 0.0.1 version.
+  2008-10-24 Add .chm build topic.
+  2008-11-13 Finished the Chapter 1 contents, and hard copy had been printed out.
+  2009-03-20 Removed Unix/Linux related contents to cbook project directory.
+  2010-03-25 Add some more missing topics(such as biblo reference, superscript, etc).
+  2011-06-10 开始中文版(English Version is Lock forever!!)
+-->
+
+<book lang="zh-cn">
+    <bookinfo>
+        <title>DocBook使用简介(中文版)</title>
+                
+        <authorgroup>
+        <author>
+            <firstname>Yang</firstname><surname>Songxiang</surname>
+            
+                <address>
+                    <email>a22301@motorola.com</email>
+                </address>
+        </author>
+        </authorgroup>
+        
+         
+        <copyright>
+            <year>2008</year>
+            <holder>Yang Songxiang</holder>
+        </copyright>
+        
+        <abstract>
+            <para>这是关于DocBook的使用指南,多以简短代码示例来演示DocBook特征.</para>
+        </abstract>
+    
+        <legalnotice>
+            <para>Permission is granted to copy, distribute and/or modify this
+        document under the terms of the GNU Free Documentation License,
+        Version 1.1 or any later version published by the Free Software
+        Foundation.</para>
+        </legalnotice>
+    </bookinfo>
+    
+    <!-- ============= Foreword =================  -->
+    <preface>
+        <title>Foreword</title>
+        <blockquote>
+            <attribution>Wikipedia</attribution>
+            <para>DocBook is a semantic markup language for technical documentation.</para>
+        </blockquote>
+        
+        <para>XML is widely used in various domains, DocBook is a good example. This book discussed
+        the DocBook's basic usage and customization methods.</para>
+        
+        <para>DocBook was originally intended for writing technical documents related to computer 
+        science but it can be used for any other sort of documentation. It's a de facto document tool
+        in open source community, and many projects used it to generate their documents.</para>
+        
+        <para>This book itself is totally written in DocBook XML format, and can be compiled to pdf/html/rtf format on
+        Linux machine. I will divide the book into two parts: one is for new user who wants to write a book from
+        scratch, the other would like to discuss the inner process procedure of DocBook, to figure out what's going
+        on when we generating a document. <xref linkend="chap_start" /> and <xref linkend="chap_customize" /> cover former topic, after try out the examples
+        listed in the book, I believe you can write your own cool book happily. It's enough for you just read
+        the starting two chapters if you just want to know how to use DocBook.</para>
+        
+        <para>I keep the book as usable/simple as possible, so there's many samples and tips. You can master
+        the DocBook in less than 4 hours if you're familiar with XML. If you are rookie to XML, that's also not a problem,
+        XML syntax is quite simple and self-explaining, one day is definitely enough for you to master DocBook.</para>
+    
+        <para>In addition, this book also recorded Unix/Linux related information, such as configuration, usage tips.</para>
+        
+        <para>Enjoy it.</para>
+        
+    </preface>
+    
+    <chapter id="chap_start">
+        <title>DocBook快速入门</title>
+        <para></para>
+    </chapter> 
+    
+    <chapter>
+        <title>自定义DocBook风格</title>
+        <para></para>
+    </chapter>
+    
+    <chapter id="chap_adv">
+        <title>高级话题</title>
+        <para></para>
+        <sect1 id="chap_adv.multi_lang">
+            <title>多国语言支持</title>
+            <para>这里主要针对中文支持.为了让DocBook支持中文输出,DocBook的XML文件应该:</para>
+            <itemizedlist spacing="compact">
+                <listitem>
+                    <para>指定<filename>lang</filename>属性为<userinput>zh-cn</userinput></para>
+                </listitem>
+                <listitem>
+                    <para>将XML文件格式转换成UTF-8编码(带BOM).</para>
+                </listitem>
+            </itemizedlist>
+            <para>下面是一个中文XML文件示例:</para>
+            <example>
+            <title>中文XML示例</title>
+            <programlisting>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;article lang=&quot;zh-cn&quot;&gt;
+  &lt;title&gt;中文标题&lt;/title&gt;
+  ...
+  ...
+&lt;/article&gt;</programlisting>
+            </example>
+            
+            <sect2>
+                <title>FOP生成中文DocBook</title>
+                <para>首先要进行环境搭建</para>
+                <itemizedlist spacing="compact">
+                <listitem>
+                    <para>从http://xmlgraphics.apache.org/fop/处下载FOP程序(比如fop-1.0).</para>
+                </listitem>
+                <listitem>
+                    <para>从Sourceforge下载DocBook的XSL包.</para>
+                </listitem>
+                <listitem>
+                    <para>从Windows系统中获得中文字体文件(比如SimHei.ttf, SimSun.ttc).</para>
+                </listitem>
+            </itemizedlist>
+                <note>
+                    <para>ttf指TrueType Font, ttc指TrueType Collections.Linux/Unix系统可在/usr/share/fonts/zh_CN/下找到简体中文字体.</para>
+                </note>
+
+                <para>接下来要为中文字体生成Metric XML.</para>
+                <informalexample>
+                <programlisting>$ java -cp build/fop.jar:lib/avalon-framework-4.2.0.jar:\
+    lib/commons-logging-1.0.4.jar:lib/commons-io-1.3.1.jar:\
+    lib/xmlgraphics-commons-1.4.jar org.apache.fop.fonts.apps.TTFReader\
+    /usr/share/fonts/zh_CN/simhei.ttf 
+    simhei_ttf.xml</programlisting>
+            </informalexample>
+
+            <para>如果是ttc字体, 可以指定-ttcname "ttc name"选项来抽取字体信息:</para>
+            <informalexample>
+                <programlisting>$ java -cp build/fop.jar:lib/avalon-framework-4.2.0.jar:\
+    lib/commons-logging-1.0.4.jar:lib/commons-io-1.3.1.jar:\
+    lib/xmlgraphics-commons-1.4.jar org.apache.fop.fonts.apps.TTFReader\
+    -ttcname "SimSun" /usr/share/fonts/zh_CN/simsun.ttc 
+    simsong_ttf.xml</programlisting>
+            </informalexample>
+
+            <para>对于Windows命令方式有点不一样, Java的CLASSPATH(-cp)选项用分号(;)而不是冒号(:)</para>
+            <informalexample>
+                <programlisting>C:> java -cp build\fop.jar;lib\avalon-framework-4.2.0.jar; \
+    lib\commons-logging-1.0.4.jar;lib\commons-io-1.3.1.jar; \
+    lib\xmlgraphics-commons-1.4.jar org.apache.fop.fonts.apps.TTFReader \
+    C:\WINDOWS\Fonts\SimHei.ttf 
+    simhei_ttf.xml</programlisting>
+        </informalexample>
+        
+                <para>有了字体支持后,FOP要配置相应的选项.通常conf/fop.xconf是FOP的默认配置文件,我们可以基于这个文件修改:</para>
+                <informalexample>
+            <programlisting>&lt;fonts&gt;
+    &lt;font metrics-url=&quot;file:///data/simhei_ttf.xml&quot; kerning=&quot;yes&quot; 
+    embed-url=&quot;file:///data/simhei.ttf&quot;&gt;
+       &lt;font-triplet name=&quot;SimHei&quot; style=&quot;normal&quot; weight=&quot;normal&quot;/&gt;
+       &lt;font-triplet name=&quot;SimHei&quot; style=&quot;normal&quot; weight=&quot;bold&quot;/&gt;
+           &lt;font-triplet name=&quot;SimHei&quot; style=&quot;italic&quot; weight=&quot;normal&quot;/&gt;
+           &lt;font-triplet name=&quot;SimHei&quot; style=&quot;italic&quot; weight=&quot;bold&quot;/&gt;
+    &lt;/font&gt;
+    &lt;font metrics-url=&quot;file:///data/simsong.xml&quot; kerning=&quot;yes&quot; 
+    embed-url=&quot;file:///data/simsun.ttc&quot;&gt;
+       &lt;font-triplet name=&quot;SimSun&quot; style=&quot;normal&quot; weight=&quot;normal&quot;/&gt;
+       &lt;font-triplet name=&quot;SimSun&quot; style=&quot;normal&quot; weight=&quot;bold&quot;/&gt;
+       &lt;font-triplet name=&quot;SimSun&quot; style=&quot;italic&quot; weight=&quot;normal&quot;/&gt;
+       &lt;font-triplet name=&quot;SimSun&quot; style=&quot;italic&quot; weight=&quot;bold&quot;/&gt;
+    &lt;/font&gt;
+&lt;/fonts&gt;</programlisting>
+        </informalexample>
+                <para>准备好XML文件后,就可以通过FOP来生成中文PDF了:</para>
+                <informalexample>
+                <programlisting>fop -c your.conf -xml your.xml
+    -param body.font.family SimSun 
+    -param title.font.family SimSun 
+    -param monospace.font.family SimSun 
+    -xsl docbook-xsl-1.74.0/fo/docbook.xsl 
+    -pdf d.pdf</programlisting>
+            </informalexample>
+            
+                <para>通常将上面命令放入一个Makefile,并加上常见的输出控制选项.</para>
+            </sect2>
+            
+            <sect2>
+                <title>中文输出美化</title>
+                <sect3>
+                    <title>简单优化</title>
+                    <para>通常情况下,将PDF的所有字体都设成SimSun,这是目前对FOP而言,最简单也是最有效的设置:</para>
+                    <informalexample>
+                        <programlisting>-param body.font.family SimSun 
+-param title.font.family SimSun 
+-param monospace.font.family SimSun</programlisting>
+                    </informalexample>
+                    <para>上面的monospce.font.family也设成SimSun,可以使&lt;programlisting&gt;中的内容不易出界.</para>
+                    <para>如果用SimHei等字体, Title,还有Example等元素内容显示不正常,会出现#符号<footnote>
+                    <para>输出的PDF中含有#的字样,一般是字体不支持.</para></footnote>.</para>
+                </sect3>
+                <sect3>
+                    <title>中文字体</title>
+                    <para>新字体仍然可以通过FOP的TTFReader生成Metrics XML文件.</para>
+                </sect3>
+            </sect2>
+        </sect1>
+    </chapter>
+    
+    <!-- ============= Appendix =================  -->
+    <appendix id="app_unit_conversion">
+        <title>Units for DocBook</title>
+        
+        <para>DocBook used several units to control dimension or size.</para>
+        
+        <table frame="topbot">
+            <title>Measure Units</title>
+            <tgroup cols="2">
+                <thead>
+                    <row><entry>Unit</entry><entry>Notes</entry></row>
+                </thead>
+                
+                <tbody>
+                    <row><entry>cm</entry><entry>centimeter</entry></row>
+                    <row><entry>mm</entry><entry>millimeter</entry></row>
+                    <row><entry>in</entry><entry>inch</entry></row>
+                    <row><entry>pt</entry><entry>point</entry></row>
+                    <row><entry>pc</entry><entry>pica</entry></row>
+                    <row><entry>px</entry><entry>pixel</entry></row>
+                    <row><entry>em</entry><entry>relative to font size</entry></row>
+                </tbody>
+            </tgroup>
+        </table>
+        
+        <para>Here summarized some common-used units.</para>
+        
+        <section id="app_unit_conversion.inch">
+            <title>Inch</title>
+            <para>The symbole of inch is <command>in</command>, the inch is the 
+            virtually universal unit of measurement in the United States, and is very 
+            commonly used in Canada and the United Kingdom.</para>
+            
+            <para>1 in = 0.0254 m = 2.54 cm = 25.40 mm</para>
+        </section>
+
+        <section>
+            <title>Foot</title>
+            
+            <para>Foot size, can vary from system to system, but in each is around a quarter to a third of a metre. We often abbreviate it as
+            <command>ft</command>, it's plural is <command>feet</command>.</para>
+            <para>The most commonly used foot today is the international foot. There are three feet in a yard and 12 inches in a foot.</para>
+            <para>1 foot = 0.3048 m = 12 inch = 1/3 yard</para>
+        </section>
+        
+        <section>
+            <title>Point</title>
+            <para>In typography, a <command>point</command> is the smallest unit of measure, commonly 
+            abbreviated as <command>pt</command>.</para>
+            
+            <para>The traditional printer's point varied between 0.18 and 0.4 mm depending on various definitions of the foot.</para>
+        </section>
+		
+        <section>
+            <title>Pica</title>
+            <para>A pica is a typographic unit of measure corresponding to 1/72nd of its respective foot, and therefore to 1/6th of an inch.</para>
+            <para>Conventionally, we often abbreviate the pica as <command>pc</command>, and</para>
+            <para><emphasis>1 pcia = 12 points</emphasis>.</para>
+        </section>
+        
+        <section>
+            <title>DPI</title>
+            <para>Dots Per Inch (DPI), is a measure of spatial printing or video dot density, 
+            in particular the number of individual dots that can be placed within the span of 
+            one linear inch (2.54 cm.) The DPI value tends to correlate with image resolution, 
+            but is related only indirectly.</para>
+        </section>
+        
+		<section id="app_unit_conversion.pagesize">
+            <title>Page Size/Type</title>
+            
+            <para>Usually, DocBook support different page type, such as US Letter, A4/A3, etc. Their dimensions are
+            different.</para>
+                    <indexterm><primary>page size dimensions</primary></indexterm>
+            <table frame="topbot" id="tbl.app_unit_conversion.pagesize">
+                <title>Page Size</title>
+                <tgroup cols="2">
+                    <thead>
+                        <row><entry>Page</entry><entry>Size</entry></row>
+                    </thead>
+                    <tbody>
+                        <row><entry>US Letter</entry><entry>8.5in x 11in</entry></row>
+                        <row><entry>A5</entry><entry>5.8in x 8.3in</entry></row>
+                        <row><entry>A4</entry><entry>8.3in x 11.7in</entry></row>
+                        <row><entry>A3</entry><entry>11.5in x 16.7in</entry></row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        
+    </appendix>
+    
+    
+    <!-- ============= FAQ =================  -->
+    <appendix id="app_faq">
+        <title>Frequently Asked Questions(FAQ)</title>
+        
+    <qandaset>
+        <qandadiv>
+            <title>DocBook Usage</title>
+            
+            <qandaentry>
+                <question>
+                <para>Where can I find the latest of DocBook XSL?</para>
+                </question>
+                <answer>
+                <para>Check <ulink url="http://docbook.sourceforge.net/release/" />, the XSL is in <emphasis>xsl/</emphasis> directory.</para>
+                </answer>
+            </qandaentry>
+
+            <qandaentry>
+                <question>
+                <para>When I use FOP to generate PDF, why it didn't contain bookmarks on the left panel?</para>
+                </question>
+                <answer>
+                <para>You can assign value 1 to param_fop1.extensions; to support bookmarks. See
+                <xref linkend="chap_customize.bookmarks" /> for more details.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>How to do even-odd page number layout for FOP?</para>
+                </question>
+                <answer>
+                <para>You can assign value 1 to param_double.sided; See
+                <xref linkend="chap_customize.page_layout" /> for more details.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>When I use FOP, why there's "draft.png not available" warning?</para>
+                </question>
+                <answer>
+                <para>If FOP is under draft mode, it will use a draft.png as the background wartermark.
+                in most cases, the warning is like this:
+                    <screen>SEVERE: Background image not available: \
+    http://docbook.sourceforge.net/release/images/draft.png</screen>
+                You can specify value "no" to param_draft.mode; to remove this kind of warning.</para>
+                <para>If you do need the draft.png, you can specify the draft.png's image full path to param_draft.watermark.image;,
+                and specify <emphasis>yes</emphasis> to param_draft.mode;.</para>
+                <para>Thus, the PDF would use the draft.png as a watermark image.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>When I use FOP, how to remove the "WARNING: Making portrait pages on USletter paper (8.5inx11in)" warning?</para>
+                </question>
+                
+                <answer>
+                <para>FOP raised this warning because you didn't explicitly specify the paper size. You can specify a
+                A4 value to param_paper.type; to remove this warning.</para>
+                
+                <para>See <xref linkend="chap_customize.page_layout" /> for more details about the page type, and
+                <xref linkend="tbl.app_unit_conversion.pagesize" /> listed some page size dimensions.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>When using FOP, how to remove the "List of Example"-like List?</para>
+                </question>
+                <answer>
+                <para>By default, FOP will add "List of Example", "List of Figure" etc list at the begining
+                of a book.</para>
+                <para>If you don't want to need them, you can remove them from param_generate.toc;:</para>
+                <informalexample>
+                    <programlisting>&lt;xsl:param name=&quot;generate.toc&quot;&gt;
+/appendix toc,title
+article/appendix  nop
+/article  toc,title
+book      toc,title,figure,table,example,equation
+/chapter  toc,title
+part      toc,title
+/preface  toc,title
+reference toc,title
+/sect1    toc
+/sect2    toc
+/sect3    toc
+/sect4    toc
+/sect5    toc
+/section  toc
+set       toc,title
+&lt;/xsl:param&gt;</programlisting>
+                </informalexample>
+                <para>Remove the <emphasis>figure,table, example, equation</emphasis> to let FOP don't
+                generate their lists.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>Why my Chinese text can't displayed correct in PDF file?</para>
+                </question>
+                <answer>
+                <para>I still can't answer this question right now.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>Why callout image in programlisting didn't displayed in the PDF when I using FOP?</para>
+                </question>
+                <answer>
+                <para>The reason is always because param_callout.graphics; is default turned on by FOP, while
+                the callout graphic path didn't exist(<emphasis>images/callouts</emphasis> is usually
+                the default path). You can safely set param_callout.graphics; as 0, or specify
+                the correct callout graphic path with param_callout.graphics.path;.</para>
+                <para>Refer ???? <!--<xref linkend="chap_customize.programlisting.callout" />--> for more details.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>What's the difference between .ttf and .ttc font file?</para>
+                </question>
+                <answer>
+                <para>Some font files are .ttf, which means TrueType Font, some are .ttc, which means TrueType Collection.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>Why I can't generate the Index Page when using docbook2pdf?</para>
+                </question>
+                <answer>
+                <para>See ???<!--<xref linkend="chap_customize.add_book_idx" />-->.</para>
+                </answer>
+            </qandaentry>
+            
+        </qandadiv>
+        
+        <qandadiv>
+            <title>Linux/Unix Usage</title>
+            
+            <qandaentry>
+                <question>
+                <para>How can I let Linux defaultly go into X11 instead of console environment?</para>
+                </question>
+                <answer>
+                <para>You need edit the /etc/inittab file, change the runlevel from 3 to 4(X11 runlevel).</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>Why so long time displaying "Loading Linux..." when loading my Linux?</para>
+                </question>
+                
+                <answer>
+                <para>This is usually happended for Slackware 12.1. You can add <command>compact</command> in the
+                /etc/lilo.conf, then type <userinput>/sbin/lilo -v</userinput> to let LILO take effect.</para>
+                
+                <para>Now, restart your Linux, the "Loading Linux..." would be faster than before!</para>
+                
+                
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>How could I know current system's running time?</para>
+                </question>
+                
+                <answer>
+                <para>Use <command>uptime</command>, tell how long the system has been running.</para>
+                <informalexample>
+                    <programlisting><userinput>uptime</userinput>
+14:23:32 up 14 days, 39 min, 24 users,  load average: 0.14, 0.09, 0.08</programlisting>
+                </informalexample>
+                </answer>
+            </qandaentry>
+            
+        </qandadiv>
+        
+    </qandaset>
+    </appendix>
+    
+    
+    <!-- ============= List the bibliography =================  -->
+    <bibliography>
+        <biblioentry id="Walsh2003">
+            <title>DocBook 5.0: The Definitive Guide</title>
+            <titleabbrev>Walsh 2003</titleabbrev>
+            <publisher><publishername>O'Reilly Media, Inc</publishername></publisher>
+            <authorgroup><author><othername>Norman Walsh</othername></author></authorgroup>
+        </biblioentry>
+        
+        <biblioentry id="Bob2005">
+            <title>DocBook XSL: The Complete Guide</title>
+            <titleabbrev>Bob 2005</titleabbrev>
+            <publisher><publishername>O'Reilly Media, Inc</publishername></publisher>
+            <authorgroup><author><othername>Bob Stayton</othername></author></authorgroup>
+        </biblioentry>
+        
+    </bibliography>
+    
+    <!-- ============= Glossary =================  -->
+    <glossary>
+        <title>Glossary</title>
+        
+        <!-- C-->
+        <glossdiv>
+            <title>C</title>
+        
+            <glossentry id="gloss_id_catalog">
+            <glossterm>Catalog</glossterm>
+            <glossdef>
+                <para>Sometimes called XML Catalog, it is a document describing a mapping 
+                between external entity references and locally-cached equivalents.</para>
+            </glossdef>
+            </glossentry>
+        
+            <glossentry id="gloss_id_css">
+            <glossterm>CSS</glossterm>
+            <glossdef>
+                <para><emphasis>C</emphasis>ascading <emphasis>S</emphasis>tyle <emphasis>S</emphasis>heets, is a stylesheet language used to describe the presentation of 
+                a document written in a markup language(HTML/XHTML/XML, etc). It's commonly used with HTML.</para>
+            </glossdef>
+            </glossentry>
+        </glossdiv>
+    
+        <!-- D -->
+        <glossdiv>
+            <title>D</title>
+            
+            <glossentry>
+            <glossterm>DOM</glossterm>
+            <glossdef>
+                <para>Document Object Model, A platform- and language-neutral interface that allows programs and scripts to dynamically access and update the content, structure and style of documents.</para> 
+                <para>The DOM provides a standard set of objects for representing HTML and XML documents, a standard model of how these objects can be combined, and a standard interface for accessing and manipulating them.</para>
+                <para>Vendors can support the DOM as an interface to their proprietary data structures and APIs, and content authors can write to the standard DOM interfaces rather than product-specific APIs, thus increasing interoperability on the Web.</para>
+            </glossdef>
+            </glossentry>
+            
+            
+            <glossentry>
+            <glossterm>DPI</glossterm>
+            <glossdef>
+                <para>Dots Per Inch.</para> 
+            </glossdef>
+            </glossentry>
+            
+            <glossentry id="dtd">
+            <glossterm>DTD</glossterm>
+            <glossdef>
+                <para>Document Type Definition </para> 
+            </glossdef>
+            </glossentry>
+            
+            <glossentry id="dsssl">
+            <glossterm>DSSSL</glossterm>
+            <glossdef>
+                <para>Document Style Sematics and Specification Language, it's a stylesheet language for
+                SGML/XML document, usually, it used the .dsl suffix convention.</para> 
+                <glossseealso otherterm="gloss_id_sgml">SGML</glossseealso>
+            </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- F -->
+        <glossdiv>
+            <title>F</title>
+            
+            <glossentry id="gloss_id_fop">
+            <glossterm>FOP</glossterm>
+            <glossdef>
+                <para><emphasis>F</emphasis>ormatting <emphasis>O</emphasis>bjects <emphasis>P</emphasis>rocessor, a print formatter driven by XSL formatting 
+                objects (XSL-FO) and an output independent formatter. It is a Java application 
+                that reads a formatting object (FO) tree and renders the resulting pages to a 
+                specified output.</para> 
+            </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- I -->
+        <glossdiv>
+            <title>I</title>
+            
+            <glossentry id="gloss_id_i18n">
+            <glossterm>I18N</glossterm>
+            <glossdef>
+                <para>Internationalization, means there're totally 18 characters between I and N. It's related with multi-language.</para> 
+            </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_irc">
+            <glossterm>IRC</glossterm>
+            <glossdef>
+                <para>Internet Relay Chat, a form of real-time Internet chat or synchronous conferencing. 
+                It is mainly designed for group communication in discussion forums called channels</para> 
+            </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- P-->
+        <glossdiv>
+            <title>P</title>
+        
+            <glossentry id="gloss_id_pi">
+            <glossterm>PI</glossterm>
+            <glossdef>
+                <para><emphasis>P</emphasis>rocessing <emphasis>I</emphasis>nstruction, a means of passing 
+                hints to the XSLT processor about how to handle something, usually like &lt;? dbhtml filename="htmlname.html"?&gt;.</para>
+                <para>The FO's PI is &lt;?dbfo xxxx?&gt;, the HTML's PI is &lt;?dbhtml xxx?&gt;.</para>
+            </glossdef>
+            </glossentry>
+        </glossdiv>
+        
+        <!-- R -->
+        <glossdiv>
+        <title>R</title>
+        
+            <glossentry id="gloss_id_recto">
+                <glossterm>recto</glossterm>
+                <glossdef>
+                    <para>The book's righ-hand page, usually odd page number(Page 1, 3, 5, 7 etc).</para>
+                    <glossseealso otherterm="gloss_id_verso">verso</glossseealso>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_relax_ng">
+                <glossterm>RELAX NG</glossterm>
+                <glossdef>
+                    <para>REgular LAnguage for XML Next Generation, is a schema language for XML. More details
+                    can be found at http://www.relaxng.org/.</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- S -->
+        <glossdiv>
+        <title>S</title>
+        
+            <glossentry id="gloss_id_sax">
+                <glossterm>SAX</glossterm>
+                <glossdef>
+                    <para><emphasis>S</emphasis>imple <emphasis>A</emphasis>PI for <emphasis>X</emphasis>ML, originally a Java-only API.
+                    SAX was the first widely adopted API for XML in Java, and is a de facto standard. More information can be found in <ulink url="http://www.saxproject.org/" />.</para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_saxon">
+                <glossterm>SAXON</glossterm>
+                <glossdef>
+                    <para>SAXON is an XSLT and XQuery processor. A collection of tools are included in the SAXON package.
+                    It provides similar functionality as xsltproc.</para>
+                    <para>More information can be found in <ulink url="http://saxon.sourceforge.net/" />.</para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_sgml">
+            <glossterm>SGML</glossterm>
+            <glossdef>
+                <para><emphasis>S</emphasis>tandard <emphasis>G</emphasis>eneralized <emphasis>M</emphasis>arkup <emphasis>L</emphasis>anguage, an international standard(ISO-8879), specifies
+                the rules for the creation of platform-independent mark language for electronic texts.</para> 
+            </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- T -->
+        <glossdiv>
+        <title>T</title>
+        
+            <glossentry id="gloss_id_truetype">
+                <glossterm>TrueType</glossterm>
+                <glossdef>
+                    <para>TrueType is an outline font standard originally developed by Apple Computer 
+                    in the late 1980s, as a competitor to Adobe's <emphasis>Type 1 fonts</emphasis> used in PostScript.</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- U -->
+        <glossdiv>
+        <title>U</title>
+        
+            <glossentry id="gloss_id_uri">
+                <glossterm>URI</glossterm>
+                <glossdef>
+                    <para>Uniform Resource Identifier. The most common URI is URL, which identifies
+                    an internet domain address. Another not-so-common type of URI is URN.</para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_url">
+                <glossterm>URL</glossterm>
+                <glossdef>
+                    <para>Uniform Resource Locator, is the address of a resource 
+                    which is retrievable using protocols already deployed on the Internet.</para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_urn">
+                <glossterm>URN</glossterm>
+                <glossdef>
+                    <para>Uniform Resource Name.</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- V -->
+        <glossdiv>
+        <title>V</title>
+        
+            <glossentry id="gloss_id_verso">
+                <glossterm>verso</glossterm>
+                <glossdef>
+                    <para>The book's lefthand-page, usually even page number(Page 2, 4, 6, 8 etc).</para>
+                    <glossseealso otherterm="gloss_id_recto">recto</glossseealso>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- W -->
+        <glossdiv>
+        <title>W</title>
+        
+            <glossentry id="gloss_id_w3c">
+                <glossterm>W3C</glossterm>
+                <glossdef>
+                    <para>The World Wide Web Consortium.</para>
+                    <para>More information can be found in <ulink url="http://www.w3.org/" />.</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- X -->
+        <glossdiv>
+        <title>X</title>
+        
+            <glossentry id="gloss_id_xml">
+                <glossterm>XML</glossterm>
+                <glossdef>
+                    <para>E<emphasis>X</emphasis>tensible <emphasis>M</emphasis>arkup <emphasis>L</emphasis>anguage.</para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_xsl">
+                <glossterm>XSL</glossterm>
+                <glossdef>
+                    <para>The Extensible Stylesheet Language, it's a family of recommendations 
+                    for defining XML document transformation and presentation.</para>
+                    <para>XSL contains following parts:</para>
+                    <itemizedlist spacing="compact">
+                        <listitem><para>XSL Transformations (XSLT)</para></listitem>
+                        <listitem><para>XML Path Language (XPath)</para></listitem>
+                        <listitem><para>XSL Formatting Objects (XSL-FO)</para></listitem>
+                    </itemizedlist>
+                        
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_xslt">
+                <glossterm>XSLT</glossterm>
+                <glossdef>
+                    <para>E<emphasis>X</emphasis>tensible <emphasis>S</emphasis>tylesheet <emphasis>L</emphasis>anguage
+                    <emphasis>T</emphasis>ransformation.</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+    
+    </glossary>
+    
+    
+    <!-- ============= The Last part, Index for the book =================  -->
+    <index />
+    <!--<index></title> -->
+    
+</book>

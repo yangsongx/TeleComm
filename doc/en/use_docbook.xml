@@ -1,0 +1,3451 @@
+<?xml version="1.0"?>
+
+<!--
+  ================================================================
+  Copyright (c) 2008~2010 Motorola.  All rights reserved.
+  
+  How to use DocBook (Compiled with DSSSL)
+  ====================================================================
+  
+  This is a quick note for using DocBook. This book aim to build via DSSL, with docbook2xxx utis, under Linux.
+  It can also be built by FOP, anyway, final book product of this book should be compiled by docbook2xxx utils
+  
+  [revision history]
+  2008-08-26 try to use local DocBook 4.3 DTD(this is pre-built package for RedHat Linux)
+                   DTD path: /usr/share/sgml/docbook/xml-dtd-4.3-1.0-25/docbookx.dtd
+  2008-08-27 For Slackware 12.1, DTD path is:
+                   /usr/share/sgml/docbook/sgml-dtd-4.5/docbook.dtd
+  2008-09-04 It seems docbook2xxx utils don't support image's depth, width, etc parameters,
+                   so, I removed the tested parameter values, to avoid FOP generate ugly image pdf output.
+  2008-09-05 Can make it build under Windows, but anyway, this book's final product should use docbook2xxx utils.
+                   file:///D:/usr/bin/docbook/dtd_4.5/docbookx.dtd
+  2008-10-06 Begin the second round of modification.
+  2008-10-14 Add LibXML2 content, as the book's appendix.
+  2008-10-15 Know how to generate Index by using docbook2pdf.
+  2008-10-16 [Milestone] Finished the 0.0.1 version.
+  2008-10-24 Add .chm build topic.
+  2008-11-13 Finished the Chapter 1 contents, and hard copy had been printed out.
+  2009-03-20 Removed Unix/Linux related contents to cbook project directory.
+  2010-03-25 Add some more missing topics(such as biblo reference, superscript, etc).
+-->
+<!DOCTYPE book SYSTEM "/usr/share/sgml/docbook/sgml-dtd-4.4-1.0-30.1/docbook.dtd"
+[
+<!ENTITY % entities SYSTEM "entity_def.xml">
+%entities;
+<!ENTITY idx            SYSTEM "myidx.xml">
+]>
+
+<book>
+    <bookinfo>
+        <title>How to Use DocBook</title>
+                
+        <authorgroup>
+        <author>
+            <firstname>Yang</firstname><surname>Songxiang</surname>
+            
+                <address>
+                    <email>a22301@motorola.com</email>
+                </address>
+            
+        </author>
+        </authorgroup>
+        
+         
+        <copyright>
+            <year>2008</year>
+            <holder>Yang Songxiang</holder>
+        </copyright>
+        
+        <abstract>
+            <para>This is a quick guide to illustrate how to use DocBook to generate document. It covers
+            both DSSSL and XSL.</para>
+<para>
+</para>
+<para></para>
+<para>
+            <mediaobject>
+           <imageobject>
+               <imagedata scale="40" align="right" valign="bottom" fileref="./img/sign.png" />
+             </imageobject>
+         </mediaobject>
+     </para>
+        </abstract>
+    
+        <legalnotice>
+            <para>Permission is granted to copy, distribute and/or modify this
+        document under the terms of the GNU Free Documentation License,
+        Version 1.1 or any later version published by the Free Software
+        Foundation.</para>
+        </legalnotice>
+    </bookinfo>
+    
+    <!-- ============= Foreword =================  -->
+    <preface>
+        <title>Foreword</title>
+        <blockquote>
+            <attribution>Wikipedia</attribution>
+            <para>DocBook is a semantic markup language for technical documentation.</para>
+        </blockquote>
+        
+        <para>XML is widely used in various domains, DocBook is a good example. This book discussed
+        the DocBook's basic usage and customization methods.</para>
+        
+        <para>DocBook was originally intended for writing technical documents related to computer 
+        science but it can be used for any other sort of documentation. It's a de facto document tool
+        in open source community, and many projects used it to generate their documents.</para>
+        
+        <para>This book itself is totally written in DocBook XML format, and can be compiled to pdf/html/rtf format on
+        Linux machine. I will divide the book into two parts: one is for new user who wants to write a book from
+        scratch, the other would like to discuss the inner process procedure of DocBook, to figure out what's going
+        on when we generating a document. <xref linkend="chap_start" /> and <xref linkend="chap_customize" /> cover former topic, after try out the examples
+        listed in the book, I believe you can write your own cool book happily. It's enough for you just read
+        the starting two chapters if you just want to know how to use DocBook.</para>
+        
+        <para>I keep the book as usable/simple as possible, so there's many samples and tips. You can master
+        the DocBook in less than 4 hours if you're familiar with XML. If you are rookie to XML, that's also not a problem,
+        XML syntax is quite simple and self-explaining, one day is definitely enough for you to master DocBook.</para>
+    
+        <para>In addition, this book also recorded Unix/Linux related information, such as configuration, usage tips.</para>
+        
+        <para>Enjoy it.</para>
+        
+    </preface>
+    
+    
+    <!-- ============= Chapter 1 =================  -->
+    <chapter id="chap_start">
+        <title>Getting Started with DocBook</title>
+        
+        <blockquote>
+            <attribution>Terry Pratchett</attribution>
+            <para>In the begining there was nothing, and it exploded.</para>
+        </blockquote>
+        
+        <para>This chapter gives a brief introduction for DocBook, and provides quick guide samples, to illustrate how to
+        use DocBook.</para>
+        
+        <para>The core standard in DocBook is the <emphasis>Document Type Definition</emphasis> (DTD), which is maintained
+        by the DocBook Technical Committee in OASIS <ulink url="http://www.oasis-open.org/docbook/" />.
+        You can freely download those DTDs from the website. Fortunately, most of current Linux
+        distributions already contained these DTDs. <xref linkend="chap_start.getting_tool_works"/> will give more details.</para>
+        
+        <para>DocBook uses stylesheet files to control/customize the output format, there're two types of stylesheet files for DocBook:</para>
+        <variablelist>
+            <varlistentry>
+                <term><command>DSSSL</command></term>
+                <listitem>
+                    <para>Usually, this stylesheet file used .dsl suffix convention, it's used by docbook2xxx utils.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term><command>XSL</command></term>
+                <listitem>
+                    <para>It uses XML stylesheet language files(.xsl), the most popular tool based on XSL is FOP.</para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        
+        <section id="chap_start.getting_tool_works">
+            <title>Getting Tool works</title>
+            <para>DocBook requires many toolchains to make it works, at least, we need following
+        tools for DocBook:</para>
+        
+            <itemizedlist>
+            <listitem><para>DocBook DTD</para></listitem>
+            <listitem><para>DocBook XSL stylesheets</para></listitem>
+            <listitem><para>docbook2xxx packages(Jade Wrapper utils)</para></listitem>
+            <listitem><para>XSLT processor</para></listitem>
+            <listitem><para>XSL-FO processor</para></listitem>
+            </itemizedlist>
+            
+            <para>Most of the above tools are pre-built packages for most of Linux distributions(e.g, RedHat/Slackware, etc). The DocBook
+            related DTD/Stylesheet files are usually located at /usr/share/sgml/docbook/ directory.</para>
+            
+            <para>For example, the Redhat EL 4.0 stored the DTD in /usr/share/sgml/docbook/xml-dtd-xx-yy/docbookx.dtd, 
+            while on Slackware 12.1, the DTD/DSSSL file paths are in /usr/lshare/sgml/docbook/sgml-dtd-xx-yy/docbook.dtd. 
+            Following is the directory layout for Slackware 12.1:</para>
+
+            <example>
+                <title>DocBook DTD directory layout</title>
+                <programlisting>/usr/share/sgml/docbook/
+|-- dsssl-stylesheets-1.79
+|   |-- VERSION
+|   |-- WhatsNew
+|   |-- bin
+|   |-- catalog
+|   |-- common
+|   |-- contrib
+|   |-- doc
+|   |-- docsrc
+|   |-- dtds
+|   |-- frames
+|   |-- html
+|   |-- images
+|   |-- lib
+|   |-- olink
+|   `-- print
+|-- sgml-dtd-3.1
+|   |-- cals-tbl.dtd
+|   |-- catalog
+|   |-- dbcent.mod
+|   |-- dbgenent.mod
+|   |-- dbhier.mod
+|   |-- dbnotn.mod
+|   |-- dbpool.mod
+|   |-- docbook.dcl
+|   `-- docbook.dtd
+|-- sgml-dtd-4.5
+|   |-- calstblx.dtd
+|   |-- catalog
+|   |-- dbcentx.mod
+|   |-- dbgenent.mod
+|   |-- dbhierx.mod
+|   |-- dbnotnx.mod
+|   |-- dbpoolx.mod
+|   |-- docbook.dcl
+|   |-- docbook.dtd
+|   |-- docbookx.dtd
+|   |-- htmltblx.mod
+|   `-- soextblx.dtd
+`-- utils-0.6.14
+    |-- backends
+    |-- docbook-utils.dsl
+    |-- frontends
+    `-- helpers</programlisting>
+            </example>
+
+            <para>FOP is a Java package, who processes the fo format. It usually used together
+            with DocBook Stylesheet(.xsl), to generate HTML/PDF format file. You can freely download
+            the latest FOP package from Apache's website.</para>
+            
+            <section>
+                <title>First Example of DocBook XML File</title>
+                <para>OK, let's consider following sample, we will illustrate
+                how to use DocBook to convert the sample file to different format documents.</para>
+                
+                <para>Suppose we have a <emphasis>my.xml</emphasis> file like this:</para>
+                
+                <example id="exp.chap_start.simple_xml">
+                    <title>The my.xml sample XML file</title>
+                <programlisting linenumbering="numbered">&lt;!-- First sepcify DTD location --&gt;
+&lt;!DOCTYPE book SYSTEM "/usr/share/sgml/docbook/xml-dtd-4.5/docbook.dtd"&gt;
+&lt;book&gt;
+  &lt;bookinfo&gt;
+    &lt;title&gt;The Title Name&lt;/title&gt;
+    &lt;author&gt;
+      &lt;firstname&gt;Yang&lt;/firstname&gt;
+      &lt;surname&gt;Songxiang&lt;/surname&gt;
+    &lt;/author&gt;
+    &lt;copyright&gt;
+      &lt;year&gt;2008&lt;/year&gt;
+      &lt;holder&gt;Yang Songxiang&lt;/holder&gt;
+    &lt;/copyright&gt;
+    
+    &lt;abstract&gt;
+       &lt;para&gt;abstract text is here.&lt;/para&gt;
+    &lt;/abstract&gt;
+    &lt;legalnotice&gt;
+        &lt;para&gt;Put your legal notice here.&lt;/para&gt;
+    &lt;/legalnotice&gt;
+  &lt;/bookinfo&gt;
+  
+  &lt;preface&gt;
+    &lt;title&gt;Foreword&lt;/title&gt;&lt;para&gt;The preface text here.&lt;/para&gt;
+  &lt;/preface&gt;
+  
+  &lt;chapter id=&quot;chap_yyy&quot;&gt;
+    &lt;title&gt;The Chapter Title&lt;/title&gt;&lt;para&gt;text here.&lt;/para&gt;
+  &lt;/chapter&gt;
+  
+  &lt;chapter id=&quot;chap_xxx&quot;&gt;
+  &lt;/chapter&gt;
+  
+  &lt;appendix id=&quot;app_xyz&quot;&gt;
+    &lt;title&gt;Appendix Name&lt;/title&gt;&lt;para&gt;Appendix Text here&lt;/para&gt;
+  &lt;/appendix&gt;
+  
+  &lt;index /&gt;
+  
+&lt;/book&gt;</programlisting>
+                </example>
+                
+                <para>The above example is a simple draft, but it does be a complete DocBook XML file, we can
+                use tools to convert this .xml file to HTML/PDF format.</para>
+                
+                <para>Line 2 of <xref linkend="exp.chap_start.simple_xml" /> shows a DTD declaration method. If the DTD
+                path in your machine is different with this example, you can modify this line to match it.</para>
+                
+                <para>Please be noted that the DTD declaration method is different for Linux and Windows:</para>
+                
+                <informalexample>
+                    <programlisting>&lt;!DOCTYPE book SYSTEM &quot;/usr/share/docbook-4.5/docbookx.dtd&quot;&gt; <co id="id_dtd_decl_linux" />
+&lt;!DOCTYPE book SYSTEM &quot;file:///C:/xml/docbook45/docbookx.dtd&quot;&gt; <co id="id_dtd_decl_win" /></programlisting>
+                    <calloutlist>
+                        <callout arearefs="id_dtd_decl_linux"><para>This is for Linux.</para></callout>
+                        <callout arearefs="id_dtd_decl_win"><para>This is for Windows.</para></callout>
+                    </calloutlist>
+                </informalexample>
+            </section>
+            
+            <section>
+                <title>Use docbook2xxx utils</title>
+                <para>Linux provided <command>docbook2dvi, docbook2html, docbook2man, docbook2pdf, 
+                docbook2ps, docbook2rtf, docbook2tex, docbook2texi, docbook2txt</command> to convert
+                XML file to each target format.</para>
+                    <indexterm><primary>docbook2html</primary></indexterm>
+                    <indexterm><primary>docbook2xxx util</primary><secondary>docbook2html</secondary></indexterm>
+                <example id="exp.chap_start.docbook2xx">
+                    <title>Convert XML by docbook2xxx</title>
+                    <programlisting><command>$docbook2html -o html my.xml</command>
+# After docbook2html, a html directory created, 
+# multi-page HTML is put in html directory.
+
+<command>$docbook2html --nochunks -o flat_html my.xml</command>
+# After that, a single-page HTML is created in flat_html directory.
+
+    <indexterm><primary>RTF Output</primary><secondary>docbook2rtf</secondary></indexterm>
+    <indexterm><primary>docbook2xxx util</primary><secondary>docbook2rtf</secondary></indexterm>
+<command>$docbook2rtf my.xml</command>
+# This is used to generate MS Word format.
+    <indexterm><primary>docbook2xxx util</primary><secondary>docbook2pdf</secondary></indexterm>
+<command>$docbook2pdf my.xml</command>
+# After docbook2pdf, a my.pdf is created.</programlisting>
+                </example>
+                
+                <para>Suppose you edit an XML file(my.xml) like <xref linkend="exp.chap_start.simple_xml" />.
+                Then type <command>$docbook2pdf my.xml</command> to convert it to a pdf file on Redhat EL 4.0:</para>
+                <screen>$docbook2pdf my.xml
+Using catalogs:/etc/sgml/xml-docbook.cat
+Using stylesheet:/usr/.../docbook/utils-0.1/docbook-utils.dsl#print
+Working on: /home/user_name/my.xml
+Done.</screen>
+                <para>For Slackware 12.1,the output is:</para>
+                <screen>$docbook2pdf my.xml
+    Using catalogs: /usr/share/sgml/docbook/sgml-dtd-4.5/catalog, 
+    /usr/share/sgml/docbook/sgml-dtd-3.1/catalog, 
+    /usr/share/sgml/docbook/dsssl-stylesheets-1.79/catalog, 
+    /usr/share/sgml/docbook/dsssl-stylesheets-1.79/html/catalog, 
+    /usr/share/sgml/docbook/dsssl-stylesheets-1.79/common/catalog, 
+    /usr/share/sgml/docbook/dsssl-stylesheets-1.79/dtds/html/catalog, 
+    /usr/share/sgml/docbook/dsssl-stylesheets-1.79/print/catalog, 
+    /usr/share/sgml/sgml-iso-entities-8879.1986/catalog, 
+    /usr/share/sgml/openjade-1.3.2/catalog
+Using stylesheet: /usr/.../docbook/utils-0.1/docbook-utils.dsl#print
+Working on: /root/docbook/use_docbook/my.xml
+Done.
+</screen>
+
+                <para>After output say done, you can find the my.pdf file is generated.</para>
+                
+                <para>When using docbook2xxx utils, the default DSSSL file is usually /usr/share/sgml/docbook/utils-x-y/docbook-utils.dsl.
+                This file contains many default option settings that control output format effect. Throughout the book, when I say
+                "By default", it means the default value in docbook-utils.dsl.</para>
+            </section>
+            
+            <section>
+                <title>Use XSL-HTML</title>
+                <para>DocBook XSL can convert XML into HTML format, the most used tool is 
+                &cmd_xsltproc;, anyway, you can use other XSLT tools such as SAXON.</para>
+                <para>In order to create HTML output via XSL, you must tell XSLT tool the XSL
+                file path. Usually, if you want to create a single-page HTML, the XSL file is
+                $(XSL_DIR)/html/docbook.xsl.</para>
+                    <indexterm><primary>xsltproc</primary><secondary>XSL-HTML single page output</secondary></indexterm>
+                <para>Follow example illustrated how to output HTML by &cmd_xsltproc;:</para>
+                <example id="exp.chap_start.xsltproc">
+                    <title>the command of xsltproc</title>
+                    <programlisting># Common Usage
+xsltproc \
+  [options] \
+  [--stringparam name value] \
+  stylesheet-path \
+  xml_file_name
+  
+# HTML sample
+xsltproc \
+  --output myfile.html \
+  --stringparam use.extensions 0 \
+  /usr/share/sgml/docbook/xsl-stylesheets/html/docbook.xsl \
+  myfile.xml</programlisting>
+                </example>
+                
+                <para>All configurations are specified by the xsl-stylesheets/ .xsl files. You can pass each
+customization parameter through the command options, to style your HTML output.
+Usually, CSS file is used to control the whole HTML output format.</para>
+                    <indexterm><primary>xsltproc</primary><secondary>XSL-HTML multi-page output</secondary></indexterm>
+                <para><xref linkend="exp.chap_start.xsltproc" /> is a single-html output. DocBook XSL also provided chunks HTML
+output support, as long as you use $(XSL_DIR)/html/chunk.xsl instead of
+$(XSL_DIR)/html/docbook.xsl:</para>
+                <example>
+                    <title>xsltproc chunk HTML output</title>
+                    <programlisting>xsltproc --output chunk_html/ --xinclude \
+  --stringparam use.extensions 0 \
+  D:\usr\bin\docbook\docbook-xsl-1.74.0\html\chunk.xsl \
+  myfile.xml</programlisting>
+                </example>
+                
+                <tip><para>You use <command>chunk_html/</command> to put all HTML pages in chunk_html/ directory. If you use
+<command>chunk_html</command>, it won't create directory for you.</para></tip>
+            </section>
+            
+            <section>
+                <title>Use FOP with XSL-FO</title>
+                
+                    <indexterm><primary>FOP</primary></indexterm>
+                <para>DocBook XSL can also convert XML file into FO file(.fo), then, .fo can be converted
+into a PDF file. The most common-used tool is FOP.</para>
+                
+                <para>We can first use &cmd_xsltproc; to convert the XML file to FO format(.fo). Then, if want to
+output PDF format, use fop to convert fo format to pdf. The most common usage is:</para>
+                
+                <example id="exp.fop_xsl_fo">
+                    <title>FOP with XSL-FO</title>
+                <programlisting># FOP sample
+xsltproc  \
+    --output myfile.fo  
+    --stringparam use.extensions 0  \
+    /usr/share/sgml/docbook/xsl-stylesheets/fo/docbook.xsl  \
+    myfile.xml
+
+# fo -> pdf
+fop -fo myfile.fo -pdf myfile.pdf</programlisting>
+                </example>
+                
+                <para>FOP can also directly parse XML file, convert to .fo format, and finally generate the pdf file:</para>
+                <example>
+                    <title>FOP Command</title>
+                    <programlisting>fop -xml xml_file \
+    -param use.extensions 0 \ <co id="id_exp.fop.xsl_param" />
+    -xsl /usr/share/docbook/docbook-xsl-1.74.0/fo/docbook.xsl \
+    -pdf output.pdf</programlisting>
+                <calloutlist>
+                    <callout arearefs="id_exp.fop.xsl_param">
+                        <para>All XSL customization parameters would be passed like this.</para>
+                    </callout>
+                </calloutlist>
+                </example>
+                
+                <tip><para>If too many parameters need to be passed, you can use a .xsl customization layer to
+                maintain all the parameters. See <xref linkend="chap_adv.customization_layer" /> for more details.</para></tip>
+            </section>
+            
+            <section>
+                <title>Use XSL HTMLHelp</title>
+                    
+                <para>The HTML Help aims to build a .chm file that used in Win32 platform.</para>
+                <note><para>XSL-htmlhelp won't generate finaly .chm target directly, it need hhc.exe to build .chm file.
+</para></note>
+                <para>In order to be able to create .chm, you need installed <emphasis>HTML Help Workshop(hhc.exe)</emphasis> package
+                in your Windows machine. Usually, it's location is C:\Program Files\HTML Help Workshop\.</para>
+                
+                <para>Following is a snippet from a Makefile that build .chm file:</para>
+                    <indexterm><primary>chm file</primary><secondary>build .chm</secondary></indexterm>
+                <example>
+                    <title>Build .chm via XSL-htmlhelp</title>
+                    <programlisting>CHM_XSL_FILE=D:\docbook\docbook-xsl-1.74.0\htmlhelp\htmlhelp.xsl
+CHM_PARAM_FLAGS = --stringparam use.extensions 0 \
+            --stringparam html.stylesheet my.css \
+            --stringparam htmlhelp.autolabel 1
+chm:
+    xsltproc --output chm/ --xinclude $(CHM_PARAM_FLAGS) \
+           $(CHM_XSL_FILE) $(SRC_FILE)
+    cp my.css chm/
+    hhc chm/htmlhelp.hhp</programlisting>
+                </example>
+                <para>XSL-htmlhelp only create the .hhp entry file, it's Window's hhc.exe to build the final .chm file.</para>
+                <tip><para>XSL-htmlhelp can also re-use some XSL parameters for XSL-HTML.</para></tip>
+				<tip><para>If you used CSS to style the HTML, the CHM would also re-use the CSS style.</para></tip>
+            </section>
+            
+        </section>
+        
+        <section id="chap_start.more_tips">
+            <title>More Notes for DocBook</title>
+            
+            <section>
+                <title>Common layout of a book</title>
+                <para><xref linkend="exp.chap_start.simple_xml" /> is a common layout of a book. The book information is
+                put in <emphasis>bookinfo</emphasis> tag, similarly, the article information is put in <emphasis>articleinfo</emphasis> tag.</para>
+                <para>See <xref linkend="exp.chap_other.article.layout" /> for article example.</para>
+                
+                <para>Following is a sample of <emphasis>bookinfo</emphasis> data for a book:</para>
+                <example>
+                    <title>A Typical bookinfo Layout</title>
+                    <programlisting>&lt;bookinfo&gt;
+  &lt;title&gt;Book Title&lt;/title&gt;
+  &lt;subtitle&gt;Book Subtitle&lt;/subtitle&gt;
+  &lt;author&gt;&lt;/author&gt;
+  &lt;copyright&gt;
+    &lt;year&gt;2000~2008&lt;/year&gt;&lt;holder&gt;Microsoft Inc.&lt;/holder&gt;
+  &lt;/copyright&gt;
+  
+  &lt;abstract&gt;
+    &lt;para&gt;Abstract Text&lt;/para&gt;
+  &lt;/abstract&gt;
+  &lt;legalnotice&gt;
+    &lt;para&gt;Liscense is here.&lt;/para&gt;
+  &lt;/legalnotice&gt;
+&lt;/bookinfo&gt;</programlisting>
+                </example>
+                
+                <para>After compilered with FOP, the recto of titlepage would be like this:</para>
+                <sidebar><programlisting>      Book Title
+     Book Subtitle
+      Author Name</programlisting></sidebar>
+
+                <para>The verso of titlepage would be like this:</para>
+                <sidebar><programlisting>Book Title : Book Subtitle
+By Author Name
+Copyright 2000~2008 Microsoft Inc.
+
+Abstract
+abstract text
+
+
+Liscense is here.</programlisting></sidebar>
+            </section>
+            
+            <section id="chap_start.divide_book">
+                <title>Break one book into slices XML</title>
+            <para><xref linkend="exp.chap_start.simple_xml" /> is just a demo example. In the real world, it's
+            not reasonable to put all chapters data in one single XML file.</para>
+            <para>We can split above chapters into separate XML files, and they are included by a main XML file.
+            This is used by almost all project that adopt DocBook. Because this make it possible to let multi-people
+            to develop the same document simultaneously and globally. Here, we can enhance the <xref linkend="exp.chap_start.simple_xml" />, to let it also seems like a professional DocBook file.</para>
+            
+            <example id="exp.chap_start.simple_xml_2">
+                <title>Break XML file into several entity</title>
+                <programlisting>&lt;!DOCTYPE book SYSTEM &quot;/usr/share/sgml/docbook/sgml-dtd-4.5/docbook.dtd&quot;
+[
+&lt;!ENTITY preface SYSTEM &quot;preface.xml&quot;&gt;
+&lt;!ENTITY chap_intro SYSTEM &quot;chap_01.xml&quot;&gt;
+&lt;!ENTITY chap_advancd SYSTEM &quot;chap_02.xml&quot;&gt;
+&lt;!ENTITY app_file SYSTEM &quot;app_file.xml&quot;&gt;
+&lt;!ENTITY glossary_docbook SYSTEM &quot;glossary_docbook.xml&quot;&gt;
+]&gt;
+&lt;book&gt;
+  &lt;bookinfo&gt;
+    &lt;title&gt;The Title Name&lt;/title&gt;
+    &lt;author&gt;
+      &lt;firstname&amp;gt;Yang&lt;/firstname&gt;&lt;surname&gt;Songxiang&lt;/surname&gt;
+    &lt;/author&gt;
+    &lt;copyright&gt;
+      &lt;year&gt;20088&lt;/year&gt;&lt;holder&gt;Yang Songxiang&lt;/holder&gt;
+    &lt;/copyright&gt;
+    
+    &lt;abstract&gt;
+       &lt;para&gt;abstract text is here.&lt;/para&gt;
+    &lt;/abstract&gt;        
+  &lt;/bookinfo&gt;
+  &amp;preface;
+  &amp;chap_intro;
+  &amp;chap_advancd;
+  &amp;app_file;
+  &amp;glossary_docbook;
+&lt;/book&gt;</programlisting>
+            </example>
+            
+            <para>The above example slices a whole book into several XML files, which make maintain work more 
+            comfortable. The build steps/methods are not changed.</para>
+            
+            <para>DocBook provids many XML attributes to control/customize the output format, these attributes
+            are recorded by <xref linkend="Walsh2003" />. You can refer it for more detail descriptions.</para>
+            
+            <para><xref linkend="chap_customize" /> will record all possible customizable stuff in DocBook.</para>
+            </section>
+            
+            <section>
+                <title>Use XInclude to Divide Book into Several Files</title>
+                <para><xref linkend="chap_start.divide_book" /> uses DTD/Entity to break one book source file into slices. You can
+                also use &cmd_XInclude; to break one book into separate XML files:</para>
+                
+                <example>
+                    <title>Use XInclude</title>
+                    <programlisting>&lt;book&gt;
+  &lt;bookinfo&gt;
+      &lt;title&gt;Book Title&lt;/title&gt;
+      &lt;author&gt;
+          &lt;firstname&gt;Yang&lt;/firstname&gt;&lt;surname&gt;Songxiang&lt;/surname&gt;
+      &lt;/author&gt;
+      
+      &lt;abstract&gt;
+          &lt;para&gt;Text&lt;/para&gt;
+      &lt;/abstract&gt;
+  &lt;/bookinfo&gt;
+  
+  &lt;!-- Windows Forms --&gt;
+  &lt;xi:include xmlns:xi=&quot;http://www.w3.org/2001/XInclude&quot; href=&quot;forms.xml&quot; /&gt;
+  
+  &lt;!-- FAQs --&gt;
+  &lt;xi:include xmlns:xi=&quot;http://www.w3.org/2001/XInclude&quot; href=&quot;faq.xml&quot; /&gt;
+    
+&lt;/book&gt;</programlisting>
+                </example>
+                
+                <important><para>If you use &cmd_xsltproc; to process the XInclude file, you must specify <userinput>--xinclude</userinput> option
+                to enable XInclude processing.</para></important>
+                
+            </section>
+            
+            <section>
+                <title>Get more reference document</title>
+                <para>You can get the complete DSSSL reference document from http://docbook.sourceforge.net/projects/dsssl/doc/.
+                The XSL document can also get from the website.</para>
+            </section>
+            
+        </section>
+        
+    </chapter>
+    
+    <!-- ============= Chapter 2 =================  -->
+    <chapter id="chap_customize">
+        <title>Customize the DocBook format</title>
+        
+        <blockquote>
+            <attribution>Publilius Syrus</attribution>
+            <para>It is a bad plan that admits of no modification.</para>
+        </blockquote>
+        
+        <section id="chap_customize.label_section">
+            <title>Numbering Chapter/Section</title>
+            <para>By default, the HTML output won't number chapter/sections, such as Chapter 1, 1.1, 1.1.2, etc.
+            And the PDF output won't number sections, such as 1.1, 1.1.2. In order to number them, we can modify the /usr/share/sgml/docbook/utils-xx.yy.zz/docbook-utils.dsl file, change some options from false(#f) to true(#t). The options to be changed are:</para>
+            <table frame="topbot">
+                <title>DSL Options for numbering</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>Option Name</entry><entry>Notes</entry></row>
+                </thead>
+                
+                <tbody>
+                    <row><entry>chapter-autolabel</entry><entry>By default, it's false for HTML.</entry></row>
+                    <row><entry>section-autolabel</entry><entry>By default, it's false.</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <para>Following example shows a snippet of docbook-utils.dsl, you can change them from
+            "f" to "t". For PDF, chapter-autolabel is defautly set to true, so you just need change
+            section-autolabel to "t" to let PDF do section numbering.</para>
+            
+            <example id="exp.chap_customize.autonum_sect">
+                <title>Auto number section</title>
+                <programlisting>;;=========================
+   HTML related options
+;;=========================
+;;Enumerate Chapters?
+(define %chapter-autolabel%
+ #t)        <lineannotation> t = "true", f = "false"</lineannotation>
+
+;;Enumerate Sections?
+(define %section-autolabel%
+ #t)
+;;===========================================================
+;;                     PRINT
+;;===========================================================
+
+;;======================================
+;;General Options
+;;======================================
+
+;;Do you want to print on both sides of the paper?
+(define %two-side% 
+ #t)
+
+;;Do you want enumerated sections? (E.g, 1.1, 1.1.1, 1.2, etc.)
+(define %section-autolabel% 
+ #f)
+
+;;Show URL links? If the text of the link and the URL are identical,
+;;the parenthetical URL is suppressed.
+(define %show-ulinks%
+ #t)
+
+;Make Ulinks footnotes to stop bleeding in the edges - this increases
+;'jade --> print' time tremendously keep this in mind before
+;complaining!
+(define %footnote-ulinks%
+  #t)
+
+;;Tex Backend on
+(define tex-backend 
+ #t)
+
+;;Define Line Spacing
+(define %line-spacing-factor% 1.1)</programlisting>
+            </example>
+            
+            <para>DocBook can recognize nested <command>section</command> and number them correctly.
+            Meanwhile, DocBook also provides more sensible tag command <command>sect1~sect4</command>.
+            DocBook can number both of these two section symbols.</para>
+            
+            <example id="exp.chap_customize.nest_sec">
+                <title>Section Representation</title>
+                <programlisting>&lt;section&gt;
+  &lt;title&gt;Hello&lt;/title&gt;
+  &lt;section&gt;
+    &lt;title&gt;World&lt;/title&gt;
+  &lt;/section&gt;
+&lt;/section&gt;
+
+&lt;sect1&gt;
+  &lt;title&gt;Hello&lt;/title&gt;
+  &lt;sect2&gt;
+    &lt;title&gt;World&lt;/title&gt;
+  &lt;/sect2&gt;
+&lt;/sect1&gt;</programlisting>
+            </example>
+            
+            <para>It's prefer to use sect1~4, since they are more sensible and user can
+            know the indent easier from the tag name.</para>
+            
+            <para>If you are using FOP on DocBook, the .dsl file is not used. You need pass XSLT with
+            parameter &param_section.autolabel;, value 1 means numbering section.</para>
+            <para>By default, the FOP section numbering is like: Chapter1, 1, 1.1, 1.1.2, etc. If you want
+            to make the numbering as Chapter1, 1.1, 1.1.2, you need turn 
+            &param_section.label.includes.component.label; parameter on. I summarize them in following table:</para>
+            
+            <table id="table.chap_customize.autolabel.xsl" frame="topbot">
+                <title>XSL Parameter for label sections</title>
+                <tgroup cols="2">
+                    <colspec colwidth="2*" />
+                    <colspec colwidth="1*" />
+                <thead>
+                    <row><entry>Parameters</entry><entry>Notes</entry></row>
+                </thead>
+                
+                <tbody>
+                    <row><entry>param_section.autolabel</entry><entry>Specify 1 to autolabel sections.</entry></row>
+                    <row><entry>param_section.label.includes.component.label</entry><entry>Specify 1 to label &lt;sect1&gt; as like 1.1.</entry></row>
+                </tbody>
+                </tgroup>
+ 
+            </table>
+            
+                <indexterm><primary>chm file</primary><secondary>numbering label</secondary></indexterm>
+            <para>For htmlhelp, it shared same options as HTML. In order to numbering .chm's Chapter on the left panel,
+            you need use htmlhelp-specific &param_htmlhelp.autolabel; parameter with value 1.</para>
+            
+        </section>
+
+        <section>
+            <title>Control LoT</title>
+            <para>DocBook can list all the tables, figures, examples, etc for you at the begining of your book.
+            docbook2pdf used &cmd_generate-book-lot-list; parameter to specify which Lists of Titles should
+            be produced for a book, usually, this parameter is in docbook-utils.dsl file.</para>
+            
+            <para>Following example let book list table, figure, example, and equation.</para>
+            
+            <example>
+                <title>DSL to control LoT</title>
+                <programlisting>define ($generate-book-lot-list$)
+  ;; Which Lists of Titles should be produced for Books?
+  (list (normalize "table")
+(normalize "figure")
+(normalize "example")
+(normalize "equation")))</programlisting>
+            </example>
+            
+            <para>By default, docbook-utils.dsl only specify "equation" can be listed.</para>
+            
+        </section>
+        
+        <section id="chap_customize.fonts">
+            <title>Change Fonts and Fonts Size</title>
+            
+                <indexterm><primary>font</primary></indexterm>
+            
+            <note><para>For docbook2pdf, the default settings are good enough, you don't
+            need any font change. While for FOP, the default font settings are bad, you probably need some modifications.</para></note>
+            
+            <para>XSL uses &param_body.fontset; or &param_body.font.family; parameter to control paragraph's font,
+            used &param_body.font.size; to control paragraph's font size.</para>
+            
+            <para>For Windows, some font name is space-char divided, such as "Palatino Linotype", in this case, you should
+            enclose the font name with single-quote symbol through command line parameter. otherwise, FOP would complain
+            error in compiling.</para>
+            <informalexample>
+                <programlisting>fop -xml xml_file \
+    <command>-param body.fontset Helvetica</command> \
+    <command>-param body.font.size 11</command> \
+    -xsl /usr/share/docbook/docbook-xsl-1.74.0/fo/docbook.xsl \
+    -pdf output.pdf
+    
+fop -xml xml_file \
+    <command>-param body.font.family Helvetica</command> \
+    <command>-param body.font.size 11</command> \
+    -xsl /usr/share/docbook/docbook-xsl-1.74.0/fo/docbook.xsl \
+    -pdf output.pdf
+    
+fop -xml xml_file \
+    <command>-param body.font.family 'Palatino Linotype'</command> \
+    <command>-param body.font.size 11</command> \
+    -xsl /usr/share/docbook/docbook-xsl-1.74.0/fo/docbook.xsl \
+    -pdf output.pdf</programlisting></informalexample>
+    
+            <section>
+                <title>The Base-14 Fonts</title>
+                <para>The Adobe PostScript and PDF Specification state that there must be a set of
+                14 fonts to be supported, for every PostScript interpreter and PDF reader:</para>
+                
+                <table frame="topbot">
+                <title>Built-in Fonts</title>
+                <tgroup cols="2">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Font Name</entry><entry>Notes</entry></row>
+                </thead>
+                
+                <tbody>
+                    <row>
+                    <entry>Helvetica</entry>
+                    <entry>(normal, bold, italic, bold italic), totally 4.</entry>
+                    </row>
+                    <row>
+                    <entry>Times</entry>
+                    <entry>(normal, bold, italic, bold italic), totally 4.</entry>
+                    </row>
+                    <row>
+                    <entry>Courier</entry>
+                    <entry>(normal, bold, italic, bold italic), totally 4.</entry>
+                    </row>
+                    <row>
+                    <entry>Symbol</entry>
+                    <entry></entry>
+                    </row>
+                    <row>
+                    <entry>ZapfDingbats</entry>
+                    <entry></entry>
+                    </row>
+                </tbody>
+                </tgroup>
+            </table>
+           
+            <para>Usually, above built-in fonts are called <emphasis>Base-14 Fonts</emphasis>.</para>
+           
+            </section>
+            
+            <section>
+                <title>Fonts Configuration</title>
+                
+                <para>The FOP's font configuration can be found in $(FOP_DIR)/conf/fop.xconf template file, in
+                &lt;fonts&gt; tag.</para>
+                
+                <para>For Windows operating system, the font directory is usually in C:\Windows\Fonts\ directory. We
+                can tell FOP the fonts path:</para>
+                
+                <example>
+                    <title>Use Customized Fonts under Windows</title>
+                    <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;fop version=&quot;1.0&quot;&gt;
+    &lt;fonts&gt;
+      &lt;directory&gt;C:\Windows\Fonts&lt;/directory&gt; <co id="id_exp.win_fonts_1" />
+      &lt;directory recursive=&quot;true&quot;&gt;C:\MyFonts2&lt;/directory&gt; <co id="id_exp.win_fonts_2" />
+    &lt;/fonts&gt;
+&lt;/fop&gt;</programlisting>
+                    <calloutlist>
+                        <callout arearefs="id_exp.win_fonts_1">
+                            <para>This is tell FOP to find fonts in C:\Windows\Fonts\</para>
+                        </callout>
+                        <callout arearefs="id_exp.win_fonts_2">
+                            <para>In case your wanted font is in it's sub-directory.</para>
+                        </callout>
+                    </calloutlist>
+                </example>
+                
+                <para>FOP can also auto detected the font installed in your system, you just put one <emphasis>auto-detect</emphasis> line
+                in &lt;fonts&gt;:</para>
+                
+                <programlisting>&lt;fonts&gt;
+    &lt;auto-detect /&gt;
+&lt;/fonts&gt;</programlisting>
+    
+                <para>You can type <userinput>fop -c your_font.conf -param body.font.family Pristina</userinput> to
+                use Windows' Pristina font style in your paragraph text.</para>
+                <para>The font docbook2pdf used by default is Palatino, so you can let FOP generate the same font
+                type, in case Windows had the same font. The font type could be specified in a customization layer,
+                or directly passed through command line.</para>
+                
+                <informalexample>
+                    <programlisting>&lt;?xml version='1.0'?&gt;
+&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
+                xmlns:exsl=&quot;http://exslt.org/common&quot;
+                xmlns:fo=&quot;http://www.w3.org/1999/XSL/Format&quot;
+                xmlns:ng=&quot;http://docbook.org/docbook-ng&quot;
+                xmlns:db=&quot;http://docbook.org/ns/docbook&quot;
+                exclude-result-prefixes=&quot;db ng exsl&quot;
+                version='1.0'&gt;
+
+  &lt;xsl:import href=&quot;D:\usr\bin\docbook\docbook-xsl-1.74.0\fo\docbook.xsl&quot; /&gt;
+  &lt;xsl:param name=&quot;section.autolabel&quot;&gt;1&lt;/xsl:param&gt;
+  &lt;xsl:param name=&quot;admon.graphics&quot;&gt;0&lt;/xsl:param&gt;
+  &lt;xsl:param name=&quot;paper.type&quot;&gt;A4&lt;/xsl:param&gt;
+  &lt;xsl:param name=&quot;fop1.extensions&quot;&gt;1&lt;/xsl:param&gt;
+  &lt;xsl:param name=&quot;draft.mode&quot;&gt;no&lt;/xsl:param&gt;
+  <command>&lt;xsl:param name=&quot;body.font.family&quot;&gt;Palatino Linotype&lt;/xsl:param&gt;</command>
+&lt;/xsl:stylesheet&gt;</programlisting>
+                </informalexample>
+            </section>
+            
+            <section>
+                <title>Change Section Font Size</title>
+                <para>By default, the section title font size in FOP/PDF is a little bigger, you can add 
+                <emphasis>section.title.level<command>X</command>.properties</emphasis> in your customization layer, to
+                modify the default font size.
+                Following snippet is selected from $(XSL_DIR)/fo/param.xsl file:</para>
+                
+                <informalexample>
+                    <programlisting>&lt;xsl:attribute-set name=&quot;section.title.level1.properties&quot;&gt;
+  &lt;xsl:attribute name=&quot;font-size&quot;&gt;
+    &lt;xsl:value-of select=&quot;$body.font.master * 2.0736&quot;/&gt;
+    &lt;xsl:text&gt;pt&lt;/xsl:text&gt;
+  &lt;/xsl:attribute&gt;
+&lt;/xsl:attribute-set&gt;
+&lt;xsl:attribute-set name=&quot;section.title.level2.properties&quot;&gt;
+  &lt;xsl:attribute name=&quot;font-size&quot;&gt;
+    &lt;xsl:value-of select=&quot;$body.font.master * 1.728&quot;/&gt;
+    &lt;xsl:text&gt;pt&lt;/xsl:text&gt;
+  &lt;/xsl:attribute&gt;
+&lt;/xsl:attribute-set&gt;
+&lt;xsl:attribute-set name=&quot;section.title.level3.properties&quot;&gt;
+  &lt;xsl:attribute name=&quot;font-size&quot;&gt;
+    &lt;xsl:value-of select=&quot;$body.font.master * 1.44&quot;/&gt;
+    &lt;xsl:text&gt;pt&lt;/xsl:text&gt;
+  &lt;/xsl:attribute&gt;
+&lt;/xsl:attribute-set&gt;
+&lt;xsl:attribute-set name=&quot;section.title.level4.properties&quot;&gt;
+  &lt;xsl:attribute name=&quot;font-size&quot;&gt;
+    &lt;xsl:value-of select=&quot;$body.font.master * 1.2&quot;/&gt;
+    &lt;xsl:text&gt;pt&lt;/xsl:text&gt;
+  &lt;/xsl:attribute&gt;
+&lt;/xsl:attribute-set&gt;</programlisting>
+                </informalexample>
+                
+                <para>The <emphasis>section.title.level1.properties</emphasis> mapped to &lt;sect1&gt;'s title size, level2 mapped
+                to &lt;sect2&gt;'s title size, etc.</para>
+                
+                <para>You can modify the percent value of above attributes, and put them in your customization layer.</para>
+            </section>
+            
+        </section>
+        
+        <section id="chap_customize.bookmarks">
+            <title>Add/Remove Bookmarks</title>
+                <indexterm><primary>bookmark</primary></indexterm>
+            <para>When build PDF file by using docbook2pdf, it will automatically add a bookmarks for you. When you open the
+            pdf file through Acrobat Reader or xpdf, the bookmark would be shown on the left panel.</para>
+            
+            <para>If you are building PDF through FOP, it won't add the bookmark until you specify &param_fop1.extensions;
+            with 1 value. Following command would add bookmark for you:</para>
+            <informalexample>
+                <programlisting>fop -xml file.xml -xsl file.xsl <command>-param fop1.extensions 1</command> -pdf out.pdf</programlisting>
+            </informalexample>
+            <note><para>The &param_fop1.extensions; means extensions for FOP version 0.90 and later.</para></note>
+        </section>
+        
+        <section id="chap_customize.page_layout">
+            <title>Page Layout</title>
+                <indexterm><primary>page type</primary></indexterm>
+            <para>When using docbook2pdf, the PDF will automatically do even-odd page number correctly.</para>
+            <para>DSSSL provided several parameters to control the page layout:</para>
+            
+            <table frame="topbot">
+                <title>DSL Parameters for Page Layout</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>Parameter</entry><entry>Notes</entry></row>
+                </thead>
+                
+                <tbody>
+                    <row>
+                    <entry>%two-side%</entry>
+                    <entry>Make even/odd page or not.</entry>
+                    </row>
+                    <row>
+                    <entry>%paper-type%</entry>
+                    <entry>Possible value is A4, USletter, A4landscape, etc.</entry>
+                    </row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <para>When using FOP, it's page number is centered. If you want to do even-odd page layout, specify
+            1 to &param_double.sided;, which would make page be printed with double page.</para>
+            
+            <para>Sometimes, you would probably need change the DocBook's page orientation, such as you want to
+            create a quick reference card. XSL provides &param_page.orientation; to do this.</para>
+            <para>You can also control the page's type(such as A4/A3, etc) by setting &param_paper.type; parameter.
+            <xref linkend="table.chap_customize.page_layout.xsl" /> listed these parameter's information:</para>
+            
+            <table id="table.chap_customize.page_layout.xsl" frame="topbot">
+                <title>XSL Parameters for Page Layout</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>Parameter</entry><entry>Notes</entry></row>
+                </thead>
+                
+                <tbody>
+                    <row>
+                    <entry>page.orientation</entry>
+                    <entry>default is "portrait", you can use "landscape" to let page rotate 90 degree.</entry>
+                    </row>
+                    <row>
+                    <entry>paper.type</entry>
+                    <entry>default is "USletter", other type can be A4/A3, etc.</entry>
+                    </row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <para>Refer <xref linkend="chap_other.quick_card" /> for more details about how to create a quick reference card.</para>
+            <para>Refer <xref linkend="tbl.app_unit_conversion.pagesize" /> for more details about the page size dimensions.</para>
+        </section>
+        
+        <section id="chap_customize.list_item">
+            <title>List Items in DocBook</title>
+            <para>It's common to list items in a book. DocBook provides &cmd_orderedlist; &cmd_itemizedlist;
+            &cmd_variablelist; to do this.</para>
+            
+            <variablelist>
+                <title>List Commands In DocBook</title>
+                <varlistentry>
+                    <term><command>orderedlist</command></term>
+                    <listitem><para>List item in numberical order, like 1,2,3,4, etc.</para></listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term><command>itemizedlist</command></term>
+                    <listitem><para>List item in bullet-like symbol.</para></listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term><command>variablelist</command></term>
+                    <listitem><para>List any items like filename, type name etc, in an indented format.</para></listitem>
+                </varlistentry>
+            </variablelist>
+            
+            <section>
+                <title>variablelist Usage</title>
+                    <indexterm><primary>listitem</primary><secondary>variablelist</secondary></indexterm>
+                <para>Following example illustrated how to use variablelist:</para>
+                <example id="exp.chap_customize.list_item_1">
+                    <title>Use variablelist</title>
+                    <programlisting>&lt;variablelist&gt;
+    &lt;title&gt;List Commands In DocBook&lt;/title&gt; <co id="id1_exp.chap_customize.list_item_1" />
+    &lt;varlistentry&gt;
+        &lt;term&gt;&lt;command&gt;orderedlist&lt;/command&gt;&lt;/term&gt;
+        &lt;listitem&gt;
+          &lt;para&gt;List item in numberical order, like 1,2,3,4, etc.&lt;/para&gt;
+        &lt;/listitem&gt;
+    &lt;/varlistentry&gt;
+    &lt;varlistentry&gt;
+        &lt;term&gt;&lt;command&gt;itemizedlist&lt;/command&gt;&lt;/term&gt;
+        &lt;listitem&gt;
+          &lt;para&gt;List item in bullet-like symbol.&lt;/para&gt;&lt;/listitem&gt;
+    &lt;/varlistentry&gt;
+    &lt;varlistentry&gt;
+        &lt;term&gt;&lt;command&gt;variablelist&lt;/command&gt;&lt;/term&gt;
+        &lt;listitem&gt;
+          &lt;para&gt;List any items like filename, type name etc, 
+          in an indented format.&lt;/para&gt;&lt;/listitem&gt;
+    &lt;/varlistentry&gt;
+&lt;/variablelist&gt;</programlisting>
+        
+                <calloutlist>
+                    <callout arearefs="id1_exp.chap_customize.list_item_1">
+                        <para>You can also omit the &lt;title&gt; here.</para>
+                    </callout>
+                </calloutlist>
+                </example>
+                
+            </section>
+            
+            <section>
+                <title>itemizedlist Usage</title>
+                    <indexterm><primary>listitem</primary><secondary>itemizedlist</secondary></indexterm>
+                <para>&cmd_itemizedlist; is used to listitem in bullet-like symbol, please be note that it can't list items in
+                numberical format, &cmd_orderedlist; will do that.</para>
+                
+                <example>
+                    <title>Use itemizedlist</title>
+                    <programlisting>&lt;itemizedlist&gt;
+    &lt;listitem&gt;&lt;para&gt;DocBook DTD&lt;/para&gt;&lt;/listitem&gt;
+    &lt;listitem&gt;&lt;para&gt;DocBook XSL stylesheets&lt;/para&gt;&lt;/listitem&gt;
+    &lt;listitem&gt;&lt;para&gt;docbook2xxx packages&lt;/para&gt;&lt;/listitem&gt;
+    &lt;listitem&gt;&lt;para&gt;XSLT processor&lt;/para&gt;&lt;/listitem&gt;
+    &lt;listitem&gt;&lt;para&gt;XSL-FO processor&lt;/para&gt;&lt;/listitem&gt;
+&lt;/itemizedlist&gt;</programlisting>
+                </example>
+                
+                <para>&cmd_itemizedlist; also provides some attributes to modify the itemize style.</para>
+                <table frame="topbot">
+                    <title>Attribute for &cmd_itemizedlist;</title>
+                    <tgroup cols="3">
+                    <colspec colname="col_1" />
+                    <colspec colname="col_2" />
+                    <colspec colname="col_3" />
+                    <thead>
+                        <row><entry>Attribute</entry><entry>Attribute Value</entry><entry>Notes</entry></row>
+                    </thead>
+                    <tbody>
+                        <row><entry>mark</entry><entry></entry><entry></entry></row>
+                        <row><entry></entry><entry>bullet</entry><entry>(Default)A bullet symbol.</entry></row>
+                        <row><entry></entry><entry>box</entry><entry>A square box symbol.</entry></row>
+                        <row><entry></entry><entry>opencircle</entry><entry>Open circle symbol.</entry></row>
+                        <row><entry>spacing</entry><entry></entry><entry></entry></row>
+                        <row><entry></entry><entry>compact</entry><entry>Compact spacing.</entry></row>
+                    </tbody>
+                    </tgroup>
+                </table>
+            </section>
+
+            <section>
+                <title>orderedlist Usage</title>
+                    <indexterm><primary>listitem</primary><secondary>orderedlist</secondary></indexterm>
+                <para>&cmd_orderedlist; is used to do number order, like 1, 2, 3, 4 etc.</para>
+                <example>
+                    <title>Use orderedlist</title>
+                    <programlisting>&lt;para&gt;Following are all comands related with listitem:&lt;/para&gt;
+&lt;orderedlist spacing=&quot;compact&quot;&gt;
+    &lt;listitem&gt;&lt;para&gt;orderedlist&lt;/para&gt;&lt;/listitem&gt;
+    &lt;listitem&gt;&lt;para&gt;itemizedlist&lt;/para&gt;&lt;/listitem&gt;
+    &lt;listitem&gt;&lt;para&gt;variablelist&lt;/para&gt;&lt;/listitem&gt;
+&lt;/orderedlist&gt;</programlisting>
+                </example>
+                
+                <para>The compiler output is:</para>
+                <sidebar>
+                <para>Following are all comands related with listitem:</para>
+                <orderedlist spacing="compact">
+                    <listitem><para>orderedlist</para></listitem>
+                    <listitem><para>itemizedlist</para></listitem>
+                    <listitem><para>variablelist</para></listitem>
+                </orderedlist>
+                </sidebar>
+                
+            </section>
+        </section>
+        
+        <section id="chap_customize.add_person_quote">
+            <title>Add some cool person's quote</title>
+            <para>Some book always include a famous person's words at the begin of each chapter/preface.
+            DocBook can use <command>blockquote</command> to do this:</para>
+                <indexterm><primary>blockquote</primary></indexterm>
+            <example id="exp.chap_customize.blockquote">
+                <title>Use blockquote</title>
+                <programlisting>&lt;chapter id=&quot;chap_start&quot;&gt;
+    &lt;title&gt;Getting Started with DocBook&lt;/title&gt;
+        
+    &lt;blockquote&gt;
+      &lt;attribution&gt;Person Name&lt;/attribution&gt;
+      &lt;para&gt;Can I believe I can add some text here?&lt;/para&gt;
+    &lt;/blockquote&gt;</programlisting>
+            </example>
+            
+            <para>After compiler, the output is:</para>
+            <sidebar>
+            
+            <blockquote><attribution>Person Name</attribution><para>Can I believe I
+            can add some text here?</para></blockquote></sidebar>
+            
+            <tip><para>You can find more useful quotes on http://www.quotationspage.com/.</para></tip>
+        </section>
+        
+        <section id="chap_customize.book_example">
+            <title>Example Text</title>
+            <indexterm><primary>example</primary></indexterm>
+            <para>When give an example, DocBook use &cmd_example; to list example items.
+            As DocBook's requirement, the &cmd_example; <emphasis>MUST</emphasis> take &lt;title&gt;
+            as it's first child element, otherwise, DocBook would failed to compile the file.
+            Add &lt;title&gt; would make DocBook numbers this example likes <emphasis>"Example 4-30"</emphasis></para>
+            
+            <para>Sometime, this is not appropriate when we just need list a very simple example. To avoid
+            DocBook always number <emphasis>"Example 4-30"</emphasis>-like title, another &cmd_informalexample; is
+            used to list simple example without title, and of course, DocBook won't number this example.</para>
+            
+            <example id="exp.chap_customize.book_example_1">
+                <title>Use example in DocBook</title>
+                <programlisting>&lt;example&gt; <co id="exp.chap_customize.book_example_1.id_1" />
+   &lt;programlisting&gt;Hello Here.&lt;/programlisting&gt;
+&lt;/example&gt;
+ 
+&lt;informalexample&gt; <co id="exp.chap_customize.book_example_1.id_2" />
+   &lt;programlisting&gt;Hello Here.&lt;/programlisting&gt;
+&lt;/informalexample&gt;</programlisting>
+                <calloutlist>
+                    <callout arearefs="exp.chap_customize.book_example_1.id_1">
+                        <para>Here didn't specify &lt;title&gt;, which would cause DocBook stop compile this file.</para>
+                    </callout>
+                    <callout arearefs="exp.chap_customize.book_example_1.id_2">
+                        <para>Here DocBook would happy to compile this file, no title be added.</para>
+                    </callout>
+                </calloutlist>
+            </example>
+            
+            
+        </section>
+        
+        <section id="chap_customize.programlisting">
+            <title>Customize programlisting</title>
+    
+            <para><command>programlisting</command> is often used for quote some sample code snippet, usually, it's used by &cmd_example;.</para>
+
+            <section id="chap_customize.programlisting.line_numbering">
+                <title>Line numbering programlisting</title>
+                    <indexterm>
+                        <primary>programlisting</primary><secondary>linenumbering</secondary>
+                    </indexterm>
+            <para>In order to mark the <command>programlisting</command> with line number information, DocBook provided the &cmd_linenumbering; attribute.
+            You can assign "numbered" value to &cmd_linenumbering; attribute to let it numbers code lines, like this:</para>
+            <informalexample>
+                <programlisting>&lt;programlisting linenumbering=&quot;numbered&quot;&gt;</programlisting>
+            </informalexample>
+            
+            <para>Use "unnumbered" to not number code lines.
+            For example, following programlisting shows a part of C code:</para>
+
+            <example>
+                <title>Display line number for programlisting</title>
+                <programlisting linenumbering="numbered">/*
+ *  linux/init/main.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ *
+ *  GK 2/5/95  -  Changed to support mounting root fs via NFS
+ *  Simplified starting of init:  Michael A. Griffith &lt;grif@acm.org&gt; 
+ */
+
+#define __KERNEL_SYSCALLS__
+
+#include &lt;linux/config.h&gt;
+#include &lt;linux/types.h&gt;
+#include &lt;linux/module.h&gt;
+
+asmlinkage void __init start_kernel(void)
+{
+	char * command_line;
+	extern struct kernel_param __start___param[], __stop___param[];
+    lock_kernel();
+	page_address_init();
+	printk(linux_banner);
+	setup_arch(&amp;command_line);
+	setup_per_cpu_areas();
+}</programlisting>
+            </example>
+            
+            <para>As you can see, in order to reduce compile time, DocBook default only
+            number lines by 5, not one-by-one.</para>
+            
+            <para>If you want the linenumber feature automatically turned on, you can modify DSSL's file,
+            it's usually in $(docbook_dir)/dsssl-stylesheets/print/dbparam.dsl, who is included by docbook.dsl.
+            And you can modify number line steps from default 5 to 1, to let DocBook number all code lines for you.</para>
+            <para>These parameters can be found in : </para>
+
+            <example>
+                <title>DSSL parameters to control linenumbering</title>
+                <programlisting>(define %number-screen-lines%
+  ;; REFENTRY number-screen-lines
+  ;; PURP Enumerate lines in a 'Screen'?
+  ;; DESC
+  ;; If true, lines in each 'Screen' will be enumerated.
+  ;; See also '%linenumber-mod%', '%linenumber-length%',
+  ;; '%linenumber-padchar%', and '($linenumber-space$)'.
+  ;; /DESC
+  ;; AUTHOR N/A
+  ;; /REFENTRY
+  #f)
+(define %linenumber-mod% 
+  ;; REFENTRY linenumber-mod
+  ;; PURP Controls line-number frequency in enumerated environments.
+  ;; DESC
+  ;; Every '%linenumber-mod%' line will be enumerated.
+  ;; /DESC
+  ;; AUTHOR N/A
+  ;; /REFENTRY
+  5) <co id="id_linenumber_mode" /></programlisting>
+            <calloutlist>
+              <callout arearefs="id_linenumber_mode">
+                <para>change from 5 to 1, to number line-by-line.</para>
+              </callout>
+            </calloutlist>
+            </example>
+            
+            </section>
+            
+            <section id="chap_customize.programlisting.callout">
+                <title>Use callout</title>
+                    <indexterm>
+                        <primary>programlisting</primary><secondary>callout</secondary>
+                    </indexterm>
+                    
+                <para>DocBook can add callout on &cmd_programlisting;, which would make the stuff
+                in programlisting more readable and easy to be understanded.</para>
+                <para>To add callout, you need:<orderedlist spacing="normal">
+                    <listitem><para>Add &lt;co id="id_num" /&gt; in programlisting.</para></listitem>
+                    <listitem><para>Add &lt;calloutlist&gt; after programlisting.</para></listitem></orderedlist></para>
+                
+                <para>Following example illustrated how use callout in programlisting.</para>
+                
+                <example>
+                    <title>Use callout in programlisting</title>
+                    <programlisting>&lt;programlisting&gt;Hello Here. &lt;co id=&quot;id_1&quot; /&gt; 
+World here. &lt;co id=&quot;id_2&quot; /&gt;
+&lt;/programlisting&gt;
+
+  &lt;calloutlist&gt;
+      &lt;callout arearefs=&quot;id_1&quot;&gt;
+          &lt;para&gt;Here put your explain text for ID_1&lt;/para&gt;
+      &lt;/callout&gt;
+      &lt;callout arearefs=&quot;id_2&quot;&gt;
+          &lt;para&gt;Here put your explain text for ID_2.&lt;/para&gt;
+      &lt;/callout&gt;
+  &lt;/calloutlist&gt;</programlisting>
+                </example>
+                
+                <para>By default, DocBook renders pdf with plain text such as (1), (2), (3). When render HTML, DocBook
+                would use an pre-built image file to represent the (1), (2), (3). Refer <xref linkend="exp.chap_customize.book_example_1" /> 
+                to see the render output effect of callout.</para>
+                
+                <para>If you are using FOP, you can specify 1 to &param_callout.graphics; to use graphics callout.</para>
+            </section>
+            
+            <section id="chap_customize.programlisting.lineannotation">
+                <title>Line Comments(lineannotation)</title>
+                    <indexterm>
+                        <primary>programlisting</primary><secondary>lineannotation</secondary>
+                    </indexterm>
+                <para>Unlike callout, DocBook provides another attribute called &cmd_lineannotation;, it allows you
+                directly add code comments in programlisting block. Sometimes, it's more usable than callout.</para>
+                
+                <para>The basic usage is: &lt;lineannotation&gt;<emphasis>Your comments here.</emphasis>&lt;/lineannotation&gt;</para>
+                <example id="exp.chap_customize.programlisting.lineannotation_1">
+                    <title>Use &cmd_lineannotation;</title>
+                    <programlisting>&lt;title&gt;Auto number section&lt;/title&gt;
+&lt;programlisting&gt;;;=========================
+   HTML related options
+;;=========================
+;;Enumerate Chapters?
+(define %chapter-autolabel%
+ #t)        &lt;lineannotation&gt; t = &quot;true&quot;, f = &quot;false&quot;&lt;/lineannotation&gt;
+;;Enumerate Sections?
+(define %section-autolabel%
+ #t)&lt;/programlisting&gt;</programlisting>
+                </example>
+                
+                <para>The compile output is like <xref linkend="exp.chap_customize.autonum_sect" /></para>
+                
+            </section>
+            
+            <section id="chap_customize.programlisting.external_file">
+                <title>External code files</title>
+                <para>If the content in &cmd_programlisting; is source code, put the source code out of
+                DocBook XML file is a good idea. Because this would avoid you typing extra source code in DocBook,
+                and you can maintain the source code in a separate file.</para>
+                
+                <para>You can use &cmd_XInclude; to do this:</para>
+                <example id="exp.chap_customize.xinclude_externalfile">
+                    <title>Use Xinclude to include exernal file</title>
+                    <programlisting>&lt;example&gt;
+  &lt;title&gt;Common Usage of a Tab Control&lt;/title&gt;
+  &lt;programlisting&gt;&lt;xi:include href=&quot;code_snippet/tabctrl_simple.cs&quot; \
+      parse=&quot;text&quot; xmlns:xi=&quot;http://www.w3.org/2001/XInclude&quot; /&gt;
+  &lt;/programlisting&gt;
+&lt;/example&gt;</programlisting>
+                </example>
+                
+                <para>The external tabctrl_simple.cs file contents:</para>
+                
+                <informalexample>
+                    <programlisting>using System.Windows.Forms;
+
+TabControl tabControl = new TabControl();
+// code to be omited...
+TabPage tg = new TabPage();
+tg.Text = "Tab Name";
+tg.Dock = DockStyle.Fill;
+tabControl.Controls.Add(tg);
+if(i &lt; 34 &amp;&amp; i &gt; 1)
+{
+  // do somthing here.
+}</programlisting>
+                </informalexample>
+                
+                <para>You can use FOP to process this example. If you want to use &cmd_xsltproc; to generate
+                HTML format, you need specify <emphasis>--xinclue</emphasis> option.</para>
+                
+                <para>The <emphasis>parse=&quot;text&quot;</emphasis> in <xref linkend="exp.chap_customize.xinclude_externalfile" /> indicates that
+                it include the file without any process, so the &lt;,&amp; symbol in file will not be changed!
+                This is very helpful for author avoid change these symbol to XML entitiy.</para>
+                
+                <caution><para>The drawback of this method is that you can't add callout/lineannotation easily.</para></caution>
+            </section>
+            
+        </section>
+        
+        <section>
+            <title>Record DocBook text litteratim</title>
+            <para>DocBook's text is in XML syntax, some symbol such as &lt;, &amp;, they can't appear in &cmd_programlisting;,
+            you can use CDATA to do this, to make the source DocBook file looks more easy-understand.</para>
+            <para>All the litteratim text are put in &lt;![CDATA[<emphasis>all literal text here</emphasis>]]&gt;.</para>
+            
+            <example>
+                <title>Use CDATA to List Text</title>
+                <programlisting>&lt;![CDATA[&lt;?xml version='1.0'?&gt;
+   &lt;!DOCTYPE slides PUBLIC &quot;-//Norman Walsh//DTD Slides XML V4.4//EN&quot;
+       &quot;http://docbook.sourceforge.net/release/slides/4.4/slides.dtd&quot;&gt;
+       &lt;slides&gt;
+       &lt;slidesinfo&gt;
+       &lt;title&gt;Presentation Title&lt;/title&gt;
+       &lt;/slidesinfo&gt;
+       &lt;foil&gt;&lt;title&gt;Foil Title&lt;/title&gt;
+       &lt;para&gt;Foil content&lt;/para&gt;
+       &lt;/foil&gt;
+       &lt;/slides&gt;]]&gt;</programlisting>
+            </example>
+            
+            <para>The output would be like this:</para>
+            <sidebar>
+            <screen><![CDATA[<?xml version='1.0'?>
+   <!DOCTYPE slides PUBLIC "-//DTD Slides XML V3.0b1//EN"
+       "http://docbook.sourceforge.net/slides/slides.dtd">
+       <slides>
+       <slidesinfo>
+       <title>Presentation Title</title>
+       </slidesinfo>
+       <foil><title>Foil Title</title>
+       <para>Foil content</para>
+       </foil>
+       </slides>]]></screen></sidebar>
+       
+            <para>Thus, it would not be hard-understand in your &cmd_programlisting; if you contained many XML entitiy symbols in it.</para>
+        </section>
+
+        <section id="chap_customize.table">
+            <title>Add Table in DocBook</title>
+                <indexterm><primary>table</primary></indexterm>
+            <para>The <command>table</command> is used to draw table.</para>
+            <example id="exp.chap_customize.table">
+                <title>Draw a Simple Table</title>
+                <programlisting>&lt;table id=&quot;table.chap_customize.simple_table&quot; frame="all" &gt;
+  &lt;title&gt;Table Title Name&lt;/title&gt;
+  &lt;tgroup cols=&quot;2&quot;&gt;
+      &lt;thead&gt;
+          &lt;row&gt;&lt;entry&gt;The first Column Name&lt;/entry&gt;
+          &lt;entry&gt;The second Column Name&lt;/entry&gt;&lt;/row&gt;
+      &lt;/thead&gt;
+      
+      &lt;tbody&gt;
+          &lt;row&gt;&lt;entry&gt;The data in table&lt;/entry&gt;
+          &lt;entry&gt;text for 2nd column&lt;/entry&gt;&lt;/row&gt;
+          &lt;row&gt;&lt;entry&gt;Hello World&lt;/entry&gt;
+          &lt;entry&gt;The data here.&lt;/entry&gt;&lt;/row&gt;
+      &lt;/tbody&gt;
+  &lt;/tgroup&gt;
+&lt;/table&gt;</programlisting>
+            </example>
+            
+            <para>After compiler, a table will be generated:</para>
+            
+            <table id="table.chap_customize.simple_table" frame="all">
+                <title>Table Title Name</title>
+                <tgroup cols="2">
+                    <thead>
+                        <row><entry>The first Column Name</entry><entry>The second Column Name</entry></row>
+                    </thead>
+                    
+                    <tbody>
+                        <row><entry>The data in table</entry><entry>text for 2nd column</entry></row>
+                        <row><entry>Hello World</entry><entry>The data here.</entry></row>
+                    </tbody>
+                </tgroup>
+            </table>
+            
+            <para>In addition, DocBook provided many attribute to customize table. The table frame can
+            be specified through <command>frame</command> attribute, possible value are:</para>
+            
+            <table id="table.chap_customize.frame_tbl_val" frame="topbot">
+                <title><command>frame</command> attribute value</title>
+                <tgroup cols="2">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                    <thead>
+                        <row><entry>Value</entry><entry>Comments</entry></row>
+                    </thead>
+                    
+                    <tbody>
+                        <row><entry>all</entry><entry>Table is fully framed(default)</entry></row>
+                        <row><entry>topbot</entry><entry>Only top and bottom line is framed</entry></row>
+                        <row><entry>sides</entry><entry>Frame the left and right sides of the table.</entry></row>
+                        <row><entry>bottom</entry><entry>Frame only the bottom of the table.</entry></row>
+                        <row><entry>top</entry><entry>Frame the top of the table.</entry></row>
+                        <row><entry>none</entry><entry>Place no border on the table.</entry></row>
+                    </tbody>
+                </tgroup>
+            </table>
+            
+            <para>It's often used to modify table column's property, such as width, and aligment. DocBook
+            provides &cmd_colspec;, together with many attributes, to help user customize the table format.</para>
+            
+            <para>&cmd_colspec; should be put as the first child XML node of the &lt;tgroup&gt;, before
+            &lt;thead&gt; tag.</para>
+            
+            <para>For example, user can set colwidth attribute, to control the column width. By default, DocBook
+            would divide the table column average, too long content would be wrapped into multi-lines.</para>
+            
+            <example id="exp.chap_customize.table.col_width">
+                <title>Change Table Column Width</title>
+                <programlisting>&lt;table id=&quot;table.chap_customize.simple_table_2&quot; frame=&quot;all&quot;&gt;
+    &lt;title&gt;Set Column Width&lt;/title&gt;
+    &lt;tgroup cols=&quot;3&quot;&gt;
+        &lt;colspec colwidth=&quot;1*&quot; /&gt;
+        &lt;colspec colwidth=&quot;2*&quot; /&gt;
+        &lt;colspec colwidth=&quot;3*&quot; /&gt;
+        &lt;thead&gt;
+            &lt;row&gt;
+            &lt;entry&gt;short_col&lt;/entry&gt;
+            &lt;entry&gt;long_column&lt;/entry&gt;
+            &lt;entry&gt;The longest column&lt;/entry&gt;
+            &lt;/row&gt;
+        &lt;/thead&gt;
+        
+        &lt;tbody&gt;
+            &lt;row&gt;
+            &lt;entry&gt;The data in table&lt;/entry&gt;
+            &lt;entry&gt;text for 2nd column&lt;/entry&gt;
+            &lt;entry&gt;text for 3nd column&lt;/entry&gt;
+            &lt;/row&gt;
+            &lt;row&gt;
+            &lt;entry&gt;Hello World&lt;/entry&gt;
+            &lt;entry&gt;The data here.&lt;/entry&gt;
+            &lt;entry&gt;The long data here.&lt;/entry&gt;
+            &lt;/row&gt;
+        &lt;/tbody&gt;
+    &lt;/tgroup&gt;
+&lt;/table&gt;</programlisting>
+            </example>
+            
+            <para>Here's the compilor result:</para>
+            <table id="table.chap_customize.simple_table_2" frame="all">
+                <title>Set Column Width</title>
+                <tgroup cols="3">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                    <colspec colwidth="3*" />
+                    <thead>
+                        <row>
+                        <entry>short_col</entry>
+                        <entry>long_column</entry>
+                        <entry>The longest column</entry>
+                        </row>
+                    </thead>
+                    
+                    <tbody>
+                        <row>
+                        <entry>The data in table</entry>
+                        <entry>text for 2nd column</entry>
+                        <entry>text for 3nd column</entry>
+                        </row>
+                        <row>
+                        <entry>Hello World</entry>
+                        <entry>The data here.</entry>
+                        <entry>The long data here.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            
+        </section>
+        
+        <section id="chap_customize.add_book_xref">
+            <title>Add Cross Reference For a Book</title>
+            <para>DocBook uses <command>xref</command> and <command>link</command> to provide corss reference.
+            User can jump to website or another location in the document. Both of them must specify the linkend 
+            attribute value, DocBook would reference the linkend to any matched id attribute value location.</para>
+
+            <para>The link can let user user their own text for linkage :</para>
+            
+                <indexterm><primary>link</primary></indexterm>
+                <indexterm><primary>xref</primary></indexterm>
+            <programlisting>&lt;link linkend=&quot;id_xxxxx&quot;&gt;The Link Text&lt;/link&gt;
+&lt;xref linkend=&quot;id_xxxxx&quot; /&gt;</programlisting>
+            <para>Thus, <userinput>The Link Text</userinput> is the same as the xref, but xref only dispalyed
+            like Sect 2.3 layout.</para>
+            
+            <para>For XSL, if you want add page number cross reference, set &param_insert.xref.page.number; with yes.</para>
+            
+        </section>
+        
+        <section>
+            <title>Add Hyperlink</title>
+            
+            <para>By default, if you type a hyper link directly, pdf reader also can smartly recognize it. But,
+            if the hyper text is too long to cause a wrap line, it would wrongly interpret it. So, DocBook 
+            provided the &cmd_ulink; to create a hyper text.</para>
+            
+                <indexterm><primary>ulink</primary></indexterm>
+            <informalexample>
+                <programlisting>Here a long line hyper link tech 
+&lt;ulink url=&quot;http://xmlgraphics.apache.org/fop/examples.html&quot;/&gt;</programlisting>
+            </informalexample>
+            
+            <para>The output:</para>
+            
+            <para>See Here a long line hyper link tech <ulink url="http://xmlgraphics.apache.org/fop/examples.html"/>.</para>
+        </section>
+        
+        <section id="chap_customize.add_book_idx">
+            <title>Add Index For a Book</title>
+                <indexterm><primary>Index</primary></indexterm>
+            <para>Most of book always put an index as the last part, to help reader do quick
+            search. DocBook provides &cmd_index; to do this. In order to locate
+            the index-ed items, you need add &cmd_indexterm; throughout your book
+            file.</para>
+            
+            <example id="exp.simple_indexterm">
+                <title>Add Index-ed Terms</title>
+                <programlisting>&lt;para&gt;Some text&lt;/para&gt;
+    &lt;indexterm&gt;
+      &lt;primary&gt;keywords&lt;/primary&gt;
+      &lt;secondary&gt;sub-keywords&lt;/secondary&gt;
+    &lt;/indexterm&gt;            
+&lt;para&gt;Some <command>keywords</command> are put here.&lt;/para&gt;
+    &lt;indexterm&gt;
+      &lt;primary&gt;only-primary-word&lt;/primary&gt;
+    &lt;/indexterm&gt;
+&lt;para&gt;some text comtained <command>only-primary-word</command> data here.&lt;/para&gt;
+
+&lt;!-- MUST declear at the end of XML file, to enable Index! --&gt;
+&lt;index/&gt;</programlisting>
+            </example>
+            
+            <para>For FOP, it will automatically generate the index for you:</para>
+            
+            <screen>Index
+
+ K
+  keywords
+    sub-keywords, 34
+ O
+  only-primary-word, 49</screen>
+            
+            <para>When you compiled the XML with docbook2pdf utils against DSSSL, it won't automatically generate
+            index for you. You need take several extra steps to enable index:</para>
+            
+            <orderedlist>
+                <listitem><para>Get a &cmd_collateindex.pl; Perl script from http://docbook.sourceforge.net/, usually
+                at the subversion repository's trunk/dsssl/bin/collateindex.pl.</para></listitem>
+                <listitem><para>Create a blank index file by typing <userinput>./collateindex.pl -N > myidx.xml</userinput>.</para></listitem>
+                <listitem>
+                  <para>Embeded the generated myidx.xml as DocBook XML's entity:</para>
+                  <screen>&lt;!entity myidx SYSTEM &quot;myidx.mxl&quot;&gt;
+  original DocBook XML stuff...
+  
+  &amp;myidx;</screen>
+                </listitem>
+                
+                <listitem><para>Type <userinput>docbook2html -d /usr/share/dsl_dir/html/docbook.dsl -V html-index main.xml</userinput><footnote>
+                <para>You can omit the <emphasis>-d style_file_name</emphasis> option.</para></footnote>, after that, a <emphasis>HTML.index</emphasis> is generated.</para></listitem>
+                
+                <listitem><para>Type <userinput>./collateindex.pl -o myidx.xml HTML.index</userinput>, now, the index
+                myidx.xml is complete, you can use <userinput>docbook2pdf main.xml</userinput> to 
+                generate the index page in your pdf output.</para></listitem>
+                
+            </orderedlist>
+            
+            <para>When using docbook2html, the HTML output will automatically generate the index successfully, you don't
+            need take above steps to generate index.</para>
+            
+            <tip><para>You would be uncomfortable when generating HTML.index file by using docbook2html, because
+            this would cause many .htm files on your directory. You can tell docbook2html with <command>-o tmp</command> option,
+            to put all the new-created
+            files in a tmp/ directory, then copy the tmp/HTML.index to your work directory, to let collateindex.pl generating
+            index for you.</para></tip>
+        
+            <para>If you want group terms with IndexDiv based on the first letter of the term , use <command>-g</command> option. By default,
+            docbook2pdf don't turn this flag on.</para>
+            
+            <informalexample>
+                <programlisting><userinput>./collateindex.pl -o myidx.xml <command>-g</command> HTML.index</userinput></programlisting>
+            </informalexample>
+        </section>
+        
+        <section id="chap_customize.add_book_bibliography">
+            <title>Add Bibliography For a Book</title>
+            <para>It's usefuly to add reference books at the end of your book. DocBook
+            provided &cmd_bibliography; to list a bibliography. You don't
+            need add any starting tag like <emphasis>chapter,appendix</emphasis>,  <command>bibliography</command>
+            has the same level as those tags.</para>
+            
+                <indexterm>
+                    <primary>bibliography</primary>
+                </indexterm>
+            <example>
+                <title>List Bibography</title>
+                <programlisting>&lt;bibliography&gt;
+    &lt;biblioentry id=&quot;Walsh2003&quot;&gt;
+        &lt;title&gt;DocBook 5.0: The Definitive Guide&lt;/title&gt;
+        &lt;titleabbrev&gt;Walsh 2003&lt;/titleabbrev&gt;
+        &lt;publisher&gt;
+          &lt;publishername&gt;O'Reilly Media, Inc&lt;/publishername&gt;
+        &lt;/publisher&gt;
+        &lt;authorgroup&gt;&lt;author&gt;
+          &lt;othername&gt;Norman Walsh&lt;/othername&gt;&lt;/author&gt;
+        &lt;/authorgroup&gt;
+    &lt;/biblioentry&gt;
+    
+    &lt;biblioentry id=&quot;Bob2005&quot;&gt;
+        &lt;title&gt;DocBook XSL: The Complete Guide&lt;/title&gt;
+        &lt;titleabbrev&gt;Bob 2005&lt;/titleabbrev&gt;
+        &lt;publisher&gt;
+          &lt;publishername&gt;O'Reilly Media, Inc&lt;/publishername&gt;
+        &lt;/publisher&gt;
+        &lt;authorgroup&gt;&lt;author&gt;
+          &lt;othername&gt;Bob Stayton&lt;/othername&gt;&lt;/author&gt;
+        &lt;/authorgroup&gt;
+    &lt;/biblioentry&gt;
+    
+&lt;/bibliography&gt;</programlisting>
+            </example>
+            
+            <para>You can use <command>biblioref</command> to do cross-reference to a bibliographic entry.</para>
+            
+            <para>The &cmd_bibliography; can also used in article, act as a <emphasis>reference</emphasis>.</para>
+            
+            <para>If you want to number reference as 1,2,3, instead of [Tom 93], you needs set dsssl-stylesheets/print/dbparam.dsl,
+            set <emphasis>biblio-number</emphasis> as true.</para>
+            
+            <para>To cite the bibliography, use xref linkend="id"  </para>
+        </section>
+        
+        <section id="chap_customize.add_book_revhistory">
+            <title>Add Revision History For a Book</title>
+            <para>DocBook uses &cmd_revhistory; to history revision information.</para>
+        </section>
+        
+        <section id="chap_customize.add_book_glossary">
+            <title>Add Glossary For a Book</title>
+                <indexterm><primary>glossary</primary></indexterm>
+            <para>DocBook use &cmd_glossary; to list a book's glossary.</para>
+            
+            <note><para>Like <command>bibliography</command> and <command>index</command>, you can directly use it
+            with parallel level as <command>chapter</command>, <command>appendix</command>.</para></note>
+            
+            <para>Usually, &cmd_glossary; is put together with appendix of the book. It can use &cmd_glossdiv; to
+            divide glossary into several parts. Following example is a typical one:</para>
+            
+            <example id="exp.chap_customize.add_book_glossary">
+                <title>Glossary of a Book</title>
+                <programlisting>&lt;glossary&gt;
+    &lt;title&gt;Glossary&lt;/title&gt;
+    
+    &lt;!-- C--&gt;
+    &lt;glossdiv&gt;
+      &lt;title&gt;C&lt;/title&gt;
+    
+      &lt;glossentry id=&quot;gloss_id_css&quot;&gt;
+        &lt;glossterm&gt;CSS&lt;/glossterm&gt;
+        &lt;glossdef&gt;
+            &lt;para&gt;Cascading Style Sheets&lt;/para&gt;
+        &lt;/glossdef&gt;
+      &lt;/glossentry&gt;
+    &lt;/glossdiv&gt;
+
+    &lt;!-- D --&gt;
+    &lt;glossdiv&gt;
+        &lt;title&gt;D&lt;/title&gt;
+        
+        &lt;glossentry id=&quot;dtd&quot;&gt;
+        &lt;glossterm&gt;DTD&lt;/glossterm&gt;
+        &lt;glossdef&gt;
+            &lt;para&gt;Document Type Definition &lt;/para&gt; 
+            &lt;glossseealso otherterm=&quot;dtd&quot;&gt;SGML&lt;/glossseealso&gt;
+        &lt;/glossdef&gt;
+        &lt;/glossentry&gt;
+        
+    &lt;/glossdiv&gt;
+    
+    &lt;!-- S --&gt;
+    &lt;glossdiv&gt;
+    &lt;title&gt;S&lt;/title&gt;
+    
+        &lt;glossentry id=&quot;gloss_id_sax&quot;&gt;
+            &lt;glossterm&gt;SAX&lt;/glossterm&gt;
+            &lt;glossdef&gt;
+                &lt;para&gt;Simple API for XML.&lt;/para&gt;
+            &lt;/glossdef&gt;
+        &lt;/glossentry&gt;
+    &lt;/glossdiv&gt;
+
+&lt;/glossary&gt;</programlisting>
+            </example>
+            
+            <para>When using docbook2xxx, the default pdf output is like this:</para>
+            <informalexample>
+                <programlisting>C
+  CSS
+      Cascading Style Sheets
+D
+  DTD
+      Document Type Definition
+S   
+  SAX
+      Simple API for XML.</programlisting>
+            </informalexample>
+      
+            <para>When using FOP, the default pdf output is:</para>
+            <informalexample>
+                <programlisting>C
+CSS      Cascading Style Sheets
+D
+DTD      Document Type Definition
+S   
+SAX      Simple API for XML.</programlisting>
+            </informalexample>
+            
+            <para>If you don't like the default style of FOP's, you can use &param_glossary.as.blocks; as 1, to sepearate
+            new line between glossary term and glossary description.</para>
+        </section>
+        
+        <section id="chap_customize.book_faq">
+            <title>Frequently Asked Questions(FAQ)</title>
+            <para>DocBook also supports FAQ feature by using &cmd_qandaset;, which means
+            <emphasis>question and answer set</emphasis>.</para>
+                <indexterm><primary>faq</primary></indexterm>
+            <note><para>The &cmd_qandaset; MUST NOT be put parallel to &cmd_chapter;, &cmd_glossary; etc. Usually, it's
+            put as a child XML element under &cmd_appendix;.</para></note>
+            
+            <para>Each item in FAQ is put in &cmd_qandaentry;, and with pair <emphasis>question</emphasis> and
+            <emphasis>answer</emphasis>. In order to divide FAQ into several parts, you can use &cmd_qandadiv; to separate
+            related items in a group.</para>
+            
+            <para>Suppose you want to add a FAQ as your book's appendix:</para>
+            
+            <example id="exp.chap_customize.faq_book">
+                <title>Add a FAQ to Book</title>
+                <programlisting>&lt;qandaset&gt;&lt;?dbfo toc=&quot;0&quot; ?&gt; <co id="id_chap_cust.faq" />
+    &lt;qandadiv&gt;
+        &lt;title&gt;Firmware Upgrade&lt;/title&gt;
+        &lt;para&gt;Description&lt;/para&gt;
+        &lt;qandaentry&gt;
+            &lt;question&gt;
+            &lt;para&gt;Questions here?&lt;/para&gt;
+            &lt;/question&gt;
+            &lt;answer&gt;
+            &lt;para&gt;Answers here.&lt;/para&gt;
+            &lt;/answer&gt;
+        &lt;/qandaentry&gt;
+    &lt;/qandadiv&gt;
+    
+    &lt;qandadiv&gt;
+        &lt;title&gt;Backup/Restore&lt;/title&gt;
+        &lt;qandaentry&gt;
+            &lt;question&gt;
+            &lt;para&gt;Backup Restore Questions here&lt;/para&gt;
+            &lt;/question&gt;
+            &lt;answer&gt;
+            &lt;para&gt;Answers here.&lt;/para&gt;
+            &lt;/answer&gt;
+        &lt;/qandaentry&gt;
+    &lt;/qandadiv&gt;
+    
+    &lt;qandadiv&gt;
+        &lt;title&gt;Provisioning&lt;/title&gt;
+        &lt;qandaentry&gt;
+            &lt;question&gt;
+            &lt;para&gt;Why ?&lt;/para&gt;
+            &lt;/question&gt;
+            &lt;answer&gt;
+            &lt;para&gt;I still can't answer this question.&lt;/para&gt;
+            &lt;/answer&gt;
+        &lt;/qandaentry&gt;
+    &lt;/qandadiv&gt;
+    
+&lt;/qandaset&gt;</programlisting>
+            <calloutlist>
+                <callout arearefs="id_chap_cust.faq">
+                    <para>0 value means not put FAQ items in TOC, otherwise, assign it as 1.</para>
+                </callout>
+            </calloutlist>
+            </example>
+            
+            <para>To avoid confuse, DSSSL and XSL both don't put the FAQ items in TOC. It's not recommend
+            to TOC the FAQ. But sometimes, for example, your atricle is full of FAQ, it would be good to
+            put all FAQ items in TOC.</para>
+            
+            <para>For XSL, you can add some text in the DocBook XML files to control whether put FAQ items in TOC or not.</para>
+            <table id="table.chap_customize.faq_toc" frame="topbot">
+                <title>Control FAQ items in TOC</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Added text</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>&lt;?dbfo toc=&quot;0&quot; ?&gt;</entry><entry>(Default)Won't add to TOC, for FO format.</entry></row>
+                    <row><entry>&lt;?dbfo toc=&quot;1&quot; ?&gt;</entry><entry>Will add to TOC for FO format.</entry></row>
+                    <row><entry>&lt;?dbhtml toc=&quot;0&quot; ?&gt;</entry><entry>Won't add to TOC for HTML format.</entry></row>
+                    <row><entry>&lt;?dbhtml toc=&quot;1&quot; ?&gt;</entry><entry>Will add to TOC for HTML format.</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+        </section>
+        
+        <section id="chap_customize.divide_book_part">
+            <title>Divide a Book into Several Parts</title>
+            <para>For large book, it's a good idea to divide it into several parts. DocBook uses <command>part</command> to
+            help divide a book into several slices.</para>
+            
+            <example id="exmp.chap_customize.div_book_part">
+                <title>Divide book into parts</title>
+                <programlisting>&lt;part&gt;
+    &lt;title&gt;The part divide title&lt;/title&gt;
+    &lt;partintro&gt;
+      &lt;para&gt;txt here.&lt;/para&gt;
+    &lt;/partintro&gt;
+    &lt;chapter id=&quot;chap_xxx&quot;&gt;&lt;/chapter&gt;
+    &lt;chapter id=&quot;chap_xxx&quot;&gt;&lt;/chapter&gt;
+&lt;/part&gt;
+&lt;part&gt;
+    &lt;title&gt;The part divide title&lt;/title&gt;
+    &lt;partintro&gt;
+      &lt;para&gt;txt here.&lt;/para&gt;
+    &lt;/partintro&gt;
+    &lt;chapter id=&quot;chap_xxx&quot;&gt;&lt;/chapter&gt;
+    &lt;chapter id=&quot;chap_xxx&quot;&gt;&lt;/chapter&gt;
+    &lt;chapter id=&quot;chap_xxx&quot;&gt;&lt;/chapter&gt;
+&lt;/part&gt;</programlisting>
+            </example>
+            
+            <para>Thus, above chapters are divided into two parts, you can see the changes from
+            TOC (Table of Contents).</para>
+            
+            <para>DSSSL provided some parameters to control part-related options, these options are
+            usually in /usr/share/sgml/docbook/utils-x-y/docbook-utils.dsl.</para>
+            
+                <indexterm><primary>part</primary><secondary>DSL parameter</secondary></indexterm>
+            <table frame="topbot">
+                <title>DSL Parameters for part</title>
+                <tgroup cols="2">
+                    <thead>
+                        <row><entry>Parameter</entry><entry>Note</entry></row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>%generate-part-titlepage%</entry><entry>Force new a part page(false by default).</entry>
+                        </row>
+                        <row>
+                            <entry>%generate-partintro-on-titlepage%</entry><entry>Output data in &lt;partintro&gt;.</entry>
+                        </row>
+                        <row>
+                            <entry>%generate-part-toc%</entry><entry>Generate a separte TOC for each part.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            
+            <tip><para>The default setting of DSL is good enough, it's not recommended to change these parameters value.</para></tip>
+
+            <para>If you're using FOP to generate PDF, it will force a new page of each part, and followed by a TOC
+            of this part.</para>
+            
+        </section>
+        
+        <section id="chap_customize.use_book_entity">
+            <title>Use C-like Macro in Book</title>
+            <para>If you need add many same-format text throughout the book, it's convenient to mark that text as
+            a C-like macro, that each place insert this macro, this can tremendously reduce the maintain effort, and is
+            easy to change the format, because you just modify one place, all the other places referenced the modified
+            one, will automatically been updated at the same time.</para>
+            <para>XML use entity to generate C-like macro. Author just type the macros in the entity files, these entity
+            files are been included by DocBook XML source files, thus, DocBook can reference them throught the book.</para>
+            
+            <example id="exp.chap_customize.inc_entity">
+                <title>Include entity in XML</title>
+                <programlisting>&lt;!DOCTYPE book SYSTEM &quot;/usr/share/sgml/docbook/xml-dtd-x-y-z/docbookx.dtd&quot;
+[
+&lt;!ENTITY % entities SYSTEM &quot;entity_def.xml&quot;&gt;
+%entities;
+]&gt;
+
+======= entity_def.xml =======
+&lt;!ENTITY cmd_caution &quot;&lt;command&gt;caution&lt;/command&gt;&quot;&gt;
+</programlisting>
+            </example>
+            
+            <para>Each time you want to insert a &lt;command&gt;caution&lt;/command&gt;, just type &amp;cmd_caution.
+            It will avoid type the extra/boring &lt;command&gt; every time when you want to refer the caution command.</para>
+        </section>
+
+        <section id="chap_customize.use_userinput">
+            <title>Use userinput command</title>
+            <para>DocBook uses &cmd_userinput; to mark user's input content. </para>
+            
+            <note>
+                <para>&cmd_userinput; is not a verbatim environment, but an inline command, it won't cause new line.
+                &cmd_screen; will forced a new line.</para>
+            </note>
+            
+            <para>Suppose following example:</para>
+            <informalexample>
+                <programlisting>&lt;para&gt;In command prompt, 
+type &lt;userinput&gt;xsltproc my.xsl simple.xml&lt;/userinput&gt;&lt;/para&gt;
+            
+&lt;para&gt;In command prompt, 
+type &lt;screen&gt;xsltproc my.xsl simple.xml&lt;/screen&gt;&lt;/para&gt;</programlisting>
+            </informalexample>
+            
+            <para>After DocBook renders the source to PDF, output is like this:</para>
+            
+            <sidebar>
+                <para>In command prompt, type <userinput>xsltproc my.xsl simple.xml</userinput></para>
+                <para>In command prompt, type <screen>xsltproc my.xsl simple.xml</screen></para>
+            </sidebar>
+            
+        </section>
+        
+        <section id="chap_customize.admon_graphic">
+            <title>DocBook's admon graphics</title>
+            <para>The admon graphics are a set of images that indicate DocBook's note-like mark.</para>
+            <para>Following DocBook commands will use admon graphics:</para>
+            <itemizedlist mark="bullet" spacing="compact">
+                <listitem><para>&cmd_caution;</para></listitem>
+                <listitem><para>&cmd_important;</para></listitem>
+                <listitem><para>&cmd_note;</para></listitem>
+                <listitem><para>&cmd_tip;</para></listitem>
+                <listitem><para>&cmd_warning;</para></listitem>
+            </itemizedlist>
+
+            <para>By default, DocBook won't use admon graphics for pdf. You can turn the admon-graphics flag on in docbook-utils.dsl.</para>
+            <para>I don't recommend to ture this flag on because it enlarge file compile time and file size, and furthermore,
+                it could make your DocBook file less compatibility.</para>
+                
+            <para>For XSL, you can specify &param_admon.graphics; with 1 to enable admon graphics.</para>
+            
+            <para>Following are all built-in DocBook admon graphics:</para>
+            
+            <figure id="fig.admon_graphics.caution">
+                <title>Graphic for &lt;caution&gt;</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata scale="80" align="center" fileref="./img/caution.png" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+            
+            <figure id="fig.admon_graphics.important">
+                <title>Graphic for &lt;important&gt;</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata scale="80" align="center" fileref="./img/important.png" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+            
+            <figure id="fig.admon_graphics.note">
+                <title>Graphic for &lt;note&gt;</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata scale="80" align="center" fileref="./img/note.png" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+            
+            <figure id="fig.admon_graphics.tip">
+                <title>Graphic for &lt;tip&gt;</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata scale="80" align="center" fileref="./img/tip.png" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+            
+            <figure id="fig.admon_graphics.warning">
+                <title>Graphic for &lt;warning&gt;</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata scale="80" align="center" fileref="./img/warning.png" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+            
+        </section>
+        
+        <section id="chap_customize.add_caution">
+            <title>Use Caution in Book</title>
+                <indexterm><primary>caution</primary></indexterm>
+            <para>DocBook provided several command that can give reader some useful tips/notes.
+            In order to notice reader be careful about some notes, DocBook provides &cmd_caution; to list caustion someting.</para>
+            
+            <example id="exp.chap_customize.use_caution">
+                <title>Use &cmd_caution; in DocBook</title>
+                <programlisting>&lt;para&gt;some text here&lt;/para&gt;
+   &lt;caution&gt;&lt;para&gt;Don't be confused by other words!&lt;/para&gt;&lt;/caution&gt;
+   
+&lt;para&gt;some text here&lt;/para&gt;
+   &lt;caution&gt;&lt;title&gt;The Caution Title&lt;/title&gt;
+     &lt;para&gt;Don't be confused by other words!&lt;/para&gt;
+   &lt;/caution&gt;</programlisting>
+            </example>
+            
+            <para>After compile, the output is like this:</para>
+            <para><emphasis>some text here</emphasis></para>
+            <caution><para>Don't be confused by other words!</para></caution>
+            
+            <para><emphasis>some text here</emphasis></para>
+            <caution><title>The Caution Title</title><para>Don't be confused by other words!</para></caution>
+            
+            <para>By default, pdf output don't use admon image, but a frame. If you don't specify the title value,
+            DocBook would add <command>Caution</command> for frame. If DocBook uses admon image, it don't add
+            title name. Of course, you can specify your own title name for &cmd_caution;</para>
+            
+        </section>
+        
+        <section>
+            <title>Use Important in Book</title>
+            <para>By default, the docbook2pdf won't use image, but a text label, for &cmd_important;:</para>
+            <example>
+                <title>Use &cmd_important;</title>
+                <programlisting>&lt;important&gt;&lt;para&gt;Important text are here.&lt;/para&gt;&lt;/important&gt;</programlisting>
+            </example>
+            
+            <para>The outut would be like this:</para>
+            <important><para>Important text are here.</para></important>
+        </section>
+        
+        <section id="chap_customize.use_image_in_book">
+            <title>Use Images in DocBook</title>
+            <para>It's possible to insert images in DocBook. Follwoing example illustrated
+            how to display a picuture in DocBook:</para>
+            
+            <example id="exp.chap_customize.simple_img">
+                <title>Display a simple picuture</title>
+                <programlisting>&lt;mediaobject&gt;
+  &lt;imageobject&gt;
+    &lt;imagedata fileref=&quot;<filename>path/picture_name</filename>&quot; /&gt;
+  &lt;/imageobject&gt;
+&lt;/mediaobject&gt;</programlisting>
+            </example>
+            
+            <para>After compiled the DocBook, the layout is like this:</para>
+            
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="./img/gnu-head-sm.png" />
+                </imageobject>
+            </mediaobject>
+            
+            <para>Yes, that's all, insert a picture is so simple.</para>
+            
+            <section>
+                <title>Add picture ID index</title>
+                <para>Use <command>figure</command> to add picture ID:</para>
+                <example id="exp.chap_customize.use_fig_id">
+                    <title>Add Figure-XX for picture</title>
+                    <programlisting>&lt;figure id=&quot;fig.simple_picture&quot;&gt;
+  &lt;title&gt;Picture Title&lt;/title&gt;
+    &lt;!-- The scale=&quot;70&quot; means a 70% scale factor.--&gt;
+    &lt;mediaobject&gt;
+        &lt;imageobject&gt;
+            &lt;imagedata scale=&quot;70&quot; fileref=&quot;./img/gnu-head-sm.png&quot; /&gt;
+        &lt;/imageobject&gt;
+    &lt;/mediaobject&gt;
+&lt;/figure&gt;</programlisting>
+                </example>
+                
+                <para>After compiled, the page would be like this:</para>
+                
+                <figure id="fig.simple_picture">
+                    <title>Picture Title</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata scale="70" fileref="./img/gnu-head-sm.png" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+            </section>
+            
+            <section>
+                <title>Picture Format Support</title>
+                <para>By default, docbook2xxx support png format, you can specify format to be support in format attribute</para>
+                <table frame="topbot">
+                    <title>DocBook supported picture format</title>
+                    <tgroup cols="2">
+                    <thead>
+                        <row><entry>Value</entry><entry>Notes</entry></row>
+                    </thead>
+                    
+                    <tbody>
+                        <row><entry>BMP</entry><entry>The image is a bitmap.</entry></row>
+                        <row><entry>GIF</entry><entry>The image is GIF format.</entry></row>
+                        <row><entry>JPEG/JPG</entry><entry>The image is JPEG format.</entry></row>
+                    </tbody>
+                    </tgroup>
+                </table>
+                <note><para>The value in the above table is case-sensitive.</para></note>
+            </section>
+            
+            <section>
+                <title>Manipulate picture</title>
+                <para>DocBook also provide feature to scale/rotate/locate the picutures.</para>
+                <para>To scale the picture, use <command>scale</command> attribute, it's an 
+                integer number, 100 means 100%, 50 means 50%. Refer <xref linkend="exp.chap_customize.use_fig_id" /> to learn
+                how to use <command>scale</command> attribute.</para>
+                
+                <para>The <command>align</command> attribute specify picture's alignment, possible value:</para>
+                
+                <table id="table.chap_customize.align_val" frame="topbot">
+                    <title><command>align</command> attribute value</title>
+                    <tgroup cols="2">
+                    <thead>
+                        <row><entry>Value</entry><entry>Comments</entry></row>
+                    </thead>
+                    
+                    <tbody>
+                        <row><entry>center</entry><entry>picture is centered</entry></row>
+                        <row><entry>left</entry><entry>left aligned</entry></row>
+                        <row><entry>right</entry><entry>right aligned</entry></row>
+                    </tbody>
+                    </tgroup>
+                </table>
+
+                <para>Following figures illustrate the different <command>align</command> value effect.</para>
+
+                <figure id="fig.simple_picture_left">
+                    <title>align="left" picture</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata scale="50" align="left" fileref="./img/gnu-head-sm.png" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+                <figure id="fig.simple_picture_center">
+                    <title>align="center" picture</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata scale="50" align="center" fileref="./img/gnu-head-sm.png" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+                <figure id="fig.simple_picture_right">
+                    <title>align="right" picture</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata scale="50" align="right" fileref="./img/gnu-head-sm.png" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+                
+            </section>
+            
+        </section>
+        
+        <section id="chap_customize.fop_config">
+            <title>FOP's Configuration File</title>
+            
+            <para>FOP's configure file template is usually put in $(FOP_DIR)/conf/fop.xconf. You
+            need use <command>-c</command> option to enable the configuration.</para>
+            
+            <para>This fop.xconf contains the same settings as the default values and will 
+            have no effect if you used it without any change.</para>
+           
+            <para>Usually, we can make a copy of conf/fop.xconf, modify the data, and tell FOP the config file
+            path. For example, here listed a simple method that utilize FOP's config file:</para>
+            
+            <orderedlist>
+                <listitem><para>Make a copy of conf/fop.xconf, such as conf/myfop.xconf.</para></listitem>
+                <listitem><para>Modify some data in conf/myfop.xconf.</para></listitem>
+                <listitem><para>Type <userinput>fop -c conf/myfop.xconf [other options]</userinput> to enable the config.</para></listitem>
+            </orderedlist>
+            
+        </section>
+        
+        <section id="chap_customize.html_css">
+            <title>Use CSS to Customize HTML</title>
+                <indexterm><primary>css</primary></indexterm>
+            <para>You can use CSS to customize HTML output, XSL provided &param_html.stylesheet; to specify a .css file.</para>
+            
+            <informalexample>
+                <programlisting>xsltproc <command>--stringparam html.stylesheet my.css</command> \
+        <command>--stringparam css.decoration 1</command> \
+        --stringparam admon.graphics 1 \
+        xsl_file.xsl source.xml</programlisting>
+            </informalexample>
+            
+            <para>After that, a</para>
+            <screen>&lt;link rel=&quot;stylesheet&quot; href=&quot;my.css&quot; type=&quot;text/css&quot;&gt;</screen>
+            <para>is generated in HTML's &lt;HEAD&gt; Element. In addition, the &param_css.decoration; let you enable
+            the .css or not.</para>
+            <para>You can now add customization style in the <emphasis>my.css</emphasis>:</para>
+            <programlisting>body {
+  background-color: #d8da3d;
+  color: #222;
+  font-family: "Book Antiqua", Georgia, Palatino, Times, \
+               "Times New Roman", serif;
+  line-height: 145%;
+}
+.screen, .programlisting, .example table {
+  margin: 1em 1em 0 1em;
+  background-color: #DDDDDD;
+  padding: 0;
+}</programlisting>
+            <para>Eachtime you want to customize any thing, just put the code in .css, don't need modify HTML itself.
+            <xref linkend="tbl_chap_customize.css_xsl_param" /> listed all XSL parameters that related with CSS:</para>
+            
+            <table id="tbl_chap_customize.css_xsl_param" frame="topbot">
+                <title>XSL Parameters with CSS</title>
+                <tgroup cols="2">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                    <thead>
+                        <row><entry>Parameter</entry><entry>Note</entry></row>
+                    </thead>
+                    <tbody>
+                        <row><entry>html.stylesheet</entry><entry>Specify the name of CSS file.</entry></row>
+                        <row><entry>html.stylesheet.type</entry><entry>Specify style type, default is text/css.</entry></row>
+                        <row><entry>css.decoration</entry><entry>Enable(1, default) the CSS decoration or not(0) .</entry></row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        
+        <section>
+            <title>Some XSL-htmlhelp Parameters</title>
+            <para>XSL-htmlhelp shared some parameters that are the same as XSL-html's, here listed some
+            XSL-htmlhelp specific parameters:</para>
+                <indexterm><primary>chm file</primary><secondary>XSL parameters</secondary></indexterm>
+            <table frame="topbot">
+                <title>XSL-htmlhtlp Parameters</title>
+                <tgroup cols="2">
+                    <thead>
+                        <row><entry>Parameters</entry><entry>Note</entry></row>
+                    </thead>
+                    <tbody>
+                        <row><entry>&param_htmlhelp.show.menu;</entry><entry></entry></row>
+                        <row><entry>&param_htmlhelp.button.home;</entry><entry></entry></row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        
+        <section id="chap_customize.misc">
+            <title>Miscellanea</title>
+            <para>It's usually need note some context text like a software's name, it's GUI menu name, shorcut key, etc.
+            This section would discuss how to use these related stuff in DocBook.</para>
+            
+            <section>
+                <title>Superscript and Subscript</title>
+                <para>2<superscript>3</superscript>=8</para>
+            </section>
+            
+            <section>
+                <title>Add footnote</title>
+                    <indexterm><primary>footnote</primary></indexterm>
+                <para>DocBook use &cmd_footnote; to add a footnote. For DSSSL PDF, it collected all foontnotes together,
+                as notes at the end of the section.</para>
+                
+                <informalexample>
+                    <programlisting>&lt;para&gt;Some text&lt;footnote&gt;&lt;para&gt;foot note text&lt;/para&gt;&lt;/footnote&gt;&lt;/para&gt;</programlisting>
+                </informalexample>
+                
+                <para>You can change &cmd_bop-footnotes; to true, to let footnotes be put at the bottom of the page, usually,
+                this variable is in dsssl-stylesheets-1.78/print/dbparam.dsl:</para>
+                
+                <programlisting>(define bop-footnotes
+   ;; REFENTRY bop-footnotes               
+  #t)</programlisting>
+            </section>
+            
+            <section>
+                <title>Customize TOC</title>
+                    <indexterm><primary>TOC</primary></indexterm>
+                <para>For DSSSL, you can use &cmd_toc-depth; to specify the table of content(TOC)'s depth. The default settings
+                in docbook-utils.dsl is:</para>
+                <example>
+                    <title>Control TOC depth via DSSSL</title>
+                    <programlisting>;;What depth should the TOC generate?
+;;!Only top level of appendixes!
+(define (toc-depth nd)
+  (if (string=? (gi nd) (normalize "book"))
+      3      <lineannotation>The TOC depth value.</lineannotation>
+      (if (string=? (gi nd) (normalize "appendix"))
+        0
+        1))</programlisting>
+                </example>
+                <para>The value of 3 means there's only 3 level depth for TOC:</para>
+                <informalexample><programlisting>1. Title ..................... 2
+    1.1 Subtitle ............. 3
+        1.1.1 Sub-subtitle ... 4</programlisting></informalexample>
+                <para>In order to display 1.1.1.1 like section, you can specify 4 instead of 3, to let TOC depth increase more.</para>
+            </section>
+            
+            <section>
+                <title>Use computeroutput to mark output</title>
+                    <indexterm><primary>computeroutput</primary></indexterm>
+                <para>DocBook provided &cmd_computeroutput; to indicate an output content. This is common used in
+                examples demo.</para>
+                
+                <example>
+                    <title>Usage of computeroutput</title>
+                    <programlisting>&lt;userinput&gt;uname -rsmo&lt;/userinput&gt;
+&lt;computeroutput&gt;Linux 2.6.9-5.ELsmp i686 GNU/Linux&lt;/computeroutput&gt;</programlisting>
+                </example>
+                
+                <para>The output would be like this:</para>
+                
+                <sidebar>
+                <informalexample>
+                    <programlisting><userinput>uname -rsmo</userinput>
+<computeroutput>Linux 2.6.9-5.ELsmp i686 GNU/Linux</computeroutput></programlisting>
+                </informalexample>
+                </sidebar>
+            </section>
+            
+            <section>
+                <title>Shortcut Key</title>
+                <para>Shortcut key is often used in user manual. DocBook uses following keyword to
+                represent shortcut key related stuff:</para>
+                <table frame="topbot">
+                    <title>Shortcut Key Command</title>
+                    <tgroup cols="2">
+                    <thead>
+                        <row><entry>Name</entry><entry>Comments</entry></row>
+                    </thead>
+                    <tbody>
+                        <row><entry>keycombo</entry><entry>Means a combination of input actions.</entry></row>
+                        <row><entry>keysym</entry><entry>The symbolic name of a key on a keyboard.</entry></row>
+                    </tbody>
+                    </tgroup>
+                </table>
+            
+                <informalexample>
+                    <programlisting>&lt;para&gt;You can choose &lt;guisubmenu&gt;Open&lt;/guisubmenu&gt; from 
+&lt;guimenu&gt;File&lt;/guimenu&gt;, or use shortcut key 
+&lt;keycombo&gt;&lt;keysym&gt;Ctrl&lt;/keysym&gt;&lt;keysym&gt;O&lt;/keysym&gt;&lt;/keycombo&gt;.&lt;/para&gt;</programlisting>
+                </informalexample>
+                
+                <para>After compile, the result is like this:</para>
+                <para>You can choose <guisubmenu>Open</guisubmenu> from <guimenu>File</guimenu>, or use
+                shortcut key <keycombo><keysym>Ctrl</keysym><keysym>O</keysym></keycombo>.</para>
+                
+                
+            </section>
+            
+            <section>
+                <title>File Name</title>
+                        <indexterm><primary>filename</primary></indexterm>
+                <para>DocBook used &cmd_filename; indicating a file name text.</para>
+                <informalexample>
+                    <programlisting>User choosed &lt;filename&gt;hello.file.name&lt;/filename&gt;.</programlisting>
+                </informalexample>
+            </section>
+            
+            
+            <section>
+                <title>GUI Menu</title>
+                <para>Following table lists the command with GUI menu:</para>
+                
+                <table frame="topbot">
+                    <title>GUI Menu Command</title>
+                    <tgroup cols="2">
+                    <thead>
+                        <row><entry>Name</entry><entry>Comments</entry></row>
+                    </thead>
+                    <tbody>
+                        <row><entry>guimenu</entry><entry>The name of a menu in a GUI.</entry></row>
+                        <row><entry>guimenuitem</entry><entry>The name of a terminal menu item in a GUI.</entry></row>
+                        <row><entry>guisubmenu</entry><entry>The name of a submenu in a GUI.</entry></row>
+                    </tbody>
+                    </tgroup>
+                </table>
+                
+                <informalexample>
+                    <programlisting>&lt;para&gt;You can choose &lt;guimenuitem&gt;Open(&lt;accel&gt;Ctrl O&lt;/accel&gt;)&lt;/guimenuitem&gt; 
+from &lt;guimenu&gt;File&lt;/guimenu&gt;.&lt;/para&gt;</programlisting>
+                </informalexample>
+                
+                <para>After compile, the result is like this:</para>
+                <para>You can choose <guimenuitem>Open(<accel>Ctrl O</accel>)</guimenuitem> from <guimenu>File</guimenu>.</para>
+                
+            </section>
+        </section>
+        
+    </chapter>
+    
+    
+    <!-- ============= Chapter 3 =================  -->
+    <chapter id="chap_other">
+        <title>Other DocBook Format</title>
+            <blockquote>
+            <attribution>E. W. Dijkstra</attribution>
+            <para>Computer Science is no more about computers than astronomy is about telescopes.</para>
+            </blockquote>
+        <para>DocBook not only generate for print book, but also other format, such as article, slide and website.</para>
+        
+        <section id="chap_other.article">
+            <title>Use DocBook for Article</title>
+            
+            <para>You can use &cmd_article; to create an article. If you use DTD, then change the <emphasis>book</emphasis> 
+            in <xref linkend="exp.chap_start.simple_xml" /> to <emphasis>article</emphasis>.</para>
+            
+            <section id="chap_other.article.layout">
+                <title>Basic Layout of An Article</title>
+                <para>Article in DocBook is quite similar with book: first declear header information, then followed text content:</para>
+                <example id="exp.chap_other.article.layout">
+                    <title>A typical article layout</title>
+                    <programlisting>&lt;article&gt;
+    &lt;title&gt;Article Title&lt;/title&gt;
+    &lt;articleinfo&gt;
+        &lt;author&gt;
+            &lt;firstname&gt;Yang&lt;/firstname&gt;&lt;surname&gt;Songxiang&lt;/surname&gt;
+        &lt;/author&gt;
+        
+        &lt;abstract&gt;
+        &lt;para&gt;The abstract text here.&lt;/para&gt;
+        &lt;/abstract&gt;
+    &lt;/articleinfo&gt;
+    &lt;sect1&gt;
+        &lt;title&gt;Title&lt;/title&gt;
+        &lt;para&gt;text&lt;/para&gt;
+    &lt;/sect1&gt;
+&lt;/article&gt;</programlisting>
+                </example>
+                
+                <para>The article header information is put in articleinfo tag.</para>
+            </section>
+            
+            <section id="chap_other.article.options">
+                <title>Options to control Article Format</title>
+                <para>This section disscuss some options that customize article-specific format. Following table
+                lists all possible options that in docbook/utils-0.6.14/docbook-utils.dsl.</para>
+                <table id="table.chap_other.article.options.dsl" frame="topbot">
+                    <title>Options in DSSSL file</title>
+                    <tgroup cols="2">
+                    <thead>
+                        <row><entry>Options Name</entry><entry>Notes</entry></row>
+                    </thead>
+                    
+                    <tbody>
+                        <row><entry>generate-article-titlepage</entry><entry>true(default) means generate article's title, TOC etc stuff.
+                        otherwise, set it as false.</entry></row>
+                        <row><entry>generate-article-toc</entry><entry>Control generating the article's TOC.</entry></row>
+                        <row><entry>generate-article-toc-on-titlepage</entry><entry>Determine to display TOC on article title page.</entry></row>
+                        <row><entry>generate-article-titlepage-on-separate-page</entry><entry>true(default) would start article text on
+                        a forcely new-page. Otherwise, the text followed with article's title/toc.</entry></row>
+                    </tbody>
+                    </tgroup>
+                </table>
+                
+            </section>
+        </section>
+        
+        <section id="chap_other.quick_card">
+            <title>Create Quick Reference Card</title>
+            <para>Use &cmd_article; can create a quick reference card, which is commonly used in open source
+            communitity, such as VIM Quick Reference Card, Emacs Quick Reference Card from <ulink url="http://www.refcards.com/" /> .</para>
+            <para>In order to generate the card with FOP, you need specify &param_page.orientation; with "landscape".</para>
+            <para>Following table lists most XSL parameters value, for quick reference card:</para>
+            
+            <table frame="topbot">
+                <title>XSL Parameters for quick reference card</title>
+                <tgroup cols="3">
+                    <thead>
+                        <row><entry>Parameter</entry><entry>Value</entry><entry>Note</entry></row>
+                    </thead>
+                    
+                    <tbody>
+                        <row>
+                        <entry>page.orientation</entry>
+                        <entry>landscape</entry>
+                        <entry>FOP use "portrait"(A4) by default, "landscape" would rotate 90 degree.</entry>
+                        </row>
+                        
+                        <row>
+                        <entry>generate.toc</entry>
+                        <entry>nop</entry>
+                        <entry>By convention, quick reference card don't need TOC at all.</entry>
+                        </row>
+                        
+                        <row>
+                        <entry>column.count.body</entry>
+                        <entry>2</entry>
+                        <entry>Quick reference card often divided into several columns.</entry>
+                        </row>
+                        
+                    </tbody>
+                </tgroup>
+            </table>
+            
+        </section>
+        
+        <section id="chap_other.website">
+            <title>Use DocBook for Website</title>
+            <para>TODO</para>
+        </section>
+        
+        <section id="chap_other.slide">
+            <title>Use DocBook for Slide</title>
+            <para>Currently, this book didn't cover this topic, since MS Powerpoint did this quite well,
+            it's not necessary to use DocBook generating slides in daily work.</para>
+        </section>
+        
+    </chapter>
+   
+    <!-- ============= Chapter 4 =================  -->
+    <chapter id="chap_adv">
+        <title>Advanced Topics on DocBook</title>
+        
+        <para>This section would dig into the internal mechanism of DocBook, to help
+        master DocBook more familiar. Some other DocBook features are also convered
+        here.</para>
+        
+        <section id="chap_adv.catalog">
+            <title>XML Catalogs</title>
+                <indexterm><primary>catalog</primary></indexterm>
+                
+                <section>
+                    <title>Why catalog?</title>
+                    
+                    <para>The catalog is a text file provides a mapping from generic addresses to specific local directories on a 
+                    given machine.</para>
+                    
+                    <para>A catalog can be used to locate the DocBook DTD, system entity files, and stylesheet files 
+            during processing. Catalog files add a degree of flexibility to your setup. Once you have set up your scripts 
+            and Makefiles to use catalog files, if you rearrange things or transfer to a different system, you can just 
+            edit the catalog file to remap all the old paths to new locations.</para>
+            
+                    <para>There're 2 types of catalog:</para>
+            
+            <variablelist>
+                <varlistentry>
+                    <term><command>SGML Catalog</command></term>
+                    <listitem><para>This is a older type of catalog, and has simpler syntax.</para></listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term><command>XML Catalog</command></term>
+                    <listitem><para>This is a newer type of catalog, and has XML-like syntax.</para></listitem>
+                </varlistentry>
+            </variablelist>
+            
+                </section>
+                
+            
+            <section>
+                <title>Create and Maintain Catalogs</title>
+                <para>&cmd_libxml2; package provided an &cmd_xmlcatalog; util, for XML catalog operation.
+                You can use <command>--create</command> options to create a catalog.</para>
+                
+                <example>
+                    <title>Create a catalog file</title>
+                    <programlisting><userinput>xmlcatalog --create</userinput>
+<computeroutput>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE catalog PUBLIC &quot;-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN&quot; 
+    &quot;http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd&quot;&gt;
+&lt;catalog xmlns=&quot;urn:oasis:names:tc:entity:xmlns:xml:catalog&quot;/&gt;</computeroutput></programlisting>
+                </example>
+            </section>
+        
+            <section>
+                <title>Catalog in Docbook</title>
+                <para>When you first run the <xref linkend="exp.chap_start.simple_xml" /> on your machine, the first command you can see is:
+            <command>Using catalogs: /usr/share/sgml/docbook/sgml-dtd-4.5/catalog</command></para>
+            
+            
+            <para>That's probably the first time you meet with catalog.</para>
+            
+            
+            
+            <para>For ReadHat EL4.0, the docbook2xxx utils would use /etc/sgml/xml-docbook.cat as the default catalog:</para>
+            
+            <example>
+                <title>A sample catalog file</title>
+                <programlisting>CATALOG "/usr/share/sgml/docbook/xml-dtd-4.3-1.0-25/catalog"
+CATALOG "/usr/share/sgml/sgml-iso-entities-8879.1986/catalog"
+CATALOG "/usr/share/sgml/openjade-1.3.2/catalog"
+CATALOG "/usr/share/sgml/docbook/dsssl-stylesheets-1.78/catalog"</programlisting>
+            </example>
+            
+            <para>From the data in catalog, we know it references some other catalog files.</para>
+            </section>
+        
+        </section>
+        
+        <section>
+            <title>DocBook on Windows</title>
+            <para>This section disscuss how to set up environment on Windows to compile a DocBook source file.</para>
+            
+            <section>
+                <title>Install XSL File</title>
+                <para>Download stylesheet files from http://docbook.sourceforge.net/, extract it to, e.g, D:\docbook\.</para>
+            </section>
+            
+            <section>
+                <title>Install JDK</title>
+                <para>You need install JDK on your machine if you don't. The latest JDK can be downloaded from
+                http://java.sun.com.</para>
+            </section>
+            
+            <section id="chap_adv.win.fop">
+                <title>Install FOP</title>
+                <para>Download FOP package from http://xmlgraphics.apache.org/fop, extract it to, e.g, D:\docbook\.</para>
+                
+                <note><para>In order to do XSLT, you
+                can also build libxml2/libxslt packages, but they are optional. See <emphasis>XML Book</emphasis> for more details about
+                how to build a libxml2/libxslt.</para></note>
+                
+                <para>Here I list the example of layout, after you got all the above packages:</para>
+                <informalexample>
+                    <programlisting>d:\docbook\
++---docbook-xsl-1.74.0
+|   +---common
+|   +---docsrc
+|   +---eclipse
+|   +---epub
+|   +---extensions
+|   +---fo
+|   +---highlighting
+|   +---html
+|   +---htmlhelp
+|   +---images
+|   +---javahelp
+|   +---lib
+|   +---manpages
+|   +---params
+|   +---profiling
+|   +---roundtrip
+|   +---slides
+|   +---template
+|   +---tests
+|   +---tools
+|   +---website
+|   +---xhtml
+|   \---xhtml-1_1
+\---fop-0.95
+    +---build
+    +---conf
+    \---lib</programlisting>
+                </informalexample>
+            </section>
+            
+            <section>
+                <title>Write a Makefile</title>
+                <para>It's convenient to maintain a Makefile to help you build DocBook document, which would let you
+                type make or nmake to compile the XML file into each target document.</para>
+                
+                <example>
+                    <title>Makefile to Build DocBook</title>
+                    <programlisting># Makefile for FOP
+#
+SRC_FILE=doc_main.xml
+FO_XSL_FILE=D:\docbook\docbook-xsl-1.74.0\fo\docbook.xsl
+FOP_BIN=D:\docbook\fop-0.95\fop.bat
+
+FO_PARAM_FLAGS=-param use.extensions 0 \
+	-param section.label.includes.component.label 1 \
+	-param section.autolabel 1 \
+	-param linenumbering.extension 1 \
+	-param fop1.extensions 1 \
+	-param double.sided 1 \
+    -param default.table.frame topbot \
+    -param table.cell.border.style none \
+    -param table.frame.border.style outset \
+    -param callout.graphics 0 \
+    -param callout.extension 0 \
+    -param draft.mode no \
+    -param body.font.family Helvetica \
+    -param body.font.size 15 \
+    -param draft.watermark.image ..\common\draft.png \
+	-param admon.graphics 0
+pdf:
+	$(FOP_BIN) -xml $(SRC_FILE) $(FO_PARAM_FLAGS) \
+    -xsl $(FO_XSL_FILE) -pdf doc_main.pdf</programlisting>
+                </example>
+                
+                <para>You can type <userinput>nmake /f Makefile pdf</userinput> to build a pdf file.</para>
+            </section>
+            
+        </section>
+        
+        <section id="chap_adv.attribute_set">
+            <title>Attribute Set</title>
+                <indexterm><primary>attribute set</primary></indexterm>
+            <para>You can put many XSL parameters into a <emphasis>attribute set</emphasis>, which would be
+            convenient to change a lot of styles in one step.</para>
+            <para>In short words, you put a lot of <command>&lt;xsl:attribute&gt;</command> tags, into an encolosed
+            <command>&lt;xsl:attribute-set&gt;</command>, to create a new attribute set.</para>
+        </section>
+        
+        <section id="chap_adv.customization_layer">
+            <title>XSL Customization Layer</title>
+                <indexterm><primary>customization layer</primary></indexterm>
+            <para>In order to make XSL parameters' customization easy, you can put all these XSL parameters'
+            value in a seperate XSL file, which is called <emphasis>customization layer</emphasis>.</para>
+            
+            <para>The customization layer permits you to customize your processing without actually editing 
+            the original DocBook stylesheet files. Your changes are a thin layer on top of the extensive 
+            collection of DocBook code.</para>
+            
+            <para>There're two kind of parameter customization:</para>
+            <informalexample>
+                <programlisting>&lt;xsl:param name=&quot;parametername&quot; select=&quot;'<emphasis>parametervalue</emphasis>'&quot;/&gt;
+&lt;xsl:param name=&quot;parametername&quot;&gt;<emphasis>parametervalue</emphasis>&lt;/xsl:param&gt;
+</programlisting>
+            </informalexample>
+            
+            <para>By using customization layer, you don't have to type many parameter commands any more. </para>
+            
+            <para>Suppose we have a fo_customization_layer.xsl file:</para>
+            <example>
+                <title>Customization Layer for FO</title>
+                <programlisting><![CDATA[<?xml version='1.0'?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:exsl="http://exslt.org/common"
+                xmlns:fo="http://www.w3.org/1999/XSL/Format"
+                xmlns:ng="http://docbook.org/docbook-ng"
+                xmlns:db="http://docbook.org/ns/docbook"
+                exclude-result-prefixes="db ng exsl"
+                version='1.0'>
+
+  <xsl:import href="D:\docbook\docbook-xsl-1.74.0\fo\docbook.xsl" />
+  <xsl:param name="draft.mode">no</xsl:param>
+  <xsl:param name="section.autolabel">1</xsl:param>
+  <xsl:param name="fop1.extensions">1</xsl:param>
+</xsl:stylesheet>]]></programlisting>
+            </example>
+            
+            <para>You type <userinput>fop -xml src.xml -xsl fo_customization_layer.xsl -pdf src.pdf</userinput> to
+            generate a PDF file. Any customization change is in the .xsl file.</para>
+            
+        </section>
+        
+        <section id="chap_adv.multi_lang">
+            <title>Multi-language in DocBook</title>
+            <para>DocBook provides &cmd_lang; attribute to support multi-language. You can use "zh-cn"<footnote>
+            <para>DocBook internally will convert the zh-cn to zh_cn.</para></footnote> as
+            the value of &cmd_lang; to let DocBook render Chinese output document.</para>
+            
+            <section>
+                <title>Use FOP</title>
+                <para>Create font matrix file</para>
+                <example>
+                    <title>create</title>
+                    <programlisting>java -cp /usr/share/fop/lib/fop.jar:/usr/share/avalon-framework-4.2/lib/avalon-framework.jar:/usr/share/commons-logging/lib/commons-logging.jar:/usr/share/commons-io-1/lib/commons-io.jar org.apache.fop.fonts.apps.TTFReader /usr/share/fonts/fireflysung/fireflysung.ttf fireflysung.xml</programlisting>
+                </example>
+                
+               
+                
+                <para>java -cp fop-0.95/build/fop.jar;fop-0.95/lib/avalon-framework-4.2.0.jar;fop-0.95/lib/commons-logging-1.0.4.jar;fop-0.95/lib/commons-io-1.3.1.jar org.apache.fop.fonts.apps.TTFReader fop-0.95\fonts\simhei.ttf yangsongx.xml</para>
+                
+                <para>Success on Win32: java -cp fop-0.95/build/fop.jar;fop-0.95/lib/avalon-framework-4.2.0.jar;fop-0.95/lib/commons-logging-1.0.4.jar;fop-0.95/lib/commons-io-1.3.1.jar;fop-0.95/lib/xmlgraphics-commons-1.3.1.jar;fop-0.95/lib/xml-apis-1.3.04.jar org.apache.fop.fonts.apps.TTFReader C:\WINDOWS\Fonts\simhei.ttf yangsongx.xml</para>
+                
+                <para>a yangsongx.xml created.</para>
+                
+                <para>chagne conf/fop.xconf</para>
+            </section>
+        </section>
+        
+        <section>
+            <title>DocBook V5.0 and RELAX NG</title>
+            <para>The new DocBook V5.0 would recommend use RELAX NG grammar schema, but you can still use DTD as well.</para>
+        </section>
+        
+    </chapter>
+    
+    
+   
+    
+    <!-- ============= Appendix =================  -->
+    <appendix id="app_unit_conversion">
+        <title>Units for DocBook</title>
+        
+        <para>DocBook used several units to control dimension or size.</para>
+        
+        <table frame="topbot">
+            <title>Measure Units</title>
+            <tgroup cols="2">
+                <thead>
+                    <row><entry>Unit</entry><entry>Notes</entry></row>
+                </thead>
+                
+                <tbody>
+                    <row><entry>cm</entry><entry>centimeter</entry></row>
+                    <row><entry>mm</entry><entry>millimeter</entry></row>
+                    <row><entry>in</entry><entry>inch</entry></row>
+                    <row><entry>pt</entry><entry>point</entry></row>
+                    <row><entry>pc</entry><entry>pica</entry></row>
+                    <row><entry>px</entry><entry>pixel</entry></row>
+                    <row><entry>em</entry><entry>relative to font size</entry></row>
+                </tbody>
+            </tgroup>
+        </table>
+        
+        <para>Here summarized some common-used units.</para>
+        
+        <section id="app_unit_conversion.inch">
+            <title>Inch</title>
+            <para>The symbole of inch is <command>in</command>, the inch is the 
+            virtually universal unit of measurement in the United States, and is very 
+            commonly used in Canada and the United Kingdom.</para>
+            
+            <para>1 in = 0.0254 m = 2.54 cm = 25.40 mm</para>
+        </section>
+
+        <section>
+            <title>Foot</title>
+            
+            <para>Foot size, can vary from system to system, but in each is around a quarter to a third of a metre. We often abbreviate it as
+            <command>ft</command>, it's plural is <command>feet</command>.</para>
+            <para>The most commonly used foot today is the international foot. There are three feet in a yard and 12 inches in a foot.</para>
+            <para>1 foot = 0.3048 m = 12 inch = 1/3 yard</para>
+        </section>
+        
+        <section>
+            <title>Point</title>
+            <para>In typography, a <command>point</command> is the smallest unit of measure, commonly 
+            abbreviated as <command>pt</command>.</para>
+            
+            <para>The traditional printer's point varied between 0.18 and 0.4 mm depending on various definitions of the foot.</para>
+        </section>
+		
+        <section>
+            <title>Pica</title>
+            <para>A pica is a typographic unit of measure corresponding to 1/72nd of its respective foot, and therefore to 1/6th of an inch.</para>
+            <para>Conventionally, we often abbreviate the pica as <command>pc</command>, and</para>
+            <para><emphasis>1 pcia = 12 points</emphasis>.</para>
+        </section>
+        
+        <section>
+            <title>DPI</title>
+            <para>Dots Per Inch (DPI), is a measure of spatial printing or video dot density, 
+            in particular the number of individual dots that can be placed within the span of 
+            one linear inch (2.54 cm.) The DPI value tends to correlate with image resolution, 
+            but is related only indirectly.</para>
+        </section>
+        
+		<section id="app_unit_conversion.pagesize">
+            <title>Page Size/Type</title>
+            
+            <para>Usually, DocBook support different page type, such as US Letter, A4/A3, etc. Their dimensions are
+            different.</para>
+                    <indexterm><primary>page size dimensions</primary></indexterm>
+            <table frame="topbot" id="tbl.app_unit_conversion.pagesize">
+                <title>Page Size</title>
+                <tgroup cols="2">
+                    <thead>
+                        <row><entry>Page</entry><entry>Size</entry></row>
+                    </thead>
+                    <tbody>
+                        <row><entry>US Letter</entry><entry>8.5in x 11in</entry></row>
+                        <row><entry>A5</entry><entry>5.8in x 8.3in</entry></row>
+                        <row><entry>A4</entry><entry>8.3in x 11.7in</entry></row>
+                        <row><entry>A3</entry><entry>11.5in x 16.7in</entry></row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        
+    </appendix>
+    
+    
+    <!-- ============= FAQ =================  -->
+    <appendix id="app_faq">
+        <title>Frequently Asked Questions(FAQ)</title>
+        
+    <qandaset>
+        <qandadiv>
+            <title>DocBook Usage</title>
+            
+            <qandaentry>
+                <question>
+                <para>Where can I find the latest of DocBook XSL?</para>
+                </question>
+                <answer>
+                <para>Check <ulink url="http://docbook.sourceforge.net/release/" />, the XSL is in <emphasis>xsl/</emphasis> directory.</para>
+                </answer>
+            </qandaentry>
+
+            <qandaentry>
+                <question>
+                <para>When I use FOP to generate PDF, why it didn't contain bookmarks on the left panel?</para>
+                </question>
+                <answer>
+                <para>You can assign value 1 to &param_fop1.extensions; to support bookmarks. See
+                <xref linkend="chap_customize.bookmarks" /> for more details.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>How to do even-odd page number layout for FOP?</para>
+                </question>
+                <answer>
+                <para>You can assign value 1 to &param_double.sided; See
+                <xref linkend="chap_customize.page_layout" /> for more details.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>When I use FOP, why there's "draft.png not available" warning?</para>
+                </question>
+                <answer>
+                <para>If FOP is under draft mode, it will use a draft.png as the background wartermark.
+                in most cases, the warning is like this:
+                    <screen>SEVERE: Background image not available: \
+    http://docbook.sourceforge.net/release/images/draft.png</screen>
+                You can specify value "no" to &param_draft.mode; to remove this kind of warning.</para>
+                <para>If you do need the draft.png, you can specify the draft.png's image full path to &param_draft.watermark.image;,
+                and specify <emphasis>yes</emphasis> to &param_draft.mode;.</para>
+                <para>Thus, the PDF would use the draft.png as a watermark image.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>When I use FOP, how to remove the "WARNING: Making portrait pages on USletter paper (8.5inx11in)" warning?</para>
+                </question>
+                
+                <answer>
+                <para>FOP raised this warning because you didn't explicitly specify the paper size. You can specify a
+                A4 value to &param_paper.type; to remove this warning.</para>
+                
+                <para>See <xref linkend="chap_customize.page_layout" /> for more details about the page type, and
+                <xref linkend="tbl.app_unit_conversion.pagesize" /> listed some page size dimensions.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>When using FOP, how to remove the "List of Example"-like List?</para>
+                </question>
+                <answer>
+                <para>By default, FOP will add "List of Example", "List of Figure" etc list at the begining
+                of a book.</para>
+                <para>If you don't want to need them, you can remove them from &param_generate.toc;:</para>
+                <informalexample>
+                    <programlisting>&lt;xsl:param name=&quot;generate.toc&quot;&gt;
+/appendix toc,title
+article/appendix  nop
+/article  toc,title
+book      toc,title,figure,table,example,equation
+/chapter  toc,title
+part      toc,title
+/preface  toc,title
+reference toc,title
+/sect1    toc
+/sect2    toc
+/sect3    toc
+/sect4    toc
+/sect5    toc
+/section  toc
+set       toc,title
+&lt;/xsl:param&gt;</programlisting>
+                </informalexample>
+                <para>Remove the <emphasis>figure,table, example, equation</emphasis> to let FOP don't
+                generate their lists.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>Why my Chinese text can't displayed correct in PDF file?</para>
+                </question>
+                <answer>
+                <para>I still can't answer this question right now.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>Why callout image in programlisting didn't displayed in the PDF when I using FOP?</para>
+                </question>
+                <answer>
+                <para>The reason is always because &param_callout.graphics; is default turned on by FOP, while
+                the callout graphic path didn't exist(<emphasis>images/callouts</emphasis> is usually
+                the default path). You can safely set &param_callout.graphics; as 0, or specify
+                the correct callout graphic path with &param_callout.graphics.path;.</para>
+                <para>Refer <xref linkend="chap_customize.programlisting.callout" /> for more details.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>What's the difference between .ttf and .ttc font file?</para>
+                </question>
+                <answer>
+                <para>Some font files are .ttf, which means TrueType Font, some are .ttc, which means TrueType Collection.</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>Why I can't generate the Index Page when using docbook2pdf?</para>
+                </question>
+                <answer>
+                <para>See <xref linkend="chap_customize.add_book_idx" />.</para>
+                </answer>
+            </qandaentry>
+            
+        </qandadiv>
+        
+        <qandadiv>
+            <title>Linux/Unix Usage</title>
+            
+            <qandaentry>
+                <question>
+                <para>How can I let Linux defaultly go into X11 instead of console environment?</para>
+                </question>
+                <answer>
+                <para>You need edit the /etc/inittab file, change the runlevel from 3 to 4(X11 runlevel).</para>
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>Why so long time displaying "Loading Linux..." when loading my Linux?</para>
+                </question>
+                
+                <answer>
+                <para>This is usually happended for Slackware 12.1. You can add <command>compact</command> in the
+                /etc/lilo.conf, then type <userinput>/sbin/lilo -v</userinput> to let LILO take effect.</para>
+                
+                <para>Now, restart your Linux, the "Loading Linux..." would be faster than before!</para>
+                
+                
+                </answer>
+            </qandaentry>
+            
+            <qandaentry>
+                <question>
+                <para>How could I know current system's running time?</para>
+                </question>
+                
+                <answer>
+                <para>Use <command>uptime</command>, tell how long the system has been running.</para>
+                <informalexample>
+                    <programlisting><userinput>uptime</userinput>
+14:23:32 up 14 days, 39 min, 24 users,  load average: 0.14, 0.09, 0.08</programlisting>
+                </informalexample>
+                </answer>
+            </qandaentry>
+            
+        </qandadiv>
+        
+    </qandaset>
+    </appendix>
+    
+    
+    <!-- ============= List the bibliography =================  -->
+    <bibliography>
+        <biblioentry id="Walsh2003">
+            <title>DocBook 5.0: The Definitive Guide</title>
+            <titleabbrev>Walsh 2003</titleabbrev>
+            <publisher><publishername>O'Reilly Media, Inc</publishername></publisher>
+            <authorgroup><author><othername>Norman Walsh</othername></author></authorgroup>
+        </biblioentry>
+        
+        <biblioentry id="Bob2005">
+            <title>DocBook XSL: The Complete Guide</title>
+            <titleabbrev>Bob 2005</titleabbrev>
+            <publisher><publishername>O'Reilly Media, Inc</publishername></publisher>
+            <authorgroup><author><othername>Bob Stayton</othername></author></authorgroup>
+        </biblioentry>
+        
+    </bibliography>
+    
+    <!-- ============= Glossary =================  -->
+    <glossary>
+        <title>Glossary</title>
+        
+        <!-- C-->
+        <glossdiv>
+            <title>C</title>
+        
+            <glossentry id="gloss_id_catalog">
+            <glossterm>Catalog</glossterm>
+            <glossdef>
+                <para>Sometimes called XML Catalog, it is a document describing a mapping 
+                between external entity references and locally-cached equivalents.</para>
+            </glossdef>
+            </glossentry>
+        
+            <glossentry id="gloss_id_css">
+            <glossterm>CSS</glossterm>
+            <glossdef>
+                <para><emphasis>C</emphasis>ascading <emphasis>S</emphasis>tyle <emphasis>S</emphasis>heets, is a stylesheet language used to describe the presentation of 
+                a document written in a markup language(HTML/XHTML/XML, etc). It's commonly used with HTML.</para>
+            </glossdef>
+            </glossentry>
+        </glossdiv>
+    
+        <!-- D -->
+        <glossdiv>
+            <title>D</title>
+            
+            <glossentry>
+            <glossterm>DOM</glossterm>
+            <glossdef>
+                <para>Document Object Model, A platform- and language-neutral interface that allows programs and scripts to dynamically access and update the content, structure and style of documents.</para> 
+                <para>The DOM provides a standard set of objects for representing HTML and XML documents, a standard model of how these objects can be combined, and a standard interface for accessing and manipulating them.</para>
+                <para>Vendors can support the DOM as an interface to their proprietary data structures and APIs, and content authors can write to the standard DOM interfaces rather than product-specific APIs, thus increasing interoperability on the Web.</para>
+            </glossdef>
+            </glossentry>
+            
+            
+            <glossentry>
+            <glossterm>DPI</glossterm>
+            <glossdef>
+                <para>Dots Per Inch.</para> 
+            </glossdef>
+            </glossentry>
+            
+            <glossentry id="dtd">
+            <glossterm>DTD</glossterm>
+            <glossdef>
+                <para>Document Type Definition </para> 
+            </glossdef>
+            </glossentry>
+            
+            <glossentry id="dsssl">
+            <glossterm>DSSSL</glossterm>
+            <glossdef>
+                <para>Document Style Sematics and Specification Language, it's a stylesheet language for
+                SGML/XML document, usually, it used the .dsl suffix convention.</para> 
+                <glossseealso otherterm="gloss_id_sgml">SGML</glossseealso>
+            </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- F -->
+        <glossdiv>
+            <title>F</title>
+            
+            <glossentry id="gloss_id_fop">
+            <glossterm>FOP</glossterm>
+            <glossdef>
+                <para><emphasis>F</emphasis>ormatting <emphasis>O</emphasis>bjects <emphasis>P</emphasis>rocessor, a print formatter driven by XSL formatting 
+                objects (XSL-FO) and an output independent formatter. It is a Java application 
+                that reads a formatting object (FO) tree and renders the resulting pages to a 
+                specified output.</para> 
+            </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- I -->
+        <glossdiv>
+            <title>I</title>
+            
+            <glossentry id="gloss_id_i18n">
+            <glossterm>I18N</glossterm>
+            <glossdef>
+                <para>Internationalization, means there're totally 18 characters between I and N. It's related with multi-language.</para> 
+            </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_irc">
+            <glossterm>IRC</glossterm>
+            <glossdef>
+                <para>Internet Relay Chat, a form of real-time Internet chat or synchronous conferencing. 
+                It is mainly designed for group communication in discussion forums called channels</para> 
+            </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- P-->
+        <glossdiv>
+            <title>P</title>
+        
+            <glossentry id="gloss_id_pi">
+            <glossterm>PI</glossterm>
+            <glossdef>
+                <para><emphasis>P</emphasis>rocessing <emphasis>I</emphasis>nstruction, a means of passing 
+                hints to the XSLT processor about how to handle something, usually like &lt;? dbhtml filename="htmlname.html"?&gt;.</para>
+                <para>The FO's PI is &lt;?dbfo xxxx?&gt;, the HTML's PI is &lt;?dbhtml xxx?&gt;.</para>
+            </glossdef>
+            </glossentry>
+        </glossdiv>
+        
+        <!-- R -->
+        <glossdiv>
+        <title>R</title>
+        
+            <glossentry id="gloss_id_recto">
+                <glossterm>recto</glossterm>
+                <glossdef>
+                    <para>The book's righ-hand page, usually odd page number(Page 1, 3, 5, 7 etc).</para>
+                    <glossseealso otherterm="gloss_id_verso">verso</glossseealso>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_relax_ng">
+                <glossterm>RELAX NG</glossterm>
+                <glossdef>
+                    <para>REgular LAnguage for XML Next Generation, is a schema language for XML. More details
+                    can be found at http://www.relaxng.org/.</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- S -->
+        <glossdiv>
+        <title>S</title>
+        
+            <glossentry id="gloss_id_sax">
+                <glossterm>SAX</glossterm>
+                <glossdef>
+                    <para><emphasis>S</emphasis>imple <emphasis>A</emphasis>PI for <emphasis>X</emphasis>ML, originally a Java-only API.
+                    SAX was the first widely adopted API for XML in Java, and is a de facto standard. More information can be found in <ulink url="http://www.saxproject.org/" />.</para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_saxon">
+                <glossterm>SAXON</glossterm>
+                <glossdef>
+                    <para>SAXON is an XSLT and XQuery processor. A collection of tools are included in the SAXON package.
+                    It provides similar functionality as xsltproc.</para>
+                    <para>More information can be found in <ulink url="http://saxon.sourceforge.net/" />.</para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_sgml">
+            <glossterm>SGML</glossterm>
+            <glossdef>
+                <para><emphasis>S</emphasis>tandard <emphasis>G</emphasis>eneralized <emphasis>M</emphasis>arkup <emphasis>L</emphasis>anguage, an international standard(ISO-8879), specifies
+                the rules for the creation of platform-independent mark language for electronic texts.</para> 
+            </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- T -->
+        <glossdiv>
+        <title>T</title>
+        
+            <glossentry id="gloss_id_truetype">
+                <glossterm>TrueType</glossterm>
+                <glossdef>
+                    <para>TrueType is an outline font standard originally developed by Apple Computer 
+                    in the late 1980s, as a competitor to Adobe's <emphasis>Type 1 fonts</emphasis> used in PostScript.</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- U -->
+        <glossdiv>
+        <title>U</title>
+        
+            <glossentry id="gloss_id_uri">
+                <glossterm>URI</glossterm>
+                <glossdef>
+                    <para>Uniform Resource Identifier. The most common URI is URL, which identifies
+                    an internet domain address. Another not-so-common type of URI is URN.</para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_url">
+                <glossterm>URL</glossterm>
+                <glossdef>
+                    <para>Uniform Resource Locator, is the address of a resource 
+                    which is retrievable using protocols already deployed on the Internet.</para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_urn">
+                <glossterm>URN</glossterm>
+                <glossdef>
+                    <para>Uniform Resource Name.</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- V -->
+        <glossdiv>
+        <title>V</title>
+        
+            <glossentry id="gloss_id_verso">
+                <glossterm>verso</glossterm>
+                <glossdef>
+                    <para>The book's lefthand-page, usually even page number(Page 2, 4, 6, 8 etc).</para>
+                    <glossseealso otherterm="gloss_id_recto">recto</glossseealso>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- W -->
+        <glossdiv>
+        <title>W</title>
+        
+            <glossentry id="gloss_id_w3c">
+                <glossterm>W3C</glossterm>
+                <glossdef>
+                    <para>The World Wide Web Consortium.</para>
+                    <para>More information can be found in <ulink url="http://www.w3.org/" />.</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        
+        <!-- X -->
+        <glossdiv>
+        <title>X</title>
+        
+            <glossentry id="gloss_id_xml">
+                <glossterm>XML</glossterm>
+                <glossdef>
+                    <para>E<emphasis>X</emphasis>tensible <emphasis>M</emphasis>arkup <emphasis>L</emphasis>anguage.</para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_xsl">
+                <glossterm>XSL</glossterm>
+                <glossdef>
+                    <para>The Extensible Stylesheet Language, it's a family of recommendations 
+                    for defining XML document transformation and presentation.</para>
+                    <para>XSL contains following parts:</para>
+                    <itemizedlist spacing="compact">
+                        <listitem><para>XSL Transformations (XSLT)</para></listitem>
+                        <listitem><para>XML Path Language (XPath)</para></listitem>
+                        <listitem><para>XSL Formatting Objects (XSL-FO)</para></listitem>
+                    </itemizedlist>
+                        
+                </glossdef>
+            </glossentry>
+            
+            <glossentry id="gloss_id_xslt">
+                <glossterm>XSLT</glossterm>
+                <glossdef>
+                    <para>E<emphasis>X</emphasis>tensible <emphasis>S</emphasis>tylesheet <emphasis>L</emphasis>anguage
+                    <emphasis>T</emphasis>ransformation.</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+    
+    </glossary>
+    
+    <!-- ============= Revision History =================  -->
+    <!--<appendix id="app_revhistory">
+        <title>Revision History</title>-->
+    <!--<revhistory>
+    
+    <revision>
+  <revnumber>0.91</revnumber>
+  <date>1996-12-11</date>
+  <authorinitials>ndw</authorinitials>
+  <revremark>Bug fixes</revremark>
+</revision>
+
+    </revhistory>-->
+<!--    </appendix>-->
+    
+    <!-- ============= The Last part, Index for the book =================  -->
+    &idx;
+    <!--<index></title> -->
+    
+</book>
