@@ -99,12 +99,255 @@
     
     <chapter id="chap_start">
         <title>DocBook快速入门</title>
-        <para></para>
+        <sect1>
+            <title>简介</title>
+            <para>DocBook的核心标准是DTD<footnote><para>Document Type Definition - DTD</para></footnote>,它由一个叫做
+        DocBook Technical Committee的组织在OASIS(<ulink url="http://www.oasis-open.org/docbook/" />)维护着.
+        这些DTD可从网站上免费下载,但大多数的Linux版本均已经自带这些内容.<xref linkend="chap_start.getting_tool_works"/> will give more details.</para>
+            <para>DocBook的输出格式控制通过stylesheet文件,通常有两种类型文件:</para>
+        <variablelist>
+            <varlistentry>
+                <term><command>DSSSL</command></term>
+                <listitem>
+                    <para>一般是.dsl后缀的文件,为docbook2xxx命令使用.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term><command>XSL</command></term>
+                <listitem>
+                    <para>使用XML的stylesheet文件(.xsl),FOP程序使用此类文件.</para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        </sect1>
+        <sect1>
+            <title>DocBook需要的工具</title>
+            <para>DocBook要使用不少工具,通常我们要求机器上至少有下面工具:</para>
+        
+            <itemizedlist>
+            <listitem><para>DocBook的DTD</para></listitem>
+            <listitem><para>DocBook XSL stylesheets</para></listitem>
+            <listitem><para>docbook2xxx包(Jade Wrapper utils)</para></listitem>
+            <listitem><para>XSLT processor</para></listitem>
+            <listitem><para>XSL-FO processor</para></listitem>
+            </itemizedlist>
+            <para>大多数Linux系统(如RedHat/Slackware)都预置上面的工具.DocBook需要的Stylesheet文件一般位于/usr/share/sgml/docbook/目录下.</para>
+            <para>比如Redhat上的DTD在/usr/share/sgml/docbook/xml-dtd-xx-yy/docbookx.dtd,而在Slackware 12.1上则是/usr/lshare/sgml/docbook/sgml-dtd-xx-yy/docbook.dtd,下面是Slackware 12.1上的目录结构:</para>
+            <example>
+                <title>DocBook的DTD目录结构</title>
+                <programlisting>/usr/share/sgml/docbook/
+|-- dsssl-stylesheets-1.79
+|   |-- VERSION
+|   |-- WhatsNew
+|   |-- bin
+|   |-- catalog
+|   |-- common
+|   |-- contrib
+|   |-- doc
+|   |-- docsrc
+|   |-- dtds
+|   |-- frames
+|   |-- html
+|   |-- images
+|   |-- lib
+|   |-- olink
+|   `-- print
+|-- sgml-dtd-3.1
+|   |-- cals-tbl.dtd
+|   |-- catalog
+|   |-- dbcent.mod
+|   |-- dbgenent.mod
+|   |-- dbhier.mod
+|   |-- dbnotn.mod
+|   |-- dbpool.mod
+|   |-- docbook.dcl
+|   `-- docbook.dtd
+|-- sgml-dtd-4.5
+|   |-- calstblx.dtd
+|   |-- catalog
+|   |-- dbcentx.mod
+|   |-- dbgenent.mod
+|   |-- dbhierx.mod
+|   |-- dbnotnx.mod
+|   |-- dbpoolx.mod
+|   |-- docbook.dcl
+|   |-- docbook.dtd
+|   |-- docbookx.dtd
+|   |-- htmltblx.mod
+|   `-- soextblx.dtd
+`-- utils-0.6.14
+    |-- backends
+    |-- docbook-utils.dsl
+    |-- frontends
+    `-- helpers</programlisting>
+            </example>
+            
+            <para>另一个常用工具是FOP,它是Java程序,多与.xsl文件处理.可以从Apache网站上取得最新版本的FOP.</para>
+        </sect1>
+        
+        <sect1>
+            <title>第一个示例</title>
+            <para>假定我们有一个叫做my.xml的文件如下:</para>
+            <example id="exp.chap_start.simple_xml">
+                    <title>The my.xml sample XML file</title>
+                <programlisting linenumbering="numbered">&lt;!-- First sepcify DTD location --&gt;
+&lt;!DOCTYPE book SYSTEM "/usr/share/sgml/docbook/xml-dtd-4.5/docbook.dtd"&gt;
+&lt;book&gt;
+  &lt;bookinfo&gt;
+    &lt;title&gt;The Title Name&lt;/title&gt;
+    &lt;author&gt;
+      &lt;firstname&gt;Yang&lt;/firstname&gt;
+      &lt;surname&gt;Songxiang&lt;/surname&gt;
+    &lt;/author&gt;
+    &lt;copyright&gt;
+      &lt;year&gt;2008&lt;/year&gt;
+      &lt;holder&gt;Yang Songxiang&lt;/holder&gt;
+    &lt;/copyright&gt;
+    
+    &lt;abstract&gt;
+       &lt;para&gt;abstract text is here.&lt;/para&gt;
+    &lt;/abstract&gt;
+    &lt;legalnotice&gt;
+        &lt;para&gt;Put your legal notice here.&lt;/para&gt;
+    &lt;/legalnotice&gt;
+  &lt;/bookinfo&gt;
+  
+  &lt;preface&gt;
+    &lt;title&gt;Foreword&lt;/title&gt;&lt;para&gt;The preface text here.&lt;/para&gt;
+  &lt;/preface&gt;
+  
+  &lt;chapter id=&quot;chap_yyy&quot;&gt;
+    &lt;title&gt;The Chapter Title&lt;/title&gt;&lt;para&gt;text here.&lt;/para&gt;
+  &lt;/chapter&gt;
+  
+  &lt;chapter id=&quot;chap_xxx&quot;&gt;
+  &lt;/chapter&gt;
+  
+  &lt;appendix id=&quot;app_xyz&quot;&gt;
+    &lt;title&gt;Appendix Name&lt;/title&gt;&lt;para&gt;Appendix Text here&lt;/para&gt;
+  &lt;/appendix&gt;
+  
+  &lt;index /&gt;
+  
+&lt;/book&gt;</programlisting>
+            </example>
+            <para>这是一个小而全的DocBook XML文件.第2行演示了一个DTD声明的方法.如果各人机器上DTD文件路径不太一样,可手动地修改.</para>
+            
+            <para>需要注意的是,Windows和Linux上声明DTD的语法有点不同</para>
+            <informalexample>
+                    <programlisting>&lt;!DOCTYPE book SYSTEM &quot;/usr/share/docbook-4.5/docbookx.dtd&quot;&gt; 
+Linux声明语法
+&lt;!DOCTYPE book SYSTEM &quot;file:///C:/xml/docbook45/docbookx.dtd&quot;&gt; 
+Windows声明语法</programlisting>
+            </informalexample>
+        </sect1>
+        
+        <sect1>
+            <title>docbook2xxx工具</title>
+            <para>Linux提供了docbook2dvi,docbook2html,docbook2man,docbook2pdf, docbook2ps,docbook2rtf,docbook2tex,docbook2texi,docbook2txt等工具来将DocBook的XML文件转成目标文档.</para>
+            
+                <indexterm><primary>docbook2html</primary></indexterm>
+                    <indexterm><primary>docbook2xxx util</primary><secondary>docbook2html</secondary></indexterm>
+                <example id="exp.chap_start.docbook2xx">
+                    <title>docbook2xxx使用示例</title>
+                    <programlisting>$ docbook2html -o html my.xml
+# 执行完docbook2html,html/目录将新建 directory created, 
+# multi-page的HTML文件生成在该目录下.
+
+$ docbook2html --nochunks -o flat_html my.xml
+# single-page的HTML文件创建在flat_html/目录下
+
+$ docbook2rtf my.xml
+# 生成RTF格式文档.
+
+$ docbook2pdf my.xml
+# 生成PDF文档my.pdf</programlisting>
+                </example>
+                <para>docbook2xxx的DSSSL文件是/usr/share/sgml/docbook/utils-x-y/docbook-utils.dsl.众多格式输出选项均在该文件里面.</para>
+        </sect1>
+        
     </chapter> 
     
     <chapter>
         <title>自定义DocBook风格</title>
-        <para></para>
+        <para>/usr/share/sgml/docbook/utils-xx.yy.zz/docbook-utils.dsl通常是控制DocBook输出风格的配置文件.</para>
+            <tip>
+                <para>http://docbook.sourceforge.net/projects/dsssl/doc/上有关于DSSSL所有选项控制说明.</para>
+            </tip>
+        <sect1>
+            <title>章节编号</title>
+            
+            <para>缺省情况下,HTML不会对章节编号,比如第1章,1.1等;PDF输出则不会对节编号,如1.1,1.2.1等.控制它们的选项是:</para>
+            <table frame="topbot">
+                <title>章节编号的DSL选项</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>Option Name</entry><entry>Notes</entry></row>
+                </thead>
+                
+                <tbody>
+                    <row><entry>chapter-autolabel</entry><entry>HTML的缺省值是false.</entry></row>
+                    <row><entry>section-autolabel</entry><entry>缺省值false.</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <para>下面例子取自docbook-utils.dsl文件,"f"表示false,"t"表示true.对于PDF,chapter-autolabel为t,而section-autolabel为f,所以将它改成t,则PDF会对节也进行编号.</para>
+            <example id="exp.chap_customize.autonum_sect">
+                <title>Auto number section</title>
+                <programlisting>;;Enumerate Chapters?
+(define %chapter-autolabel%
+ #t)         含义:t = "true", f = "false"
+
+;;Do you want to print on both sides of the paper?
+(define %two-side% 
+ #t)
+
+;;Do you want enumerated sections? (E.g, 1.1, 1.1.1, 1.2, etc.)
+(define %section-autolabel% 
+ #f)</programlisting>
+            </example>
+            
+            <para>DocBook可以使用嵌套的section,同时也提供sect1到sect4的标记方法.优先考虑sect1~4的方法,这样可以比较容易识别当前的sect层次.</para>
+            <example id="exp.chap_customize.nest_sec">
+                <title>Section Representation</title>
+                <programlisting>&lt;section&gt;          &lt;sect1&gt;
+  &lt;section&gt;           &lt;sect2&gt;
+  &lt;/section&gt;          &lt;/sect2&gt;
+&lt;/section&gt;         &lt;/sect1&gt;</programlisting>
+            </example>
+            <para>如果使用FOP则要用到XSL中的param_section.autolabel选项,1表示编号.缺省下FOP的编号方式是Chapter1,1,1.1,1.1.2,等.如果要弄成Chapter1,1.1,1.1.2,则要将选项param_section.label.includes.component.label置成1</para>
+            
+            <table id="table.chap_customize.autolabel.xsl" frame="topbot">
+                <title>编号的XSL选项</title>
+                <tgroup cols="2">
+                    <colspec colwidth="2*" />
+                    <colspec colwidth="1*" />
+                <thead>
+                    <row><entry>Parameters</entry><entry>Notes</entry></row>
+                </thead>
+                
+                <tbody>
+                    <row><entry>param_section.autolabel</entry><entry>1表示编号,&lt;sect1&gt;编成1</entry></row>
+                    <row><entry>param_section.label.includes.component.label</entry><entry>1是将&lt;sect1&gt;编成1.1.</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <indexterm><primary>chm file</primary><secondary>numbering label</secondary></indexterm>
+            <para>For htmlhelp, it shared same options as HTML. In order to numbering .chm's Chapter on the left panel,
+            you need use htmlhelp-specific param_htmlhelp.autolabel; parameter with value 1.</para>
+        </sect1>
+        
+        <sect1>
+            <title>图表示例等的编号</title>
+            <para></para>
+        </sect1>
+        
+        <sect1>
+            <title>更改字体及大小</title>
+            <para></para>
+        </sect1>
     </chapter>
     
     <chapter id="chap_adv">
