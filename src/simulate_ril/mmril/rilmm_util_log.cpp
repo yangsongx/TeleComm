@@ -1,4 +1,15 @@
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include "rilmm_util_log.h"
+
+/* Maximum Buffer Size to Copy the Debug print */
+#define RILMM_BUFFER_MAX_SIZE  750
+
+/* Maximum Buffer Size to Copy the Debug print  and append function name and line number*/
+#define RILMM_SUPER_BUFFER_MAX_SIZE (RILMM_BUFFER_MAX_SIZE + 100 ) 
 
 void rilmm_log(RILMM_LOG_LEVEL level,...)
 {
@@ -12,24 +23,32 @@ void rilmm_log(RILMM_LOG_LEVEL level,...)
       char *fnc_name;
       char buffer[RILMM_BUFFER_MAX_SIZE];
       char super_buffer[RILMM_SUPER_BUFFER_MAX_SIZE];
+      char tmp[3200];
 
       va_start(argp,level);
       fnc_name = va_arg(argp,char*);
       format = va_arg(argp,char*);
 
 
+      strcpy(super_buffer, "-MMRIL-  ");
       //Reconstruct the Buffer
       vsnprintf(buffer,RILMM_BUFFER_MAX_SIZE,format,argp);
-      snprintf(super_buffer,RILMM_SUPER_BUFFER_MAX_SIZE,"%s %s",fnc_name,buffer);
+      snprintf(tmp,RILMM_SUPER_BUFFER_MAX_SIZE,"%s %s",fnc_name,buffer);
 
       switch(level)
       {   
          case RILM_LOG_LEVEL_DEBUG:
+            strcat(super_buffer, tmp);
             LOGD("%s",super_buffer);
             break;
+
          case RILM_LOG_LEVEL_ERROR:
+            strcat(super_buffer, "**Error** ");
+            strcat(super_buffer, tmp);
+
             LOGE("%s",super_buffer);
             break;
+
          case RILM_LOG_LEVEL_INFO:
             LOGI("%s",super_buffer);
             break;
@@ -40,7 +59,7 @@ void rilmm_log(RILMM_LOG_LEVEL level,...)
             break; 
       }   
 
-      LOGE("shit, still not implement below code!");
+      LOGE("shit, still not implement below code!\n");
 #if 0 
       if(log_params.PowerUpLog  == 1)
       {

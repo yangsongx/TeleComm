@@ -3,6 +3,8 @@
 
 /* Here put commonly-used constants by MM/LTE/CDMA RILs */
 
+#define RIL_REQUEST_SUPPORTED 1
+
 /* MM/LTE RIL define them in 2 hard copy, and named them in
    2 different enum type, here let them share the same.
  */
@@ -18,5 +20,8 @@ typedef enum {
 typedef RILMM_LOG_LEVEL RILM_LOG_LEVEL;
 
 #define LOGE(fmt,...)  fprintf(stderr, fmt, ##__VA_ARGS__)
+
+#define FOR_EACH(pos, elem, max) \
+            for(pos = 0; pos < max && elem[pos] != NULL; pos++)
 
 #endif
