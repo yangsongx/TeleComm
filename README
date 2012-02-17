@@ -9,3 +9,8 @@ src/
 
 
  git push -u origin  master
+
+
+[Get Code]
+(make $http_proxy if needs proxy]
+ git clone http://yangsongx@github.com/yangsongx/TeleComm.git
