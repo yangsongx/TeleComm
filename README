@@ -1,16 +1,29 @@
+[Get Code]
+(make $http_proxy if needs proxy]
+
+   git clone http://yangsongx@github.com/yangsongx/TeleComm.git
+
+[How to push]
+   git push -u origin master
+
+or,
+   git push -u origin branch_name 
+
+
+[Layout]
 
 TeleComm
 
-doc/
- - document
+  doc/ - document
+   +
+   |
+   +-- telecomm_and_msm8960/ - the reference and MSM8960 doc.
+                            As njred224 is down, all the doc's 
+                            config is dropped.
 
-src/
- - source code
+                            In the future, all stuff update would
+                            put in the github.com here.
 
+  src/
+    - source code
 
- git push -u origin  master
-
-
-[Get Code]
-(make $http_proxy if needs proxy]
- git clone http://yangsongx@github.com/yangsongx/TeleComm.git

@@ -1,0 +1,119 @@
+
+    <!-- ============= Glossary =================  -->
+    <glossary>
+        <title>Glossary</title>
+        <!--   N   -->
+        <glossdiv>
+            <title>N</title>
+            
+            <glossentry>
+                <glossterm>NAS</glossterm>
+                <glossdef>
+                    <para><emphasis>Network Access Service</emphasis></para>
+                </glossdef>
+            </glossentry>
+        </glossdiv>
+        
+        <!--   O   -->
+        <glossdiv>
+            <title>O</title>
+            
+            <glossentry>
+                <glossterm>ONCRPC</glossterm>
+                <glossdef>
+                    <para><emphasis>Open Network Computing RPC</emphasis></para>
+                </glossdef>
+            </glossentry>
+        </glossdiv>
+        
+        <!--   P   -->
+        <glossdiv>
+            <title>P</title>
+            
+            <glossentry>
+                <glossterm>PDS</glossterm>
+                <glossdef>
+                    <para><emphasis>Position Determination Service</emphasis></para>
+                </glossdef>
+            </glossentry>
+        </glossdiv>
+        
+        
+        <!--   Q   -->
+        <glossdiv>
+            <title>Q</title>
+            
+            <glossentry>
+                <glossterm>QCCI</glossterm>
+                <glossdef>
+                    <para><emphasis>QMI Common Client Interface</emphasis></para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry>
+                <glossterm>QMI</glossterm>
+                <glossdef>
+                    <para><emphasis><trademark class='registered'>QualComm</trademark> MSM<trademark></trademark> Interface</emphasis></para>
+                </glossdef>
+            </glossentry>
+        </glossdiv>
+        
+        <!--   R   -->
+        <glossdiv>
+            <title>R</title>
+            
+            <glossentry>
+                <glossterm>RmNet</glossterm>
+                <glossdef>
+                    <para>RmNet is a proprietary USB virtual Ethernet framework developed by Qualcomm for its mobile phone platforms.</para>
+                </glossdef>
+            </glossentry>
+
+            <glossentry>
+                <glossterm>RPM</glossterm>
+                <glossdef>
+                    <para><emphasis>Resource Power Manager</emphasis>, RPM had another abbre meaning: <emphasis>Redhat Package Manager</emphasis>,
+                    which is a Linux distribution related. term</para>
+                </glossdef>
+            </glossentry>
+            
+        </glossdiv>
+        <!--   S   -->
+        <glossdiv>
+            <title>S</title>
+            
+            <glossentry>
+                <glossterm>SMD</glossterm>
+            <glossdef>
+                <para><emphasis>Shared Memory Driver</emphasis></para> 
+            </glossdef>
+            </glossentry>
+            
+            <glossentry>
+                <glossterm>SMEM</glossterm>
+            <glossdef>
+                <para><emphasis>Shared MEmory Manager</emphasis></para> 
+            </glossdef>
+            </glossentry>
+            
+            <glossentry>
+                <glossterm>SMSM</glossterm>
+            <glossdef>
+                <para><emphasis>Shared Memory State Machine</emphasis></para> 
+            </glossdef>
+            </glossentry>
+        </glossdiv>
+        
+        <!--   W   -->
+        <glossdiv>
+            <title>W</title>
+            
+            <glossentry>
+                <glossterm>WDS</glossterm>
+                <glossdef>
+                    <para><emphasis>Wireless Data Service</emphasis></para>
+                </glossdef>
+            </glossentry>
+        </glossdiv>
+        
+    </glossary>

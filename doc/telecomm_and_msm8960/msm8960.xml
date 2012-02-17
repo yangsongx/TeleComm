@@ -1,0 +1,405 @@
+<?xml version="1.0"?>
+<!--
+ =======================
+   
+
+ =======================
+
+ [History]
+ 
+ 2012-02-06 Change focus on whole MSM8960, not only IPC!
+ 2011-01-10 Initial Creation
+ 
+-->
+<!DOCTYPE article SYSTEM "/usr/share/sgml/docbook/sgml-dtd-4.4-1.0-30.1/docbook.dtd"
+[
+<!ENTITY cmd_ping "<userinput>ping_mdm</userinput>">
+<!ENTITY section_glossary SYSTEM "glossary_section.xml">
+]>
+
+<article>
+    <title>QualComm MSM8960 Introduction</title>
+    <articleinfo>
+        
+        <authorgroup>
+        <author>
+            <firstname>Yang</firstname><surname>Songxiang</surname>
+                <address>
+                    <email>a22301@motorola.com</email>
+                </address>
+            
+        </author>
+        </authorgroup>
+        <copyright>
+            <year>2011</year>
+            <holder>Motorola Inc.</holder>
+        </copyright>
+
+        <abstract>
+            <para>This document introduced QualComm MSM8960 chipset, running on Android.</para>
+        </abstract>
+        
+    </articleinfo>
+    
+    <sect1>
+        <title>Overview</title>
+        
+        <para>The architecture for MSM8960 is different as Tegra. Below is a draft image for those 2 architeture:</para>
+        
+        <figure id="fig.arch.compare">
+            <title>IPC on Tegra and MSM8960</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata scale="70" align="center" fileref="./res/arch_compare.png" />
+                </imageobject>
+             </mediaobject>
+        </figure>
+        
+        <para>As MSM8960 can be consider as one single chipset containing both AP and BP. The IPC would be differet as
+        the product such as Hubble.</para>
+        
+        <para>Usually IPC methods on MSM8960 are:</para>
+        
+        <itemizedlist spacing="compact">
+            <listitem>
+                <para>SMD - Shared Memory Driver, similar as shared memory.</para>
+            </listitem>
+            <listitem>
+                <para>QMI - QualComm MSM Interface, QualComm specific protocol.</para>
+            </listitem>
+        </itemizedlist>
+         
+    </sect1>
+    
+    
+    <sect1>
+        <title>Boot and Init</title>
+        
+        <para>The boot mode points on MSM8960 are:</para>
+        <itemizedlist>
+            <listitem>
+                <para><userinput>ro.bootmode</userinput> property indicates current system boot mode, this is passed from <emphasis>Bootloader</emphasis>
+                to <emphasis>kernel</emphasis>, and <emphasis>kernel</emphasis> set it to userspace.</para>
+            </listitem>
+            <listitem>
+                <para>Different boot mode would export different driver, and different PID.</para>
+            </listitem>
+            <listitem>
+                <para><filename>init.qcom.sh/init.qcom.usb.rc</filename> scripts are used for the setting, final action is 
+                writting value on sysfs, to notify kernel change corresponding setting.</para>
+            </listitem>
+         </itemizedlist>
+         
+         <para>Moto also provided oem config command in fastboot, to set a boot mode:</para>
+         
+         <example>
+            <title>Setting boot mode</title>
+            <programlisting>fastboot oem config bootmode normal
+fastboot oem config bootmode bp-tools
+fastboot oem config bootmode factory</programlisting>
+         </example>
+         
+         <para>Those commands can be controlled in <filename>bootable/bootloader/lk/</filename>.</para>
+    </sect1>
+    
+    <!-- SMD -->
+    <sect1>
+        <title>SMD</title>
+        
+        <sect2>
+            <title>Driver Support</title>
+            
+            <para>Kernel driver support can be found at <filename>arch/arm/mach-msm/</filename> in kernel directory. The
+            <userinput>msm_smd</userinput> kernel module would take care of the SMD support at kernel level.</para>
+            
+            <para>We can simply consider the SMD driver as a similar driver like MUX used in Hubble:</para>
+            
+            <figure id="fig.smd_dev">
+                <title>SMD Driver Channels</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata scale="56" align="center" fileref="./res/smd_dev.png" />
+                </imageobject>
+             </mediaobject>
+            </figure>
+        
+            <para>Each channel(or port) would talk each specific functionality between AP and BP. These channels are allocated during
+            <userinput>msm_smd</userinput> module init. Here's the sample code from <filename>mach-msm/smd.c</filename>:</para>
+        
+            <example>
+                <title>SMD Channels Allocation</title>
+                <programlisting>#define <userinput>ID_CH_ALLOC_TBL</userinput> SMEM_CHANNEL_ALLOC_TBL
+static void smd_channel_probe_worker(struct work_struct *work)
+{
+  shared = <userinput>smem_find(ID_CH_ALLOC_TBL, sizeof(*shared) * 64);</userinput>
+  for (n = 0; n &lt; 64; n++) {
+    <userinput>smd_alloc_channel(&amp;shared[n]);</userinput>
+  }
+}</programlisting>
+            </example>
+            
+            <para>The detail information stored in <userinput>ID_CH_ALLOC_TBL</userinput> can be found from <xref linkend="qcom.smem.smd.interface.spec" />
+            (Chapter 5). Here only listed some channels:</para>
+            
+            <table frame="topbot">
+                <title>Some SMD Channels</title>
+            <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Channel</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>/dev/smd0</entry><entry>DS channel</entry></row>
+                    <row><entry>/dev/smd1</entry><entry>Diag channel</entry></row>
+                    <row><entry>/dev/smd7~26</entry><entry>Data-1~Data-20 channel</entry></row>
+                    <row><entry>/dev/smd36</entry><entry>Loopback, usually for testing/debugging.</entry></row>
+                </tbody>
+            </tgroup>
+            </table>
+        </sect2>
+        
+        <sect2>
+            <title>Talking via SMD</title>
+            
+            <para>Once driver setup the SMD support, the data exchange between AP and BP would be simple, just open
+            corresponding device and <userinput>read()/write()</userinput> it. Here is a simple demo:</para>
+            <figure id="fig.smd_io">
+                <title>SMD Data Exchange Scenario</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata scale="60" align="center" fileref="./res/smd_io.png" />
+                </imageobject>
+             </mediaobject>
+            </figure>
+            
+        </sect2>
+        
+        <sect2>
+            <title>Logging for SMD</title>
+            
+            <para><filename>/sys/module/smd/parameters/debug_mask</filename> can controlSMD/SMSM debug level run-time. It used
+            lower 4-bit for each debug/info level:</para>
+            <informalexample>
+                <programlisting><![CDATA[          3            2           1           0
+   +-------------------------------------------------+
+   | SMSM_INFO  |  SMD_INFO | SMSM_DEBUG | SMD_DEBUG |
+   +-------------------------------------------------+]]></programlisting>
+            </informalexample>
+
+            <para>Thus, 0x05 is turn on info/debug for SMD, while 0x0A is turn on info/debug for SMSM<footnote><para>arch/arm/mach-msm/smd.c is the implementation code.</para></footnote>.</para>
+
+            <example>
+                <title>Control SMD log level at run-time</title>
+                <programlisting># <userinput>echo "5">/sys/module/smd/parameters/debug_mask</userinput><lineannotation> Turn on DEBUG+INFO for SMD</lineannotation>
+# <userinput>echo "15">/sys/module/smd/parameters/debug_mask</userinput><lineannotation> This is turn on all level</lineannotation>
+# <userinput>echo "1">/sys/module/smd/parameters/debug_mask</userinput><lineannotation> Only turn on DEBUG for SMD</lineannotation></programlisting>
+            </example>
+
+            <para><filename>/dev/smem_log</filename> is the device containing SMD related log.</para>
+        </sect2>
+        
+    </sect1>
+    
+    <!-- MSM8960 Subsystem -->
+    <sect1>
+        <title>Subsystem</title>
+        
+        <sect2>
+            <title>Introduction</title>
+            
+            <para>As MSM8960 is single-chip, most of components are considered as a <emphasis>subsystem</emphasis>,
+            including the baseband modem(BP).</para>
+            <table frame="topbot">
+                <title>Subsystem in MSM8960</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Name</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>modem</entry><entry>BP</entry></row>
+                    <row><entry>lpass</entry><entry>???</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+        </sect2>
+        
+        <sect2>
+            <title>Notification</title>
+            
+            <para>Kernel provides a registration to let any client want to track the subsystem's state change, it's
+            actually adding callback functions.</para>
+            <example>
+                <title>Notification Sampe Code</title>
+                <programlisting>mach-msm/subsystem_notif.c
+void *subsys_notif_register_notifier(const char *subsys_name,
+         struct notifier_block *nt)
+{
+  subsys_notif_add_subsys(subsys_name);
+}
+int subsys_notif_unregister_notifier()
+{
+  srcu_notifier_chain_unregister();
+}</programlisting>
+            </example>
+            
+            <para><filename>mach-msm/qdsp6v2/apr.c</filename> is reference code how to use this notification feature, it
+            would define callback function, and pass it to subsystem:</para>
+            <example>
+                <title>How to registrate notification</title>
+                <programlisting>static struct notifier_block mnb = {
+  .notifier_call = modem_notifier_cb,
+};
+
+static int __init apr_late_init(void)
+{
+  subsys_notif_register_notifier("modem", &amp;mnb);
+  subsys_notif_register_notifier("lpass", &amp;lnb);
+}</programlisting>
+            </example>
+            
+            <para>After registrated, the callback would be triggered as long as <emphasis>modem</emphasis> or <emphasis>lpass</emphasis>
+            state changes,the notification type is a parameter in callback function:</para>
+            
+            <informalexample>
+                <programlisting>static int lpass_notifier_cb(unsigned long code ...)
+{
+  switch(code){
+    case SUBSYS_BEFORE_SHUTDOWN:
+      pr_debug("L-Notify: Shutdown started");
+      break;
+    case SUBSYS_AFTER_SHUTDOWN:
+      pr_debug("L-Notify: Shutdown Completed");
+      break;
+    case SUBSYS_BEFORE_POWERUP:
+      pr_debug("L-notify: Bootup started");
+      break;
+    case SUBSYS_AFTER_POWERUP:
+      pr_debug("L-Notify: Bootup Completed");
+      break;
+  }
+}</programlisting>
+            </informalexample>
+        </sect2>
+        
+        <sect2>
+            <title>Restart</title>
+            
+            <para><filename>mach-msm/subsystem_restart.c</filename> provided restart feature, and <userinput>EXPORT_SYMBOL</userinput>
+            API to let any client to call it.</para>
+            <example>
+                    <title>Restart Subsystem</title>
+                    <programlisting>int <userinput>subsystem_restart</userinput>(const char *subsys_name)
+{
+  pr_info("Restart sequence requested for %s, restart_level = %d.\n",
+           subsys_name, restart_level);
+  subsys = _find_subsystem(subsys_name);
+}</programlisting>
+            </example>
+            
+            <para>For example. if want to restart BP:</para>
+            <informalexample>
+                <programlisting><userinput>subsystem_restart</userinput>("modem");</programlisting>
+            </informalexample>
+        </sect2>
+    </sect1>
+    
+     <!-- QCRIL -->
+    <sect1>
+        <title>QCRIL</title>
+        
+        <para>QCRIL is a provided by QualComm. This is used in single-chip hardware(such as MSM8960). This is
+        a little different with the vendor RIL(i.e, moto-ril) we talked before.</para>
+
+        <sect2>
+            <title>Overview</title>
+            
+            <para><filename>vendor/qcom/proprietary/qcril/</filename> is usually the qcril code location. It includes
+            quite many components.</para>
+            
+            <para>We can only focus on 2 main components: <emphasis>qmi</emphasis> and <emphasis>hook_oem</emphasis>:</para>
+            <informalexample>
+                    <programlisting><![CDATA[ +------------------------------------+
+ | libril-qc-qmi-1.so (RIL_Init entry)|  --->  qcril/qcril_qmi/
+ +------------------------------------+
+                                                   
+ +------------------------------------+
+ | libril-qcril-hook-oem.so (HOOK OEM)|  --->  qcril/qcrilhook_oem/
+ +------------------------------------+]]></programlisting>
+            </informalexample>
+            
+            <para>The <emphasis>RIL_Init()</emphasis> entry point is in qmi.so, and the telephony requests are sending to
+            this .so file.</para>
+            
+            <para>As QualComm's design, qcril's logcat output can be controlled by a parameter:</para>
+            <informalexample>
+                <programlisting>persist.radio.adb_log_on <lineannotation>1 - open logcat, 0 -close</lineannotation></programlisting>
+            </informalexample>
+            <para>So, we need make sure <userinput>persist.radio.adb_log_on</userinput> is 1, to let logcat output contain
+            the qcril data.</para>
+            
+        </sect2>
+        
+        <sect2>
+            <title>HOOK OEM</title>
+            
+            <para>The HOOK OEM provides expansion on AP/BP IPC. For example, the Everest's moto-specific AT command(such as AT+FDORM)
+            can be implemented in the HOOK, as there's no such AT commands in MSM8960 QCRIL architecture.</para>
+            
+            <para>Some other HOOK in Everest, such as RDE(Radio Device Element), can also implemented via the QCRIL's HOOK.</para>
+            
+            <para>IKMSM8960BP-131</para>
+        </sect2>
+        
+    </sect1>
+    <appendix>
+        <title>About this Document</title>
+        
+        <para>This introduction article is just a draft and is subject to be changed, it's prefer to accept any comments/corrections
+        to let it be more accurate.</para>
+        
+        <para>So this document is version controlled by <emphasis>git</emphasis>, everyone can get the source file by:</para>
+        
+        <informalexample>
+            <programlisting>$ <userinput>git clone /proj/repo01/workspace/a22301/training_src</userinput></programlisting>
+        </informalexample>
+        
+        <para>It can generate pdf, html, and Windows word format as user like:</para>
+        
+        <informalexample>
+            <programlisting>$ <userinput>make pdf</userinput> <lineannotation>It's generating a PDF document</lineannotation>
+$ <userinput>make html</userinput> <lineannotation>Document is an HTML page</lineannotation>
+$ <userinput>make word</userinput> <lineannotation>It's Window's Word format(rtf).</lineannotation></programlisting>
+        </informalexample>
+        
+        <para>Any patch is welcome, and let's maintain this article together.</para>
+    </appendix>
+    
+     <bibliography>
+        <biblioentry id="qcom.smd.overview">
+            <title>Linux SMEM,SMSM, and SMD Overview</title>
+            <authorgroup><author><othername>80-VJ608-1</othername></author></authorgroup>
+            <publisher><publishername>QualComm</publishername></publisher>
+        </biblioentry>
+        
+        <biblioentry id="qcom.smem.smd.interface.spec">
+            <title>SMEM and SMD Interface Specification</title>
+            <authorgroup><author><othername>80-VM454-1</othername></author></authorgroup>
+            <publisher><publishername>QualComm</publishername></publisher>
+            
+        </biblioentry>
+        
+        <biblioentry id="qcom.smem.smd.proc_interface.spec">
+            <title>SMEM Processor Command Interface Specification</title>
+            <authorgroup><author><othername>80-VK224-1</othername></author></authorgroup>
+            <publisher><publishername>QualComm</publishername></publisher>
+            
+        </biblioentry>
+        
+    </bibliography>
+    
+    <!-- ============= Glossary =================  -->
+    &section_glossary; 
+</article>

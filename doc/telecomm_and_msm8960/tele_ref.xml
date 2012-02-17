@@ -1,0 +1,370 @@
+<?xml version="1.0"?>
+<!--
+ =======================
+  A general telephony Doc   
+
+ =======================
+
+ [History]
+ 2012-02-04 move qcril to msm8960.xml, since here doc is clean and indepent ref doc.
+ 2011-01-10 Initial Creation
+-->
+<!DOCTYPE article SYSTEM "/usr/share/sgml/docbook/sgml-dtd-4.4-1.0-30.1/docbook.dtd"
+[
+<!ENTITY cmd_ping "<userinput>ping_mdm</userinput>">
+<!ENTITY section_glossary SYSTEM "glossary_section.xml">
+<!ENTITY section_index SYSTEM "the_index.xml">
+]>
+
+<article>
+    <title>Android Telephony Reference Manual</title>
+    <articleinfo>
+        
+        <authorgroup>
+        <author>
+            <firstname>Yang</firstname><surname>Songxiang</surname>
+                <address>
+                    <email>a22301@motorola.com</email>
+                </address>
+            
+        </author>
+        </authorgroup>
+        <copyright>
+            <year>2012</year>
+            <holder>Motorola Inc.</holder>
+        </copyright>
+
+        <abstract>
+            <para>This document introduced telephony domain topics on Android platform. It aims
+            to provide a clean, and product-independent reference manual, but should mainly focus
+            on MSM8960.</para>
+            <para>Android OS version is 4.0(Icecream) and later.</para>
+        </abstract>
+        
+    </articleinfo>
+    
+    <sect1>
+        <title>Overview</title>
+        
+        <para>The whole telephony feature convers at least 3 layers:</para>
+        
+        <itemizedlist>
+            <listitem>
+                <para>App/Framework, which is high layer, as part of Android's source code.</para>
+            </listitem>
+            <listitem>
+                <para>Vendor RIL, which is middle layer, can be proprietary.</para>
+            </listitem>
+            <listitem>
+                <para>Baseband(BP), which is lower layer, usually be QualComm's.</para>
+            </listitem>
+        </itemizedlist>
+        
+         
+    </sect1>
+    
+    <!-- Upper app layer -->
+    <sect1>
+        <title>High App Layer</title>
+        
+        <sect2>
+            <title>Phone's Creation</title>
+            <para>Android uses <emphasis>Factory</emphasis> pattern to manage the phone object's creation. Below
+            is a sample code that <emphasis>PhoneFactory.java</emphasis> create the target phone object:</para>
+            
+            <example>
+                <title>Code Snippet for Phone Creation</title>
+                <programlisting>public static void makeDefaultPhone(Context context){
+  int networkMode = Settings.Secure.getInt(
+                    Settings.Secure.PREFERRED_NETWORK_MODE);
+  ril = new RIL(xxx, networkMode); <lineannotation>Creating RIL based on network type</lineannotation>
+  switch(networkMode){
+    case XXXX: GSMPhone();
+    case YYYY: CDMAPhone();
+  }
+}</programlisting>
+            </example>
+        </sect2>
+        
+        <sect2>
+            <title>Setup Data Call</title>
+            
+            <para>Kernel driver support can be found at <filename>arch/arm/mach-msm/</filename> in kernel directory. The
+            <userinput>msm_smd</userinput> kernel module would take care of the SMD support at kernel level.</para>
+            
+        </sect2>
+        
+        <sect2>
+            <title>FTM and Tools</title>
+            
+            <para>FTM can be considered as <emphasis>Field Test Menu</emphasis>, or <emphasis>Factory Test Mode</emphasis>.
+            It's usually doing data R/W with BP.</para>
+            
+            <para>Related tools are <emphasis>RadioComm</emphasis>, <emphasis>RSD</emphasis>, <emphasis>QPST</emphasis>.</para>
+        </sect2>
+        
+    </sect1>
+    
+    <!-- RIL Layer -->
+    <sect1>
+        <title>RIL Layer</title>
+        <sect2>
+            <title>Overal Layout</title>
+            <para>cover libril in hardware/ dir.</para>
+        </sect2>
+        
+        <sect2>
+            <title>Entry Point</title>
+            <para></para>
+        </sect2>
+        
+    </sect1>
+    
+    <sect1>
+        <title>QualComm BP</title>
+        
+        <sect2>
+            <title>AT Commands</title>
+            <para>For non-single-chip hardware, most of data was exchanged via AT commands. Some of them are
+            3gpp standard, and some are moto-specific, or QualComm-specific.</para>
+            
+            <para>Here lists these commands' referenc information.</para>
+            
+            <sect3>
+                <title>CIEV</title>
+                
+                <para>The +CIEV indicates a call(voice, or data)'s connection status. Usually, it's a unsolicit
+                msg, and Moto code uses <userinput>~+CIEV</userinput> to mark as a unsolicit msg.</para>
+                
+                    <indexterm>
+                        <primary>CIEV</primary>
+                    </indexterm>
+                <para>There're totally 3 fields in CIEV:</para>
+                
+                <informalexample>
+                    <programlisting>~+CIEV=calltype,status,reason</programlisting>
+                </informalexample>
+                
+                <para>The code is in mot_rsl layer, below is the code snippet:</para>
+                <example>
+                    <title>Mot-RSL processing +CIEV</title>
+                    <programlisting>void mot_rsl_at_send_ciev(mot_rsl_at_clcc_call_id_type calltype,
+    mot_rsl_at_ciev_call_status_type status,
+    mot_rsl_at_ciev_reason_code_type reason)</programlisting>
+                </example>
+                
+                
+                <table frame="topbot">
+                    <title>calltype Field</title>
+                    <tgroup cols="2">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>1</entry><entry>MOT_RSL_AT_CLCC_ID_VOICE</entry></row>
+                    <row><entry>2</entry><entry>MOT_RSL_AT_CLCC_ID_DATA_1X</entry></row>
+                    <row><entry>3</entry><entry>MOT_RSL_AT_CLCC_ID_DATA_DO</entry></row>
+                    <row><entry>4</entry><entry>MOT_RSL_AT_CLCC_ID_DATA_GPRS</entry></row>
+                    <row><entry>5</entry><entry>MOT_RSL_AT_CLCC_ID_DATA_WCDMA</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+                <para>For calling someone, the <userinput>calltype</userinput> always be 1.</para>
+                
+                <table frame="topbot">
+                    <title>status Filed</title>
+                    <tgroup cols="2">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>0</entry><entry>MOT_RSL_AT_CIEV_CALL_ENDED</entry></row>
+                    <row><entry>1</entry><entry>MOT_RSL_AT_CIEV_CALL_DIALING</entry></row>
+                    <row><entry>2</entry><entry>MOT_RSL_AT_CIEV_CALL_CONNECTED</entry></row>
+                    <row><entry>3</entry><entry>MOT_RSL_AT_CIEV_CALL_BUSY</entry></row>
+                    <row><entry>4</entry><entry>MOT_RSL_AT_CIEV_CALL_INCOMING</entry></row>
+                    <row><entry>5</entry><entry>MOT_RSL_AT_CIEV_CALL_DORMANT</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+                
+                
+                <table frame="topbot">
+                    <title>reason Field</title>
+                    <tgroup cols="2">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>0</entry><entry>MOT_RSL_AT_CIEV_REASON_NORMAL</entry></row>
+                    <row><entry>1</entry><entry>MOT_RSL_AT_CIEV_REASON_DROP</entry></row>
+                    <row><entry>2</entry><entry>MOT_RSL_AT_CIEV_REASON_FAIL</entry></row>
+                    <row><entry>3</entry><entry>MOT_RSL_AT_CIEV_REASON_NO_CARRIER</entry></row>
+                    <row><entry>4</entry><entry>MOT_RSL_AT_CIEV_REASON_BUSY</entry></row>
+                    <row><entry>5</entry><entry>MOT_RSL_AT_CIEV_REASON_FAILED_AUTH</entry></row>
+                    <row><entry>6</entry><entry>MOT_RSL_AT_CIEV_REASON_OTHER</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+            </sect3>
+            
+            <sect3>
+                <title>CREG</title>
+                <para><emphasis>AT+CREG</emphasis> indicates the registration information, the first 2 fields are
+                most important.</para>
+                    <indexterm>
+                        <primary>CREG</primary>
+                    </indexterm>
+                <para>There're 10-digit value for the +CREG. They had different meaning for GSM and CDMA network.</para>
+                <para>For GSM, the last 5-digit value are all 0, while CDMA used all fields:</para>
+                
+                <informalexample>
+                        <programlisting><lineannotation>+CREG for CDMA</lineannotation>
+regStatus,RadioTech, baseID,  baseLat,  baseLong,
+   SID,      NID,   Roam_Ind,PRL_match,  EVDO_rev
+
+<lineannotation>+CREG for GSM/UMTS(Last 5-digit are all 0):</lineannotation>
+regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
+                </informalexample>
+                
+                <para>The reference code level can be found at mot_sys:</para>
+                <example>
+                        <title>Code for +CREG</title>
+                        <programlisting>mot_at_cmd_status_type mot_sys_at_exec_creg_cmd()
+{
+  if (mot_rsl_is_cdma_mode()){
+    sprintf((char*)res_buff_ptr->data_ptr,
+      "%s=%d,%d,%d,%ld,%ld,%d,%d,%d,%d,%d\n", tok_ptr->name, rsl.reg.creg, 
+      rsl.sys_mode.camp_mode, rsl.bs.bs_id, bs_lat.s, bs_long.s, rsl.bs.bs_sid, 
+      rsl.bs.bs_nid, roam_ind,rsl.reg.prl_match,rsl.sys_mode.evdo_rev );
+  } else if (mot_rsl_is_gsm_mode()){
+    sprintf((char*)res_buff_ptr->data_ptr,
+      "%s=%d,%d,%04X,%08lX,%d,0,0,0,0,0\n", tok_ptr->name, rsl.reg.creg,
+      rsl.sys_mode.camp_mode, rsl.ss_info.sys_id.id.plmn_lac.lac,
+      (rsl.ss_info.cell_info.cell_id > 0x7FFFFFFF) ? 0x7FFFFFFF 
+            :rsl.ss_info.cell_info.cell_id,
+      rsl.ss_info.reg_reject_info.reject_cause);
+  }
+  
+}</programlisting>
+                </example>
+                <para>1st field is registration result, mot_rsl_reg_status_e_type is the enum definition</para>
+                <table frame="topbot">
+                    <title>1st Field - Registration Result</title>
+                    <tgroup cols="2">
+                
+                <thead>
+                    <row><entry>Value</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>MOT_RSL_AT_NET_REG_NO_SERVICE(0)</entry><entry>Not registered, not searching</entry></row>
+                    <row><entry>MOT_RSL_AT_NET_REG_HOME(1)</entry><entry>Registered on home network</entry></row>
+                    <row><entry>MOT_RSL_AT_NET_REG_SEARCHING(2)</entry><entry>Not registered, searching</entry></row>
+                    <row><entry>MOT_RSL_AT_NET_REG_DENIED(3)</entry><entry>Registration denied</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+                
+                <para>The 2nd field is RAT(Radio Access Technology), it's mot_rsl_sys_mode_type enum. This enum is mapped
+                from QualComm's <userinput>sys_mode</userinput>.</para>
+                
+                <para>Usually, the higer value, the higer network type.</para>
+                <table frame="topbot">
+                    <title>2nd field in +CREG(RAT)</title>
+                    <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="1*" />
+                <thead>
+                    <row><entry>Value</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>MOT_RSL_SYS_MODE_NO_SERVICE(0)</entry><entry>MOT_RSL_SYS_MODE_1X(1)</entry></row>
+                    <row><entry>MOT_RSL_SYS_MODE_EVDO(2)</entry><entry>MOT_RSL_SYS_MODE_CDMA_ONLY(3)</entry></row>
+                    <row><entry>MOT_RSL_SYS_MODE_GPRS(6)</entry><entry>MOT_RSL_SYS_MODE_EDGE(7)</entry></row>
+                    <row><entry>MOT_RSL_SYS_MODE_UMTS(8)</entry><entry>MOT_RSL_SYS_MODE_HSUPA(10)</entry></row>
+                    <row><entry>MOT_RSL_SYS_MODE_HSDPA_HSUPA(11)</entry><entry>MOT_RSL_SYS_MODE_HSDPAPLUS(12)</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+            </sect3>
+            
+            
+            <sect3>
+                <title>COPS</title>
+                <para></para>
+                    <indexterm>
+                        <primary>COPS</primary>
+                    </indexterm>
+                <para></para>
+            </sect3>
+            <sect3>
+                <title>RSSI</title>
+                
+                <para>Received Signal Strength Indication(RSSI) is unsolicit message, indicating the signal strength. </para>
+                
+                <para>Moto handles it in mot_sys layer, different network type, would result in different fields meaning:</para>
+                
+                <example>
+                    <title>+RSSI Fields Processing in mot_sys</title>
+                    <programlisting>void  mot_sys_send_rssi()
+{
+  if (mot_rsl_is_cdma_mode()){
+    get_rf_power();
+    sprintf(curr_rssi_cmd, "~+RSSI=%d,%d,%d,%d,%d,%d,%d\n",
+      cdma_bar, cdma_ecio, cdma_rssi, hdr_bar,  
+      hdr_sinr,  hdr_ec, hdr_ecio);
+  } else if(mot_rsl_is_gsm_mode()){
+    get_gsm_rf_power();
+    sprintf(curr_rssi_cmd, "~+RSSI=%d,%d,%d,%d,0,0,0\n",
+       gsm_bar, gsm_rssi, gsm_ber, SIG_BAR_NO_SRV);
+  }
+}</programlisting>
+                </example>
+                
+                    <indexterm>
+                        <primary>RSSI</primary>
+                    </indexterm>
+                <para></para>
+            </sect3>
+        </sect2>
+        
+        <sect2>
+            <title>Sys Mode</title>
+            <para></para>
+                    <indexterm>
+                        <primary>sys_mode</primary>
+                    </indexterm>
+                    
+            <table frame="topbot">
+                <title>sys_mode values</title>
+            <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="1*" />
+                <thead>
+                    <row><entry>value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>SYS_SYS_MODE_NO_SRV 0</entry><entry>SYS_SYS_MODE_AMPS 1</entry></row>
+                    <row><entry>SYS_SYS_MODE_CDMA 2</entry><entry>SYS_SYS_MODE_GSM  3</entry></row>
+                    <row><entry>SYS_SYS_MODE_HDR 4</entry><entry>SYS_SYS_MODE_WCDMA 5</entry></row>
+                    <row><entry>SYS_SYS_MODE_GPS 6</entry><entry>SYS_SYS_MODE_GW 7 (GSM+WCDMA)</entry></row>
+                    <row><entry>SYS_SYS_MODE_WLAN 8</entry><entry>SYS_SYS_MODE_LTE 9</entry></row>
+                    <row><entry>SYS_SYS_MODE_GWL 10(GSM+WCDMA+LTE)</entry><entry>SYS_SYS_MODE_TDS 11</entry></row>
+                </tbody>
+            </tgroup>
+            </table>
+        </sect2>
+    </sect1>
+    <!-- ============= Glossary =================  -->
+    &section_glossary;
+
+    <!-- index -->
+    &section_index;
+    
+</article>
