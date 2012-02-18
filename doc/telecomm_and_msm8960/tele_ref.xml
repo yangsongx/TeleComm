@@ -11,7 +11,7 @@
  2012-02-04 move qcril to msm8960.xml, since here doc is clean and indepent ref doc.
  2011-01-10 Initial Creation
 -->
-<!DOCTYPE article SYSTEM "/usr/share/sgml/docbook/sgml-dtd-4.5/docbook.dtd"
+<!DOCTYPE article SYSTEM "/usr/share/sgml/docbook/sgml-dtd-4.4-1.0-30.1/docbook.dtd"
 [
 <!ENTITY cmd_ping "<userinput>ping_mdm</userinput>">
 <!ENTITY section_glossary SYSTEM "glossary_section.xml">
@@ -124,6 +124,66 @@
     
     <sect1>
         <title>QualComm BP</title>
+        
+        <sect2>
+            <title>Telecom Terminology</title>
+            <sect3>
+                <title>ESN/MEID/IMEI</title>
+                
+                <para>These 3 IDs all identify the mobile phone device.</para>
+                
+                <itemizedlist>
+                    
+                    <listitem>
+                    <para>Electronic Serial Number(ESN), 4-byte(32-bit) value, oldest identify method.</para>
+                    </listitem>
+                    
+                    <listitem>
+                    <para>Mobile Equipment IDentifier(MEID), as ESN length is too short, MEID uses longer 7-byte to
+                    identify a mobile device. It can be in both hex and dec format, and prefer <emphasis>CDMA</emphasis>.</para>
+                    </listitem>
+                    
+                    <listitem>
+                    <para>International Mobile Equipment Identity(IMEI), prefer <emphasis>GSM/UMTS</emphasis>, it only in dec format,
+                    using a 15-digit(NOT 15-bit) dec number.</para>
+                    </listitem>
+                    
+                </itemizedlist>
+                
+                <para>These ID can be found at phone back-side, or press <userinput>*#06#</userinput> to show them
+                in the pop-up menu. Below is result on <emphasis>Moto Droid2</emphasis>:</para>
+                
+                <figure>
+                    <title>Pop-up Menu of MEID(CDMA)</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata scale="50" fileref="res/meid.png" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+                
+                <para>In order to keep back compatibility, ESN/MEID is co-exist in the system. And if ESN is starting
+                with <userinput>0x80</userinput>, it means the MEID is enabled.</para>
+                
+                <para>For example, the <emphasis>ZTE CDMA</emphasis> phone's pop-up menu would show the dec/hex ESN number,
+                keep MEID be ZERO:</para>
+                <informalexample>
+                    <programlisting>ESN (Hex)A715FE84  (Dec)16701441412
+MEID 00000000000000</programlisting>
+                </informalexample>
+                
+                <para>For thoes GSM/UMTS mode phone, IMEI would prefered, so <userinput>*#06#</userinput> pop-up menu
+                would show IMEI instead of MEID, below is result on <emphasis>Moto Milestone</emphasis>:</para>
+                <figure>
+                    <title>Pop-up Menu of IMEI(GSM)</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata scale="50" fileref="res/imei.png" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+            </sect3>
+        </sect2>
         
         <sect2>
             <title>AT Commands</title>
@@ -335,6 +395,7 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
                 <para></para>
             </sect3>
         </sect2>
+        
         
         <sect2>
             <title>Sys Mode</title>
