@@ -6,10 +6,12 @@
  =======================
 
  [History]
+ 2012-02-18 /usr/share/sgml/docbook/sgml-dtd-4.4-1.0-30.1/docbook.dtd is moto machine
+             while "/usr/share/sgml/docbook/sgml-dtd-4.5/docbook.dtd" is my home config.
  2012-02-04 move qcril to msm8960.xml, since here doc is clean and indepent ref doc.
  2011-01-10 Initial Creation
 -->
-<!DOCTYPE article SYSTEM "/usr/share/sgml/docbook/sgml-dtd-4.4-1.0-30.1/docbook.dtd"
+<!DOCTYPE article SYSTEM "/usr/share/sgml/docbook/sgml-dtd-4.5/docbook.dtd"
 [
 <!ENTITY cmd_ping "<userinput>ping_mdm</userinput>">
 <!ENTITY section_glossary SYSTEM "glossary_section.xml">
