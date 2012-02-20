@@ -303,6 +303,29 @@ static int __init apr_late_init(void)
             <informalexample>
                 <programlisting><userinput>subsystem_restart</userinput>("modem");</programlisting>
             </informalexample>
+            
+            <para>There's a <emphasis>restart level</emphasis> to indicate different level of a restart process. Kernel defined
+            it as a enum.</para>
+            
+            <table frame="topbot">
+                <title>restart level</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>level</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>RESET_SOC (1)</entry><entry></entry></row>
+                    <row><entry>RESET_SUBSYS_COUPLED (2)</entry><entry>???</entry></row>
+                    <row><entry>RESET_SUBSYS_INDEPENDENT (3)</entry><entry>???</entry></row>
+                    <row><entry>RESET_SUBSYS_MIXED (25)</entry><entry>???</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <para><filename>/sys/module/subsystem_restart/parameters/restart_level</filename> is the flag of the level value, which
+            can be read/write by command.</para>
         </sect2>
     </sect1>
     
@@ -402,4 +425,4 @@ $ <userinput>make word</userinput> <lineannotation>It's Window's Word format(rtf
     
     <!-- ============= Glossary =================  -->
     &section_glossary; 
-</article>
+</article

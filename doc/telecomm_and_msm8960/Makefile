@@ -1,16 +1,18 @@
-# Makefile for documentation
+# Makefile for telecom reference document
 #
 # [Usage]
-# make pdf  - create pdf doc
-# make html - create HTML doc
+# make tele  - create telecom reference pdf doc
+# make pdf   - create MSM8960 pdf doc
 #
 #
 
 HOST_CHECK = $(shell uname -n)
-OK_TO_BUILD = $(filter njred224,$(HOST_CHECK))
+TARGET_BUILD_MACHINE = njred224 gaorong
+
+OK_TO_BUILD = $(filter $(TARGET_BUILD_MACHINE),$(HOST_CHECK))
 
 ifeq ($(OK_TO_BUILD),)
-$(warning "The preferred doc build machine is njred224, the host is $(HOST_CHECK)")
+$(warning "The preferred doc build machine is $(TARGET_BUILD_MACHINE), the host is $(HOST_CHECK)")
 endif
 
 SRC=msm8960.xml

@@ -23,19 +23,76 @@
 
 <indexentry>
   <primaryie>CIEV,
-    <ulink url="x59.html#AEN101" role="AEN105">CIEV</ulink>
+    <ulink url="x57.html#AEN147" role="AEN151">CIEV</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>COPS,
-    <ulink url="x59.html#AEN265" role="AEN268">COPS</ulink>
+    <ulink url="x57.html#AEN311" role="AEN314">COPS</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>CREG,
-    <ulink url="x59.html#AEN200" role="AEN204">CREG</ulink>
+    <ulink url="x57.html#AEN246" role="AEN250">CREG</ulink>
+  </primaryie>
+</indexentry>
+
+</indexdiv>
+<indexdiv><title>E</title>
+
+<indexentry>
+  <primaryie>ESN,
+    <ulink url="x57.html#AEN61" role="AEN63">ESN/MEID/IMEI</ulink>
+  </primaryie>
+</indexentry>
+
+</indexdiv>
+<indexdiv><title>I</title>
+
+<indexentry>
+  <primaryie>IMEI,
+    <ulink url="x57.html#AEN61" role="AEN67">ESN/MEID/IMEI</ulink>
+  </primaryie>
+</indexentry>
+
+</indexdiv>
+<indexdiv><title>M</title>
+
+<indexentry>
+  <primaryie>MCC,
+    <ulink url="x57.html#AEN119" role="AEN121">MCC/MNC/PLMN</ulink>
+  </primaryie>
+</indexentry>
+
+<indexentry>
+  <primaryie>MEID,
+    <ulink url="x57.html#AEN61" role="AEN65">ESN/MEID/IMEI</ulink>
+  </primaryie>
+</indexentry>
+
+<indexentry>
+  <primaryie>MNC,
+    <ulink url="x57.html#AEN119" role="AEN123">MCC/MNC/PLMN</ulink>
+  </primaryie>
+</indexentry>
+
+</indexdiv>
+<indexdiv><title>N</title>
+
+<indexentry>
+  <primaryie>nv_items_enum_type,
+    <ulink url="x57.html#AEN360" role="AEN367">NV Items</ulink>
+  </primaryie>
+</indexentry>
+
+</indexdiv>
+<indexdiv><title>P</title>
+
+<indexentry>
+  <primaryie>PLMN,
+    <ulink url="x57.html#AEN119" role="AEN125">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -44,7 +101,7 @@
 
 <indexentry>
   <primaryie>RSSI,
-    <ulink url="x59.html#AEN271" role="AEN278">RSSI</ulink>
+    <ulink url="x57.html#AEN317" role="AEN324">RSSI</ulink>
   </primaryie>
 </indexentry>
 
@@ -53,7 +110,7 @@
 
 <indexentry>
   <primaryie>sys_mode,
-    <ulink url="x59.html#AEN281" role="AEN284">Sys Mode</ulink>
+    <ulink url="x57.html#AEN327" role="AEN330">Sys Mode</ulink>
   </primaryie>
 </indexentry>
 

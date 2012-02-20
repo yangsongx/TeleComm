@@ -91,8 +91,7 @@
         <sect2>
             <title>Setup Data Call</title>
             
-            <para>Kernel driver support can be found at <filename>arch/arm/mach-msm/</filename> in kernel directory. The
-            <userinput>msm_smd</userinput> kernel module would take care of the SMD support at kernel level.</para>
+            <para>add the RIL setup data call req here.</para>
             
         </sect2>
         
@@ -111,7 +110,7 @@
     <sect1>
         <title>RIL Layer</title>
         <sect2>
-            <title>Overal Layout</title>
+            <title>Overall Layout</title>
             <para>cover libril in hardware/ dir.</para>
         </sect2>
         
@@ -124,12 +123,14 @@
     
     <sect1>
         <title>QualComm BP</title>
-        
+        <!-- Telecom Terminology -->
         <sect2>
             <title>Telecom Terminology</title>
             <sect3>
                 <title>ESN/MEID/IMEI</title>
-                
+                    <indexterm><primary>ESN</primary></indexterm>
+                    <indexterm><primary>MEID</primary></indexterm>
+                    <indexterm><primary>IMEI</primary></indexterm>
                 <para>These 3 IDs all identify the mobile phone device.</para>
                 
                 <itemizedlist>
@@ -151,7 +152,7 @@
                 </itemizedlist>
                 
                 <para>These ID can be found at phone back-side, or press <userinput>*#06#</userinput> to show them
-                in the pop-up menu. Below is result on <emphasis>Moto Droid2</emphasis>:</para>
+                in the pop-up menu(3gpp protocol). Below is result on <emphasis>Moto Droid2</emphasis>:</para>
                 
                 <figure>
                     <title>Pop-up Menu of MEID(CDMA)</title>
@@ -182,9 +183,71 @@ MEID 00000000000000</programlisting>
                         </imageobject>
                     </mediaobject>
                 </figure>
+                
+                <para>QualComm stored above IDs in NV items:</para>
+                 <table frame="topbot">
+                    <title>NV Items for ESN/MEID/IMEI</title>
+                    <tgroup cols="2">
+                <thead>
+                    <row><entry>NV ID</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>NV_ESN_I(0)</entry><entry>ESN</entry></row>
+                    <row><entry>NV_MEID_I(1943)</entry><entry>MEID</entry></row>
+                    <row><entry>NV_UE_IMEI_I(550)</entry><entry>IMEI</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+            </sect3>
+            
+            <!-- MCC/MNC/PLMN -->
+            <sect3>
+                <title>MCC/MNC/PLMN</title>
+                
+                    <indexterm><primary>MCC</primary></indexterm>
+                    <indexterm><primary>MNC</primary></indexterm>
+                    <indexterm><primary>PLMN</primary></indexterm>
+                <para>These 3 IDs indicating a country's network type.</para>
+                <itemizedlist>
+                    
+                    <listitem>
+                    <para>Mobile Country Code(MCC), 3-digit number, specify a country.</para>
+                    </listitem>
+                    
+                    <listitem>
+                    <para>Mobile Netowrk Code(MNC), 2-digit(European) or 3-digit(North America), specify a network operator.</para>
+                    </listitem>
+                    
+                    <listitem>
+                    <para>Public Land Mobile Network(PLMN), is <userinput>MCC+MNC</userinput>, identify an unique network.</para>
+                    </listitem>
+                    
+                </itemizedlist>
+                
+                <para>3gpp defines the PLMN number composed by 3-byte:</para>
+                <informalexample>
+                    <programlisting><![CDATA[           |  8  |  7  |  6  |  5  |  4  |  3  |  2  |  1  |
+           |===============================================|
+   octet 1 |      MCC Digit 2      |      MCC Digit 1      |
+           |-----------------------------------------------|
+   octet 2 |      MNC Digit 3      |      MCC Digit 3      |
+           |-----------------------------------------------|
+   octet 3 |      MNC Digit 2      |      MNC Digit 1      |
+           |===============================================|]]></programlisting>
+                </informalexample>
+                
+                <para>So QualComm code defined it in struct like this:</para>
+                
+                <example>
+                    <title>QualComm PLMN ID definition</title>
+                    <programlisting>typedef struct sys_plmn_id_s{
+  byte  identity[3];
+} sys_plmn_id_s_type;</programlisting>
+                </example>
             </sect3>
         </sect2>
         
+        <!-- AT Commands -->
         <sect2>
             <title>AT Commands</title>
             <para>For non-single-chip hardware, most of data was exchanged via AT commands. Some of them are
@@ -423,6 +486,83 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
             </tgroup>
             </table>
         </sect2>
+        
+        <sect2>
+            <title>NV Items</title>
+            
+            <para>The <emphasis>NV Items</emphasis> stored most of the BP-related config on the phone. They are specified
+            by numerical number(NV ID), and QualComm uses <userinput>nv_items_enum_type</userinput> enum to represent it.</para>
+            
+            <para>Usually, Motorola extended the nv item, adding own items as well. To avoid conflict, these
+            moto-specific items are began from offset <userinput>8000</userinput>:</para>
+            
+                <indexterm><primary>nv_items_enum_type</primary></indexterm>
+            <informalexample>
+                <programlisting> 1023 typedef enum {
+ 1024 
+ 1025   NV_ESN_I                     = 0,
+ 1026   NV_ESN_CHKSUM_I              = 1,
+ 8205   NV_MAX_I                     = 7225
+ 8207 #ifdef MOT_FEATURE_MOT_NV
+ 8208   ,
+ 8209   MOT_NV_FIRST_I             = 8000,
+ 8210   MOT_NV_FIELD_TEST_ENABLE_I = MOT_NV_FIRST_I,
+ 8211   MOT_NV_IN_FACTORY_I        = MOT_NV_FIRST_I+1,
+ ...    ...
+ } nv_items_enum_type;</programlisting>
+            </informalexample>
+            
+            <para><filename>core/api/services/nv_items.h</filename> is the header defined all the NV items IDs, and their inner
+            data structure.</para>
+            <para>As so many IDs, and so many different structure for each ID, QualComm combines all these stuff into an union
+            data type, <userinput>nv_item_type</userinput>.</para>
+            
+            <table frame="topbot">
+                <title>NV Items Info</title>
+            <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Field</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>Definition Header</entry><entry>core/api/services/nv_items.h</entry></row>
+                    <row><entry>Source Code</entry><entry>core/services/nv/</entry></row>
+                    <row><entry>ID</entry><entry>nv_items_enum_type, enum number</entry></row>
+                    <row><entry>Data Structure</entry><entry>nv_item_type, union.</entry></row>
+                    <row><entry>Moto Extend</entry><entry>start from offset 8000.</entry></row>
+                </tbody>
+            </tgroup>
+            </table>
+            <sect3>
+                <title>Read/Write NV Items</title>
+                
+                <para>QualComm allows read/write NV items through diag packet, and it defines a read/write protocol in diag specification.</para>
+                
+                <para>The read/write action would finally be dispatched to R/W the EFS <filename>/nvm/ID</filename> data.</para>
+                
+                <para>The draft logic flow is like this:</para>
+                <informalexample>
+                    <programlisting><![CDATA[
+                 +----------+                      +----------+
+ R/W diag req -> | nvdiag.c | --> nvio.c --------> | /nvm/xx/ |
+                 +----------+            (EFS API) +----------+]]></programlisting>
+                </informalexample>
+                <para>Sometimes, we met the <emphasis>Inactive Items</emphasis> error when read a item, this is usually caused because there's
+                no the NV ID file there, below is a sample code for this case:</para>
+                <example>
+                    <title>Inactive Item Cases</title>
+                    <programlisting>nvio_read_item(nv_items_enum_type item, void *data_ptr,){
+  snprintf(f_name,sizeof(f_name),"/nvm/num/%d",item);
+  <userinput>if(efs_stat(f_name,&amp;temp_buf) == -1)
+    return NV_NOTACTIVE_S;</userinput>
+    
+  status = efs_get(f_name, data_ptr, item_size);
+  return status;
+}</programlisting>
+                </example>
+            </sect3>
+        </sect2>
     </sect1>
     <!-- ============= Glossary =================  -->
     &section_glossary;
@@ -430,4 +570,4 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
     <!-- index -->
     &section_index;
     
-</article>
+</article>
