@@ -52,7 +52,7 @@
         
         <itemizedlist>
             <listitem>
-                <para>App/Framework, which is high layer, as part of Android's source code.</para>
+                <para>App/Framework/Base RIL, which is high layer, as part of Android's source code.</para>
             </listitem>
             <listitem>
                 <para>Vendor RIL, which is middle layer, can be proprietary.</para>
@@ -62,15 +62,16 @@
             </listitem>
         </itemizedlist>
         
-         
+        <para>The whole 3 layer composed the telephony feature, on Android system.</para> 
     </sect1>
     
     <!-- Upper app layer -->
     <sect1>
         <title>High App Layer</title>
         
+        <!-- Phone Creation-->
         <sect2>
-            <title>Phone's Creation</title>
+            <title>Phone Creation</title>
             <para>Android uses <emphasis>Factory</emphasis> pattern to manage the phone object's creation. Below
             is a sample code that <emphasis>PhoneFactory.java</emphasis> create the target phone object:</para>
             
@@ -86,12 +87,64 @@
   }
 }</programlisting>
             </example>
+            
+            <para><emphasis>Radio State</emphasis> is used indicating current <emphasis>BP Machine</emphasis> status,
+            because phone is definitely power on, of courese.</para>
+            
+            <para>Thus, the initial radio state should be <emphasis>unavailable</emphasis>, NOT <emphasis>power off</emphasis>,
+            because phone didn't know the BP is on or off, or even not exist at all.</para>
+            
+                <indexterm><primary>RIL_RadioState</primary></indexterm>
+            <para>Radio state is defined as <userinput>RIL_RadioState</userinput> enum by RIL, and below is it's value:</para>
+            
+            <table frame="topbot">
+                <title>Radio State Value</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Radio Value</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>RADIO_STATE_OFF(0)</entry><entry>Radio explictly powered off (eg CFUN=0)</entry></row>
+                    <row><entry>RADIO_STATE_UNAVAILABLE(1)</entry><entry>Unknow state, radio is resetting or others.</entry></row>
+                    <row><entry>RADIO_STATE_ON(10)</entry><entry></entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <note><para>The radio state legacy value 2~9 is obsolted from Android 4.0.</para></note>
+            
+            <para>RIL defined some req/unsol msg for the radio, to help upper layer and lower layer can exchange the radio
+            state correctly:</para>
+            <table frame="topbot">
+                <title>Radio State Related RIL msg</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Msg</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>RIL_REQUEST_RADIO_POWER(23)</entry><entry>Toggle radio on and off (for "airplane" mode)</entry></row>
+                    <row><entry>RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED(1000)</entry><entry>Indicate Radio State changed.</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
         </sect2>
         
+        <!-- Voice Call -->
+        <sect2>
+            <title>Voice Call</title>
+            <para>App uses <userinput>VOICE_REGISTRATION_STATE</userinput> to query current voice registration state. RIL would
+            get this request, and send back the state to app.</para>
+        </sect2>
+        
+        <!-- Setup Data Call -->
         <sect2>
             <title>Setup Data Call</title>
             
-            <para>add the RIL setup data call req here.</para>
+            <para>add the RIL setup data call req here. DATA_REGISTRATION_STATE </para>
             
         </sect2>
         
@@ -119,6 +172,61 @@
             <para></para>
         </sect2>
         
+        <sect2>
+            <title>RIL Version</title>
+            
+            <para>The <emphasis>RIL version</emphasis> composed by 2 parts:</para>
+            <itemizedlist>
+            <listitem>
+                <para>Android Base RIL Version,.</para>
+            </listitem>
+            <listitem>
+                <para>Vendor RIL Version.</para>
+            </listitem>
+
+            </itemizedlist>
+        </sect2>
+        <!-- SIM Card Support -->
+        <sect2>
+            <title>SIM Card Support</title>
+            
+            <para>The basic and generic information of a SIM card can be found at <xref linkend="qc.simcard" /></para>
+            
+            <table frame="topbot" id="tbl.ril.simcard.item">
+                <title>SIM Related Msg in RIL</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Msg Type</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>RIL_REQUEST_GET_SIM_STATUS(1)</entry><entry>Get SIM status</entry></row>
+                    <row><entry>RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED(1019)</entry><entry>SIM status changed unsol msg</entry></row>
+                    <row><entry>RIL_UNSOL_SIM_SMS_STORAGE_FULL(1016)</entry><entry>SMS storage on the SIM is full.</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+        </sect2>
+        <!-- Voice Call Support -->
+        <sect2>
+            <title>Voice Call Support</title>
+            <para></para>
+            <table frame="topbot" id="tbl.ril.voicecall.item">
+                <title>Voice Call Related Msg in RIL</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Msg Type</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>RIL_REQUEST_DIAL(10)</entry><entry>Making a phone call</entry></row>
+                    <row><entry>RIL_REQUEST_VOICE_REGISTRATION_STATE(20)</entry><entry>Get voice regiteration state</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+        </sect2>
     </sect1>
     
     <sect1>
@@ -244,6 +352,36 @@ MEID 00000000000000</programlisting>
   byte  identity[3];
 } sys_plmn_id_s_type;</programlisting>
                 </example>
+                
+                <para>Below is some PLMNs in the world:</para>
+                <table frame="topbot" id="tbl.mcc.mnc.list">
+                    <title>Some PLMNs in the World</title>
+                    <tgroup cols="2">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Country/Network</entry><entry>MCC/MNC</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>China Mobile(CMCC)</entry><entry>460  00</entry></row>
+                    <row><entry>China Unicom</entry><entry>460  01</entry></row>
+                    <row><entry>China Telecom</entry><entry>460  03</entry></row>
+                    <row><entry>USA Verizon</entry><entry>310 012</entry></row>
+                    <row><entry>Canada MTS</entry><entry>302 66</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+            </sect3>
+        </sect2>
+        <!-- SIM Card -->
+        <sect2 id="qc.simcard">
+            <title>SIM Card</title>
+            <para></para>
+            
+            <sect3>
+                <title>IMSI</title>
+                    <indexterm><primary>IMSI</primary></indexterm>
+                <para>EF_IMSI 0x6F07</para>
             </sect3>
         </sect2>
         
@@ -486,6 +624,11 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
             </tgroup>
             </table>
         </sect2>
+        <!-- Call Manager(CM) -->
+        <sect2>
+            <title>Call Manager(CM)</title>
+            <para></para>
+        </sect2>
         
         <sect2>
             <title>NV Items</title>
@@ -570,4 +713,4 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
     <!-- index -->
     &section_index;
     
-</article>
+</article>

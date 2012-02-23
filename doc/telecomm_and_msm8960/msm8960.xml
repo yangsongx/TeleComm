@@ -44,19 +44,11 @@
     <sect1>
         <title>Overview</title>
         
-        <para>The architecture for MSM8960 is different as Tegra. Below is a draft image for those 2 architeture:</para>
+        <para>The architecture for MSM8960 is different as Tegra, as MSM8960 is in one-single chip provided by
+        QualComm.</para>
         
-        <figure id="fig.arch.compare">
-            <title>IPC on Tegra and MSM8960</title>
-            <mediaobject>
-                <imageobject>
-                    <imagedata scale="70" align="center" fileref="./res/arch_compare.png" />
-                </imageobject>
-             </mediaobject>
-        </figure>
-        
-        <para>As MSM8960 can be consider as one single chipset containing both AP and BP. The IPC would be differet as
-        the product such as Hubble.</para>
+        <para>QualComm named the <emphasis>AP</emphasis> as high level OS(HLOS), and the BP as non-high-level
+        OS(NON-HLOS). The HLOS is native Android system, while NON-HLOS is modem system.</para>
         
         <para>Usually IPC methods on MSM8960 are:</para>
         
@@ -68,10 +60,21 @@
                 <para>QMI - QualComm MSM Interface, QualComm specific protocol.</para>
             </listitem>
         </itemizedlist>
+        
+        <para>The debugging/logging is similar as Targa, and MSM8960 provided ramdump feature to dump the memory
+        if there's any wrong when running the system.</para>
+        
+        <example>
+            <title>Get a BP-Panic Dump</title>
+            <programlisting># <userinput>echo "1">/sys/module/subsystem_restart/parameters/enable_ramdumps</userinput>
+<userinput>send_data 75 37 03 00</userinput> (in QXDM, force BP-panic)</programlisting>
+        </example>
+        
+        <para>parse the dump https://sites.google.com/a/motorola.com/89xx_catbox/how_to-s/bp/parse-ramdump</para>
          
     </sect1>
     
-    
+    <!-- Boot and Init -->
     <sect1>
         <title>Boot and Init</title>
         
@@ -284,6 +287,7 @@ static int __init apr_late_init(void)
             </informalexample>
         </sect2>
         
+        <!-- restart -->
         <sect2>
             <title>Restart</title>
             
@@ -326,6 +330,14 @@ static int __init apr_late_init(void)
             
             <para><filename>/sys/module/subsystem_restart/parameters/restart_level</filename> is the flag of the level value, which
             can be read/write by command.</para>
+            
+            <para>If there's a BP panic,</para>
+            <informalexample>
+                <programlisting>Notify: start reset
+subsys-restart: subsystem_restart(): Restart sequence requested for modem, restart_level = 3.
+subsys-restart: subsystem_restart(): BP panic notify enabled
+subsys-restart: subsystem_restart_thread(): [c3bfb100]: Shutting down modem</programlisting>
+            </informalexample>
         </sect2>
     </sect1>
     
@@ -377,6 +389,29 @@ static int __init apr_late_init(void)
         </sect2>
         
     </sect1>
+    
+    <sect1>
+        <title>Modem(Non-HLOS)</title>
+        
+        <sect2>
+            <title>NV Items Setting</title>
+            
+            <para>The <userinput>fsg.mbn</userinput> contains current NV items data, it stored in <emphasis>fsg</emphasis>
+            partion, the whole data layout is actually an EFS.</para>
+            
+            <para>So, execute <userinput>fastboot flash fsg fsg.mbn</userinput> would load a new NV value setting.</para>
+            
+            <para>Below example would extract the fsg.mbn file, and dump all data, thus we can found the NV items' value:</para>
+            
+            <example>
+                <title>Dump the fsg.mbn</title>
+                <programlisting>mkdir temp
+xxd -s 40 -p fsg.mbn | xxd -r -p - | tar xvf - -C temp
+xxd temp/nvm/num/8034</programlisting>
+            </example>
+        </sect2>
+    </sect1>
+    
     <appendix>
         <title>About this Document</title>
         
@@ -425,4 +460,4 @@ $ <userinput>make word</userinput> <lineannotation>It's Window's Word format(rtf
     
     <!-- ============= Glossary =================  -->
     &section_glossary; 
-</article
+</article>

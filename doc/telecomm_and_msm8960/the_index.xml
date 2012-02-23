@@ -23,19 +23,19 @@
 
 <indexentry>
   <primaryie>CIEV,
-    <ulink url="x57.html#AEN147" role="AEN151">CIEV</ulink>
+    <ulink url="x161.html#AEN285" role="AEN289">CIEV</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>COPS,
-    <ulink url="x57.html#AEN311" role="AEN314">COPS</ulink>
+    <ulink url="x161.html#AEN449" role="AEN452">COPS</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>CREG,
-    <ulink url="x57.html#AEN246" role="AEN250">CREG</ulink>
+    <ulink url="x161.html#AEN384" role="AEN388">CREG</ulink>
   </primaryie>
 </indexentry>
 
@@ -44,7 +44,7 @@
 
 <indexentry>
   <primaryie>ESN,
-    <ulink url="x57.html#AEN61" role="AEN63">ESN/MEID/IMEI</ulink>
+    <ulink url="x161.html#AEN165" role="AEN167">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
@@ -53,7 +53,13 @@
 
 <indexentry>
   <primaryie>IMEI,
-    <ulink url="x57.html#AEN61" role="AEN67">ESN/MEID/IMEI</ulink>
+    <ulink url="x161.html#AEN165" role="AEN171">ESN/MEID/IMEI</ulink>
+  </primaryie>
+</indexentry>
+
+<indexentry>
+  <primaryie>IMSI,
+    <ulink url="x161.html#AEN276" role="AEN278">IMSI</ulink>
   </primaryie>
 </indexentry>
 
@@ -62,19 +68,19 @@
 
 <indexentry>
   <primaryie>MCC,
-    <ulink url="x57.html#AEN119" role="AEN121">MCC/MNC/PLMN</ulink>
+    <ulink url="x161.html#AEN223" role="AEN225">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>MEID,
-    <ulink url="x57.html#AEN61" role="AEN65">ESN/MEID/IMEI</ulink>
+    <ulink url="x161.html#AEN165" role="AEN169">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>MNC,
-    <ulink url="x57.html#AEN119" role="AEN123">MCC/MNC/PLMN</ulink>
+    <ulink url="x161.html#AEN223" role="AEN227">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -83,7 +89,7 @@
 
 <indexentry>
   <primaryie>nv_items_enum_type,
-    <ulink url="x57.html#AEN360" role="AEN367">NV Items</ulink>
+    <ulink url="x161.html#AEN501" role="AEN508">NV Items</ulink>
   </primaryie>
 </indexentry>
 
@@ -92,7 +98,7 @@
 
 <indexentry>
   <primaryie>PLMN,
-    <ulink url="x57.html#AEN119" role="AEN125">MCC/MNC/PLMN</ulink>
+    <ulink url="x161.html#AEN223" role="AEN229">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -100,8 +106,14 @@
 <indexdiv><title>R</title>
 
 <indexentry>
+  <primaryie>RIL_RadioState,
+    <ulink url="x27.html#AEN29" role="AEN44">Phone Creation</ulink>
+  </primaryie>
+</indexentry>
+
+<indexentry>
   <primaryie>RSSI,
-    <ulink url="x57.html#AEN317" role="AEN324">RSSI</ulink>
+    <ulink url="x161.html#AEN455" role="AEN462">RSSI</ulink>
   </primaryie>
 </indexentry>
 
@@ -110,7 +122,7 @@
 
 <indexentry>
   <primaryie>sys_mode,
-    <ulink url="x57.html#AEN327" role="AEN330">Sys Mode</ulink>
+    <ulink url="x161.html#AEN465" role="AEN468">Sys Mode</ulink>
   </primaryie>
 </indexentry>
 
