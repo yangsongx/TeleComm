@@ -27,3 +27,19 @@ TeleComm
   src/
     - source code
 
+-------------------------------------------------------------------------------    
+
+[TODO]
+
+    o Needs let TOC of the article show sect2 page info![High]
+        (solution: there are toc-depth(note - there're TWO place for them:
+          554 (define (toc-depth nd)
+          555   (if (string=? (gi nd) (normalize "book"))
+          556       3
+          557       (if (string=? (gi nd) (normalize "appendix"))
+          558         0
+          559         1)))
+
+          -change 559's `1' to `2' to verify if it works or not
+
+    o Needs re-arrange the long table RIL msg display to itemizedlist.[Medium]
