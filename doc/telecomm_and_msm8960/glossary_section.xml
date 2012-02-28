@@ -2,6 +2,31 @@
     <!-- ============= Glossary =================  -->
     <glossary>
         <title>Glossary</title>
+        <!--   C   -->
+        <glossdiv>
+            <title>C</title>
+            
+            <glossentry>
+                <glossterm>CPHS</glossterm>
+                <glossdef>
+                    <para><emphasis>Common PCN Handset Specification</emphasis>(PHS)</para>
+                </glossdef>
+            </glossentry>
+        </glossdiv>
+        <!--   E   -->
+        <glossdiv>
+            <title>E</title>
+            
+            <glossentry>
+                <glossterm>EONS</glossterm>
+                <glossdef>
+                    <para><emphasis>Enhanced Operator Name String</emphasis>(EONS), to define various 
+                    operator names that are to be displayed for different PLMN identities. It also 
+                    allows the display of a different operator name based on a subset of the 
+                    registered network through the use of a range of LACs or a single LAC.</para>
+                </glossdef>
+            </glossentry>
+        </glossdiv>
         <!--   N   -->
         <glossdiv>
             <title>N</title>
@@ -100,6 +125,13 @@
                 <glossterm>SMSM</glossterm>
             <glossdef>
                 <para><emphasis>Shared Memory State Machine</emphasis></para> 
+            </glossdef>
+            </glossentry>
+            
+            <glossentry>
+                <glossterm>SPN</glossterm>
+            <glossdef>
+                <para><emphasis>Service Provider Name</emphasis></para> 
             </glossdef>
             </glossentry>
         </glossdiv>

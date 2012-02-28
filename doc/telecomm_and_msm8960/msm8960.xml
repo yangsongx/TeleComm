@@ -390,27 +390,6 @@ subsys-restart: subsystem_restart_thread(): [c3bfb100]: Shutting down modem</pro
         
     </sect1>
     
-    <sect1>
-        <title>Modem(Non-HLOS)</title>
-        
-        <sect2>
-            <title>NV Items Setting</title>
-            
-            <para>The <userinput>fsg.mbn</userinput> contains current NV items data, it stored in <emphasis>fsg</emphasis>
-            partion, the whole data layout is actually an EFS.</para>
-            
-            <para>So, execute <userinput>fastboot flash fsg fsg.mbn</userinput> would load a new NV value setting.</para>
-            
-            <para>Below example would extract the fsg.mbn file, and dump all data, thus we can found the NV items' value:</para>
-            
-            <example>
-                <title>Dump the fsg.mbn</title>
-                <programlisting>mkdir temp
-xxd -s 40 -p fsg.mbn | xxd -r -p - | tar xvf - -C temp
-xxd temp/nvm/num/8034</programlisting>
-            </example>
-        </sect2>
-    </sect1>
     
     <appendix>
         <title>About this Document</title>

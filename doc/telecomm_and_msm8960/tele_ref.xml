@@ -62,7 +62,16 @@
             </listitem>
         </itemizedlist>
         
-        <para>The whole 3 layer composed the telephony feature, on Android system.</para> 
+        <para>The whole 3 layer composed the telephony feature, on Android system.</para>
+        
+        <para><filename>framework/base/telephony/</filename> is the upper layer telephony framework, it
+        provides all higer app's services for telephony.</para>
+        
+        <para><filename>hardware/ril/</filename> is Android's native RIL section, it provides base definition
+        and messages, that communicate with vendor ril. Refer <xref linkend="ril.overall_layout" /> for
+        more details on the native RIL.</para>
+        
+        <para>The vendor ril and baseband code is totally customerizable, and varies on different products.</para>
     </sect1>
     
     <!-- Upper app layer -->
@@ -100,15 +109,13 @@
             <table frame="topbot">
                 <title>Radio State Value</title>
                 <tgroup cols="2">
-                <colspec colwidth="1*" />
-                <colspec colwidth="2*" />
                 <thead>
                     <row><entry>Radio Value</entry><entry>Note</entry></row>
                 </thead>
                 <tbody>
                     <row><entry>RADIO_STATE_OFF(0)</entry><entry>Radio explictly powered off (eg CFUN=0)</entry></row>
                     <row><entry>RADIO_STATE_UNAVAILABLE(1)</entry><entry>Unknow state, radio is resetting or others.</entry></row>
-                    <row><entry>RADIO_STATE_ON(10)</entry><entry></entry></row>
+                    <row><entry>RADIO_STATE_ON(10)</entry><entry>Radio On.</entry></row>
                 </tbody>
                 </tgroup>
             </table>
@@ -128,6 +135,51 @@
                 <tbody>
                     <row><entry>RIL_REQUEST_RADIO_POWER(23)</entry><entry>Toggle radio on and off (for "airplane" mode)</entry></row>
                     <row><entry>RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED(1000)</entry><entry>Indicate Radio State changed.</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+        </sect2>
+        <!-- Service State Poll -->
+        <sect2>
+            <title>Service State Poll</title>
+            
+            <para>Telephony always keep polling the serivice state(SS), it is the high, user-friendly format,
+            for current mobile phone's service state data.</para>
+            
+            <para>Each time of a poll cycle, these state values(old V.S. new), were output in RIL log:</para>
+            
+            <example>
+                <title>GSM Service State Poll in RIL Log</title>
+                <programlisting>D/GSM Poll ServiceState done: oldSS=[..] newSS=[..]
+                              oldGprs=.. newGprs=..
+                              oldType=.. newType=..
+                              ...        ...</programlisting>
+            </example>
+            
+            <para>Above old/new value output may varies, as different Android version.</para>
+            
+            <para>But keep in mind this is high level of a user-view, on service state.</para>
+            
+            <para>The 1st field of <userinput>SS</userinput>, is a <emphasis>ServiceState</emphasis> class instance,
+            it's whole definition can be found in <emphasis>ServiceState::toString()</emphasis>. And it's also a moving
+            target, in different version, and different product(Motorola changing it as well).</para>
+            
+            <para>Below demo some fields value in the SS</para>
+            
+            <table frame="topbot">
+                <title>old/newSS fields' value</title>
+                <tgroup cols="3">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <colspec colwidth="3*" />
+                <thead>
+                    <row><entry>Field</entry><entry>Type</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>1</entry><entry>state</entry><entry>0-(In Service), 1-(Out Of Service)</entry></row>
+                    <row><entry>2</entry><entry>roam</entry><entry>true means Roaming.</entry></row>
+                    <row><entry>3</entry><entry>OperatorAlpha Long</entry><entry>Long Alpha(such as <userinput>US AT&amp;T</userinput>)</entry></row>
+                    <row><entry>4</entry><entry>OperatorAlpha Short</entry><entry>Short Alpha(such as <userinput>AT&amp;T</userinput>)</entry></row>
                 </tbody>
                 </tgroup>
             </table>
@@ -162,14 +214,45 @@
     <!-- RIL Layer -->
     <sect1>
         <title>RIL Layer</title>
-        <sect2>
+        <sect2 id="ril.overall_layout">
             <title>Overall Layout</title>
             <para>cover libril in hardware/ dir.</para>
         </sect2>
         
         <sect2>
-            <title>Entry Point</title>
-            <para></para>
+            <title>Entry Point of Vendro RIL</title>
+            
+            <para>The <command>RIL_Init()</command> is entry point in vendor RIL, it's a handshake to exchange
+            each RIL side's function call address, so later we can know how talk to each other.</para>
+            <informalexample>
+                <programlisting>const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **argv);</programlisting>
+            </informalexample>
+            <itemizedlist>
+                    
+                <listitem>
+                <para><userinput>argc, argv</userinput> is command option, for more flexible configuration, they are optional.</para>
+                </listitem>
+                
+                <listitem>
+                <para><userinput>RIL_RadioFunctions</userinput> is a function set, return back to Android RIL, to let it know
+                how to send request, how to get current radio state, etc.</para>
+                </listitem>
+                
+                <listitem>
+                <para><userinput>RIL_Env</userinput> is a function set, send in Vendor RIL, tell him if there's any response, unsol
+                msg, etc, how to send them back to Android.</para>
+                </listitem>
+                    
+            </itemizedlist>
+            
+            <para>Thus, <userinput>RIL_Env</userinput> only contains <emphasis>back-way</emphasis> methods:</para>
+            <informalexample>
+                <programlisting>struct RIL_Env {
+  void <userinput>(*OnRequestComplete)</userinput>(...);
+  void <userinput>(*OnUnsolicitedResponse)</userinput>(...);
+  void <userinput>(*RequestTimedCallback)</userinput> (...);
+};</programlisting>
+            </informalexample>
         </sect2>
         
         <sect2>
@@ -183,7 +266,6 @@
             <listitem>
                 <para>Vendor RIL Version.</para>
             </listitem>
-
             </itemizedlist>
         </sect2>
         <!-- SIM Card Support -->
@@ -373,17 +455,7 @@ MEID 00000000000000</programlisting>
                 </table>
             </sect3>
         </sect2>
-        <!-- SIM Card -->
-        <sect2 id="qc.simcard">
-            <title>SIM Card</title>
-            <para></para>
-            
-            <sect3>
-                <title>IMSI</title>
-                    <indexterm><primary>IMSI</primary></indexterm>
-                <para>EF_IMSI 0x6F07</para>
-            </sect3>
-        </sect2>
+        
         
         <!-- AT Commands -->
         <sect2>
@@ -597,6 +669,17 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
             </sect3>
         </sect2>
         
+        <!-- SIM Card -->
+        <sect2 id="qc.simcard">
+            <title>SIM Card</title>
+            <para></para>
+            
+            <sect3>
+                <title>IMSI</title>
+                    <indexterm><primary>IMSI</primary></indexterm>
+                <para>EF_IMSI 0x6F07</para>
+            </sect3>
+        </sect2>
         
         <sect2>
             <title>Sys Mode</title>
@@ -629,7 +712,7 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
             <title>Call Manager(CM)</title>
             <para></para>
         </sect2>
-        
+        <!-- NV Items -->
         <sect2>
             <title>NV Items</title>
             
@@ -661,7 +744,7 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
             data type, <userinput>nv_item_type</userinput>.</para>
             
             <table frame="topbot">
-                <title>NV Items Info</title>
+                <title>QCOM NV Items Info</title>
             <tgroup cols="2">
                 <colspec colwidth="1*" />
                 <colspec colwidth="2*" />
@@ -677,6 +760,7 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
                 </tbody>
             </tgroup>
             </table>
+            <!-- Read/Write NV Items -->
             <sect3>
                 <title>Read/Write NV Items</title>
                 
@@ -704,6 +788,87 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
   return status;
 }</programlisting>
                 </example>
+                
+                <para>As QualComm's implementation, there's protection when R/W the nv items. This can be found
+                in below code:</para>
+                <example>
+                    <title>Protection of R/W</title>
+                    <programlisting>void *nvdiag_read()
+{
+  //First check to see if this item is not allowed to be read.
+  //NOTE:  These items are unreadable, even if security is unlocked!
+  <userinput>if (unreadable_nv_item(eItem))</userinput> {
+    return( diagpkt_err_rsp( DIAG_BAD_PARM_F, req_pkt, pkt_len ));
+  }
+}
+boolean unreadable_nv_item(nv_items_enum_type item)
+{
+  switch(item){
+    /* Keys, secrets, and passwords are unreadable */
+    case NV_A_KEY_I:
+     ...   ....
+    case NV_SEC_DEVICE_KEY_I :
+      return true;
+      
+    default: return false;
+  }
+}</programlisting>
+                </example>
+                
+                <para>And furthermore, some NV items' write would require Subsidy Code(SPC) unlock.</para>
+            </sect3>
+            
+            <sect3>
+                <title>Some Comm NV Items Info</title>
+                <para>The NV Items value can be a <emphasis>flex</emphasis> config file.</para>
+                <para>For MSM8960(such as <emphasis>Vanquish</emphasis>), there's a <userinput>fsg</userinput>
+                partition, and a <filename>fsg.mbn</filename> image file, which contain the EFS data. Thus loading a new NV data
+                setting would be simple:</para>
+                
+                <informalexample>
+                    <programlisting>$ <userinput>fastboot flash fsg fsg.mbn</userinput></programlisting>
+                </informalexample>
+                
+                <para>The <filename>fsg.mbn</filename> file can be extracted by below commands:</para>
+                <example>
+                    <title>Dump the fsg.mbn</title>
+                    <programlisting>mkdir temp
+xxd -s 40 -p fsg.mbn | xxd -r -p - | tar xvf - -C temp
+xxd temp/nvm/num/8034</programlisting>
+                </example>
+                
+                <para>All <userinput>ID-XXX</userinput> item values are the <filename>/nvm/num/ID-XXX</filename> files,
+                in binary format.</para>
+
+                <para>There're some commonly-used NV items, that MUST be very familiar with them.</para>
+            </sect3>
+        </sect2>
+        
+        <sect2>
+            <title>BP Panic</title>
+            <para>The <emphasis>BP Panic</emphasis> is a very huge topic, and always met in product development,
+            especially in bring-up stage.</para>
+            
+            <sect3>
+                <title>Panic on MSM8960</title>
+                
+                <para>First, it supports QualComm's QXDM force panice, which is core dump action of diag extended
+                msg:</para>
+                
+                <para>Type below commands in QXDM <guimenu>command</guimenu> window:</para>
+                <informalexample>
+                    <programlisting>send_data 75 37 03 00</programlisting>
+                </informalexample>
+                
+                <para>The <userinput>75 37 03 00</userinput> is a DIAG payload which indicates:</para>
+                
+                <informalexample>
+                    <programlisting>typedef struct{
+  uint8 command_code; <userinput>DIAG_SUBSYS_CMD_F(75)</userinput>
+  uint8 subsys_id;  <userinput>DIAG_SUBSYS_DEBUG(37)</userinput>
+  uint16 subsys_cmd_code; <userinput>ERR_F3_TRACE_CORE_DUMP(0x0003)</userinput>
+};</programlisting>
+                </informalexample>
             </sect3>
         </sect2>
     </sect1>
