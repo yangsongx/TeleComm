@@ -61,16 +61,6 @@
             </listitem>
         </itemizedlist>
         
-        <para>The debugging/logging is similar as Targa, and MSM8960 provided ramdump feature to dump the memory
-        if there's any wrong when running the system.</para>
-        
-        <example>
-            <title>Get a BP-Panic Dump</title>
-            <programlisting># <userinput>echo "1">/sys/module/subsystem_restart/parameters/enable_ramdumps</userinput>
-<userinput>send_data 75 37 03 00</userinput> (in QXDM, force BP-panic)</programlisting>
-        </example>
-        
-        <para>parse the dump https://sites.google.com/a/motorola.com/89xx_catbox/how_to-s/bp/parse-ramdump</para>
          
     </sect1>
     

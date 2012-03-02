@@ -146,7 +146,9 @@
             <para>Telephony always keep polling the serivice state(SS), it is the high, user-friendly format,
             for current mobile phone's service state data.</para>
             
-            <para>Each time of a poll cycle, these state values(old V.S. new), were output in RIL log:</para>
+            <sect3>
+                <title>GSM/WCDMA Service State Poll</title>
+                <para>Each time of a poll cycle, these state values(old V.S. new), were output in RIL log:</para>
             
             <example>
                 <title>GSM Service State Poll in RIL Log</title>
@@ -176,20 +178,75 @@
                     <row><entry>Field</entry><entry>Type</entry><entry>Note</entry></row>
                 </thead>
                 <tbody>
-                    <row><entry>1</entry><entry>state</entry><entry>0-(In Service), 1-(Out Of Service)</entry></row>
+                    <row><entry>1</entry><entry>state</entry><entry>0-(In Service), 1-(Out Of Service), 2-(Emergency Call)</entry></row>
                     <row><entry>2</entry><entry>roam</entry><entry>true means Roaming.</entry></row>
                     <row><entry>3</entry><entry>OperatorAlpha Long</entry><entry>Long Alpha(such as <userinput>US AT&amp;T</userinput>)</entry></row>
                     <row><entry>4</entry><entry>OperatorAlpha Short</entry><entry>Short Alpha(such as <userinput>AT&amp;T</userinput>)</entry></row>
                 </tbody>
                 </tgroup>
             </table>
+            </sect3>
+            
+            <sect3>
+                <title>CDMA Service State Poll</title>
+                
+                <para>For current Android evolution(4.0), the CDMA/LTE service state poll are both put under <filename>cdma/</filename> dir.</para>
+                
+                <itemizedlist>
+                <listitem>
+                    <para><filename>telephony/cdma/CdmaServiceStateTracker.java</filename>, CDMA's service state poll file.</para>
+                </listitem>
+                <listitem>
+                    <para><filename>telephony/cdma/CdmaLteServiceStateTracker.java</filename>. LTE/CDMA service state poll, as
+                    the Vanquish is for VZW, CDMA/LTE prefered, of course.</para>
+                </listitem>
+            
+                </itemizedlist>
+        
+                <para>The poll result is similar as GSM/WCDMA, it would output oldSS and newSS.</para>
+                
+                <example>
+                    <title>CdmaLteServiceStateTracker of Poll</title>
+                    <programlisting>protected void pollStateDone() {
+  ...
+  if (DBG) log("pollStateDone: oldSS=[" + ss + "] newSS=[" + newSS + "]");
+  ...
+  // The output would be like:
+  <userinput>pollStateDone: oldSS=[1 home domestic...EvDo-rev.A:8] newSS=[0 ...]</userinput>
+}</programlisting>
+                </example>
+            </sect3>
+            
         </sect2>
         
         <!-- Voice Call -->
         <sect2>
             <title>Voice Call</title>
-            <para>App uses <userinput>VOICE_REGISTRATION_STATE</userinput> to query current voice registration state. RIL would
-            get this request, and send back the state to app.</para>
+            
+            <para>The <emphasis>Voice Call</emphasis> is composed by below items:</para>
+            <itemizedlist>
+            <listitem>
+                <para>Subscribe with either SIM card, or NV.</para>
+            </listitem>
+            <listitem>
+                <para>Search matching operator, based on subscription(SIM/NV).</para>
+            </listitem>
+            </itemizedlist>
+            
+            <sect3>
+                <title>Subscribe with SIM/NV</title>
+                <para></para>
+            </sect3>
+            
+            <sect3>
+                <title>Operator</title>
+                <para>The <emphasis>Operator</emphasis> is network carrier PLMN, or Name, dependend on
+                implementation.</para>
+                
+                <para>Telephony is sending <userinput>RIL_REQUEST_OPERATOR</userinput> to RIL, and RIL would
+                response 3-field data:</para>
+                
+            </sect3>
         </sect2>
         
         <!-- Setup Data Call -->
@@ -197,6 +254,44 @@
             <title>Setup Data Call</title>
             
             <para>add the RIL setup data call req here. DATA_REGISTRATION_STATE </para>
+            
+            <sect3>
+                <title>Data Registration State</title>
+                <para>DATA_REGISTRATION_STATE</para>
+            </sect3>
+            
+            <sect3>
+                <title>CDMA 1xEV Network</title>
+                
+                <para>deafult 460036131837427@mycdma.cn</para>
+                
+                <table frame="topbot">
+                <title>NV Items for China TeleCom Auth</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>NV Item</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>NV_HDR_AN_AUTH_NAI_I(579)</entry><entry>ctnet@mycdma.cn</entry></row>
+                    <row><entry>NV_HDR_AN_AUTH_PASSWORD_I(580)</entry><entry>vnet.mobi</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+                
+                <informalexample>
+                    <programlisting>9925 typedef PACKED struct PACKED_POST{
+ 9926   /* length of NAI */
+ 9927   byte   nai_len;
+ 9928   /* the NAI */
+ 9929   byte   nai[NV_MAX_AN_AUTH_NAI_LENGTH];
+ 9930 } nv_hdr_an_auth_nai_type;</programlisting>
+                </informalexample>
+                
+                
+                <para>In QPST Service Program, <guimenu>PPP Config</guimenu>, <guimenu>Um</guimenu> tab username:</para>
+            </sect3>
             
         </sect2>
         
@@ -254,7 +349,7 @@
 };</programlisting>
             </informalexample>
         </sect2>
-        
+        <!-- RIL Version -->
         <sect2>
             <title>RIL Version</title>
             
@@ -267,6 +362,14 @@
                 <para>Vendor RIL Version.</para>
             </listitem>
             </itemizedlist>
+            
+            <para>Android Base RIL Version is released together with Android system:</para>
+            <example>
+                <title>Base RIL Version</title>
+                <programlisting>(hardware/ril/include/telephony/ril.h)
+  32 #define RIL_VERSION 6     /* Current version */
+  33 #define RIL_VERSION_MIN 2 /* Minimum RIL_VERSION supported */</programlisting>
+            </example>
         </sect2>
         <!-- SIM Card Support -->
         <sect2>
@@ -638,6 +741,7 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
                     </indexterm>
                 <para></para>
             </sect3>
+            
             <sect3>
                 <title>RSSI</title>
                 
@@ -707,11 +811,13 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
             </tgroup>
             </table>
         </sect2>
+        
         <!-- Call Manager(CM) -->
         <sect2>
             <title>Call Manager(CM)</title>
             <para></para>
         </sect2>
+        
         <!-- NV Items -->
         <sect2>
             <title>NV Items</title>
@@ -815,7 +921,22 @@ boolean unreadable_nv_item(nv_items_enum_type item)
 }</programlisting>
                 </example>
                 
-                <para>And furthermore, some NV items' write would require Subsidy Code(SPC) unlock.</para>
+                <para>And furthermore, some NV items' write would require Service Programming Code(SPC) unlock. These
+                protection can be found in <userinput>nvdiag_write()</userinput> implementation.</para>
+                
+                <para>The <emphasis>Service Programming Code Lock</emphasis>(SPC Lock) here, is a protection when accessing NV items.
+                QualComm defined it as a DIAG msg(DIAG_SPC_F, 0x41).</para>
+                
+                <para>The code is value in <command>NV_SEC_CODE_I</command>(ID-85), which is a 6-digit number, the NV
+                inner structure is:</para>
+                <example>
+                    <title>NV_SEC_CODE_I SPC data</title>
+                    <programlisting>typedef PACKED struct PACKED_POST{
+    /* The security code is fixed length(6),
+       and is stored as ASCII string.*/
+    byte  digits[NV_SEC_CODE_SIZE]; // NV_SEC_CODE_SIZE 6
+}</programlisting>
+                </example>
             </sect3>
             
             <sect3>
@@ -841,19 +962,35 @@ xxd temp/nvm/num/8034</programlisting>
                 in binary format.</para>
 
                 <para>There're some commonly-used NV items, that MUST be very familiar with them.</para>
+                <table frame="topbot">
+                <title>Some Commonly-used NV Items Info</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>NV Item</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>NV_HDR_AN_AUTH_NAI_I(579)</entry><entry></entry></row>
+                    <row><entry>NV_HDR_AN_AUTH_PASSWORD_I(580)</entry><entry></entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+                
             </sect3>
         </sect2>
-        
+        <!-- BP Panic -->
         <sect2>
             <title>BP Panic</title>
+            
             <para>The <emphasis>BP Panic</emphasis> is a very huge topic, and always met in product development,
             especially in bring-up stage.</para>
             
-            <sect3>
-                <title>Panic on MSM8960</title>
+            <sect3 id="qbp.bppanic.diagdumpcmd">
+                <title>Common DIAG Coredump Command</title>
                 
-                <para>First, it supports QualComm's QXDM force panice, which is core dump action of diag extended
-                msg:</para>
+                <para>First, BP needs support QualComm's QXDM force panice, which is core dump action of diag extended
+                msg.</para>
                 
                 <para>Type below commands in QXDM <guimenu>command</guimenu> window:</para>
                 <informalexample>
@@ -869,6 +1006,85 @@ xxd temp/nvm/num/8034</programlisting>
   uint16 subsys_cmd_code; <userinput>ERR_F3_TRACE_CORE_DUMP(0x0003)</userinput>
 };</programlisting>
                 </informalexample>
+                
+                <para>The corresponding handler is in <filename>core/debugtools/err/</filename>:</para>
+                
+                <example>
+                    <title>Sample of handling the Panic Diag CMD</title>
+                    <programlisting>/* core/debugtools/err/src/err_f3_trace.c */
+static const diagpkt_user_table_entry_type err_f3_trace_tbl[] = {
+<userinput>{ERR_F3_TRACE_CORE_DUMP,ERR_F3_TRACE_CORE_DUMP,err_f3_trace_core_dump_handler},</userinput>
+{ERR_TEST_INVOKE_CRASH,ERR_TEST_INVOKE_CRASH,err_invoke_crash_handler},
+...    ...
+}</programlisting>
+                </example>
+            </sect3>
+            <!-- Panic on MSM8960 -->
+            <sect3>
+                <title>Panic on MSM8960</title>
+                
+                <para>MSM8960 is one-single chip, BP is a <emphasis>subsystem</emphasis>, so there would 2 different
+                result for a BP panic:</para>
+                
+                <itemizedlist>
+                    <listitem>
+                        <para><emphasis>Silent Reset</emphasis>, AP would try recovery the BP, the coredump file
+                        would store somewhere. This won't cause AP restart.</para>
+                    </listitem>
+                    <listitem>
+                        <para><emphasis>Download Dump Mode</emphasis>, whole chip goes into Download mode, using QualComm's
+                        <emphasis>QPST</emphasis> to get the coredump. This would cause AP/BP down.</para>
+                    </listitem>
+                </itemizedlist>
+                
+                <para>Silent reset is prefered as it not required the whole system restart. It can be configured runtime to 
+                decide to dump the panic file or not.</para>
+                
+                <para>This dump configured option can be either a property or a sysfs flag.</para>
+                
+                <para><userinput>setprop persist.radio.qc.ramdump.enable 1</userinput> will enable the ramdump, it would always
+                enabled after system restart.</para>
+                
+                <para><userinput>echo "1">/sys/module/subsystem_restart/parameters/enable_ramdumps</userinput> is a one-shot
+                enable, after system restart, it would be the default value set in kernel code(which is 0).</para>
+                
+                <para>In order to let MSM8960 system go into Download mode, it needs:</para>
+                <itemizedlist spacing="compact">
+                    <listitem>
+                        <para>Set 2 NV items value to enable dump(see <xref linkend="tbl.qcom.msm8960.dumpnv" />)</para>
+                    </listitem>
+                    <listitem>
+                        <para>Set <filename>/sys/module/restart/parameters/download_mode</filename> value to 1.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Set <filename>/sys/module/subsystem_restart/parameters/restart_level</filename> value to 1.</para>
+                    </listitem>
+                </itemizedlist>
+                
+                <table frame="topbot" id="tbl.qcom.msm8960.dumpnv">
+                <title>NV Items of Donwload Dump Mode</title>
+                    <tgroup cols="2">
+                    <thead>
+                    <row><entry>NV Item</entry><entry>Value</entry></row>
+                    </thead>
+                <tbody>
+                    <row><entry>NV_ERR_FATAL_OPTIONS_I(ID-905)</entry><entry>0</entry></row>
+                    <row><entry>NV_DETECT_HW_RESET_I(ID-4399)</entry><entry>1</entry></row>
+                </tbody>
+                    </tgroup>
+                </table>
+                
+                <para>After system go into Download mode, using QPST to fetch the memory dump, the most important dump
+                file is <filename>EBICS0.BIN</filename>. Use the wrapper script to figure out which line cause the crash:</para>
+                
+                <example>
+                    <title></title>
+                    <programlisting>$ <userinput>./bp-ramdump-parse.py -e AAAAANAZQ.elf -c EBICS0.BIN</userinput>
+Error Message:Forced core dump %d, %d, %d
+Error in file err_f3_trace.c, line 2090</programlisting>
+                </example>
+                
+                <para>The <filename>AAAAANAZQ.elf</filename> is BP build symbol file, usually in <filename>build/AAAAANAZ/</filename> dir.</para>
             </sect3>
         </sect2>
     </sect1>

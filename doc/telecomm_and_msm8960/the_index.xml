@@ -23,31 +23,19 @@
 
 <indexentry>
   <primaryie>CIEV,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN346" role="AEN350">CIEV</ulink>
-=======
-    <ulink url="x188.html#AEN304" role="AEN308">CIEV</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN409" role="AEN413">CIEV</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>COPS,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN510" role="AEN513">COPS</ulink>
-=======
-    <ulink url="x188.html#AEN468" role="AEN471">COPS</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN573" role="AEN576">COPS</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>CREG,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN445" role="AEN449">CREG</ulink>
-=======
-    <ulink url="x188.html#AEN403" role="AEN407">CREG</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN508" role="AEN512">CREG</ulink>
   </primaryie>
 </indexentry>
 
@@ -56,11 +44,7 @@
 
 <indexentry>
   <primaryie>ESN,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN234" role="AEN236">ESN/MEID/IMEI</ulink>
-=======
-    <ulink url="x188.html#AEN192" role="AEN194">ESN/MEID/IMEI</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN297" role="AEN299">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
@@ -69,21 +53,13 @@
 
 <indexentry>
   <primaryie>IMEI,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN234" role="AEN240">ESN/MEID/IMEI</ulink>
-=======
-    <ulink url="x188.html#AEN192" role="AEN198">ESN/MEID/IMEI</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN297" role="AEN303">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>IMSI,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN529" role="AEN531">IMSI</ulink>
-=======
-    <ulink url="x188.html#AEN487" role="AEN489">IMSI</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN592" role="AEN594">IMSI</ulink>
   </primaryie>
 </indexentry>
 
@@ -92,31 +68,19 @@
 
 <indexentry>
   <primaryie>MCC,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN292" role="AEN294">MCC/MNC/PLMN</ulink>
-=======
-    <ulink url="x188.html#AEN250" role="AEN252">MCC/MNC/PLMN</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN355" role="AEN357">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>MEID,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN234" role="AEN238">ESN/MEID/IMEI</ulink>
-=======
-    <ulink url="x188.html#AEN192" role="AEN196">ESN/MEID/IMEI</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN297" role="AEN301">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>MNC,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN292" role="AEN296">MCC/MNC/PLMN</ulink>
-=======
-    <ulink url="x188.html#AEN250" role="AEN254">MCC/MNC/PLMN</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN355" role="AEN359">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -125,11 +89,7 @@
 
 <indexentry>
   <primaryie>nv_items_enum_type,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN570" role="AEN577">NV Items</ulink>
-=======
-    <ulink url="x188.html#AEN528" role="AEN535">NV Items</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN633" role="AEN640">NV Items</ulink>
   </primaryie>
 </indexentry>
 
@@ -138,11 +98,7 @@
 
 <indexentry>
   <primaryie>PLMN,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN292" role="AEN298">MCC/MNC/PLMN</ulink>
-=======
-    <ulink url="x188.html#AEN250" role="AEN256">MCC/MNC/PLMN</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN355" role="AEN361">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -157,11 +113,7 @@
 
 <indexentry>
   <primaryie>RSSI,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN516" role="AEN523">RSSI</ulink>
-=======
-    <ulink url="x188.html#AEN474" role="AEN481">RSSI</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN579" role="AEN586">RSSI</ulink>
   </primaryie>
 </indexentry>
 
@@ -170,11 +122,7 @@
 
 <indexentry>
   <primaryie>sys_mode,
-<<<<<<< HEAD
-    <ulink url="x230.html#AEN534" role="AEN537">Sys Mode</ulink>
-=======
-    <ulink url="x188.html#AEN492" role="AEN495">Sys Mode</ulink>
->>>>>>> 2a5e9d3fb31589387b711810d42ef99aea7f55b4
+    <ulink url="x293.html#AEN597" role="AEN600">Sys Mode</ulink>
   </primaryie>
 </indexentry>
 
