@@ -72,6 +72,8 @@
         more details on the native RIL.</para>
         
         <para>The vendor ril and baseband code is totally customerizable, and varies on different products.</para>
+        
+        <para>arch/arm/include/asm/bootinfo.h:34:#define PU_REASON_USB_CABLE    0x00000010 /* Bit 4  */</para>
     </sect1>
     
     <!-- Upper app layer -->
@@ -138,6 +140,35 @@
                 </tbody>
                 </tgroup>
             </table>
+            
+            <sect3>
+                <title>Phone Number</title>
+                
+                <para>The <emphasis>Phone Number</emphasis> is usually a number data stored in SIM card, and we call it
+                as <userinput>MDN</userinput>(Mobile Directory Number).</para>
+                
+                <para>China's mobile phone number is in 11-digit currently, separated by 3 section:</para>
+                <example>
+                    <title>China 11-digit phone number</title>
+                    <programlisting><![CDATA[|  Network  | city-ID | User-ID | 
+|===============================|
+|  1  3  0  | 2 2 5 9 | 3 5 1 5 | 
+|===============================|]]></programlisting>
+                </example>
+                
+                <para>The MDN is stored in <emphasis>E.164</emphasis> standard, also stays in HLR and VLR database.</para>
+                
+                <example>
+                    <title>MDN Number Data</title>
+                    <programlisting><![CDATA[
+|                |    HLR-ID   | User-ID | 
+|==========================================|
+|   CC  |   MAC  | H0 H1 H2 H3 |   ABCD    | 
+|==========================================|]]></programlisting>
+                </example>
+                
+                <para>Country Code for China is <userinput>86</userinput></para>
+            </sect3>
         </sect2>
         <!-- Service State Poll -->
         <sect2>
@@ -145,6 +176,8 @@
             
             <para>Telephony always keep polling the serivice state(SS), it is the high, user-friendly format,
             for current mobile phone's service state data.</para>
+            
+            <para>So, the icon(like <userinput>3g, 1X</userinput>)'s display info, can be found via the poll RIL log.</para>
             
             <sect3>
                 <title>GSM/WCDMA Service State Poll</title>
@@ -158,7 +191,7 @@
                               ...        ...</programlisting>
             </example>
             
-            <para>Above old/new value output may varies, as different Android version.</para>
+            <para>Above old/new SS value output may varies, in different Android version.</para>
             
             <para>But keep in mind this is high level of a user-view, on service state.</para>
             
@@ -186,7 +219,7 @@
                 </tgroup>
             </table>
             </sect3>
-            
+            <!-- CDMA Service State Poll -->
             <sect3>
                 <title>CDMA Service State Poll</title>
                 
@@ -209,10 +242,10 @@
                     <title>CdmaLteServiceStateTracker of Poll</title>
                     <programlisting>protected void pollStateDone() {
   ...
-  if (DBG) log("pollStateDone: oldSS=[" + ss + "] newSS=[" + newSS + "]");
+  log("pollStateDone: oldSS=[" + ss + "] newSS=[" + newSS + "]");
   ...
   // The output would be like:
-  <userinput>pollStateDone: oldSS=[1 home domestic...EvDo-rev.A:8] newSS=[0 ...]</userinput>
+  //<userinput>pollStateDone: oldSS=[1 home domestic...EvDo-rev.A:8] newSS=[0 ...]</userinput>
 }</programlisting>
                 </example>
             </sect3>
@@ -233,19 +266,45 @@
             </listitem>
             </itemizedlist>
             
+            <!-- Subscribe with SIM/NV -->
             <sect3>
                 <title>Subscribe with SIM/NV</title>
                 <para></para>
             </sect3>
             
+            <!-- Operator -->
             <sect3>
                 <title>Operator</title>
+                
                 <para>The <emphasis>Operator</emphasis> is network carrier PLMN, or Name, dependend on
                 implementation.</para>
                 
                 <para>Telephony is sending <userinput>RIL_REQUEST_OPERATOR</userinput> to RIL, and RIL would
                 response 3-field data:</para>
                 
+                    <indexterm>
+                        <primary>OPERATOR</primary>
+                    </indexterm>
+                <table frame="topbot">
+                <title>OPERATOR data field</title>
+                <tgroup cols="2">
+                
+                <thead>
+                    <row><entry>Field</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>1</entry><entry>long alpha ONS or EONS</entry></row>
+                    <row><entry>2</entry><entry>short alpha ONS or EONS</entry></row>
+                    <row><entry>3</entry><entry>PLMN(MCC+MNC)</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+                
+                <para>Below is an example of <emphasis>China TeleComm</emphasis> CDMA network, it didn't show up the short alpha:</para>
+                <informalexample>
+                    <programlisting>RILJ    : [0248]> OPERATOR
+RILJ    : [0252]&lt; OPERATOR {46003, , 46003}</programlisting>
+                </informalexample>
             </sect3>
         </sect2>
         
@@ -253,7 +312,81 @@
         <sect2>
             <title>Setup Data Call</title>
             
-            <para>add the RIL setup data call req here. DATA_REGISTRATION_STATE </para>
+            <para>The data call setup is for data service for browser, etc.</para>
+            <para>RIL uses SETUP_DATA_CALL(27) request for this. AP framework would do
+            a lot of check to make sure all conditions are meet, before sending this request to BP.</para>
+            <para>These checking logic can found in framework code.</para>
+                <indexterm>
+                    <primary>SETUP_DATA_CALL</primary>
+                </indexterm>
+            <para>After all condition meets, the setup request would send to RIL. The whole setup request
+            contains many fields, current definition is:</para>
+            
+            <table frame="topbot">
+                <title>SETUP_DATA_CALL request</title>
+                <tgroup cols="3">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <colspec colwidth="3*" />
+                <thead>
+                    <row><entry>Field</entry><entry>Meaning</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>1</entry><entry>Radio technology</entry><entry>0(CDMA), 1(GSM/UMTS), above 2 is <userinput>RIL_RadioTechnology+2</userinput></entry></row>
+                    <row><entry>2</entry><entry>RIL_DataProfile</entry><entry>This is optional</entry></row>
+                    <row><entry>3</entry><entry>APN</entry><entry>For GSM/UMTS case</entry></row>
+                    <row><entry>4</entry><entry>APN username</entry><entry>For GSM/UMTS case</entry></row>
+                    <row><entry>5</entry><entry>APN password</entry><entry>For GSM/UMTS case</entry></row>
+                    <row><entry>6</entry><entry>PAP/CHAP auth type</entry><entry>0(Never PAP/CHAP), 1(may PAP, Never CHAP), 2(may CHAP, Never PAP),3(may PAP/CHAP, depend on BP code)</entry></row>
+                    <row><entry>7</entry><entry>Connection type</entry><entry>IP/IPV6/IPV4V6/PPP</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <para>Below sample is <emphasis>Vanquish</emphasis>, setup data call with China Telecom CDMA network.</para>
+            <para>It request 2 type of radio tech in this case:</para>
+            <example>
+                <title>China Telecom DataCall Setup</title>
+                <programlisting><userinput>first try RADIO_TECH_EVDO_A(8) setup:</userinput>
+RILJ    : [0133]> SETUP_DATA_CALL 10 0 null null null 3 IP
+<userinput>got IP addrss for RADIO_TECH_EVDO_A(8):</userinput>
+RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState: 
+       {version=6 status=0 retry=-1 cid=0 active=2 type=IP' 
+       ifname='rmnet0' addresses=[49.90.136.7/28] 
+        dnses=[61.177.7.1,218.2.135.1] gateways=[49.90.136.1]}
+<userinput>disconnected due to Out of Service:</userinput>
+CDMA    : [CDMALTEPhone] getDataConnectionState: Data is Out of Service. ret = DISCONNECTED
+CDMA    : [CdmaDCT] Data not allowed due to - psState= 1
+<userinput>send try RADIO_TECH_EVDO_0(7) setup:</userinput>
+RILJ    : [0133]> SETUP_DATA_CALL 9 0 null null null 3 IP
+RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState: 
+       {version=6 status=0 retry=-1 cid=0 active=2 type=IP' 
+       ifname='rmnet0' addresses=[49.90.136.7/28] 
+       dnses=[61.177.7.1,218.2.135.1] gateways=[49.90.136.1]}</programlisting>
+            </example>
+            
+            <sect3>
+                <title>Condition Checking</title>
+                <para>The <userinput>isDataAllowed()</userinput> would do all the condition checking. If any of them have
+                incorrect status, it'll refuse send SETUP_DATA_CALL to RIL.</para>
+                <para>So, this function's log is helpful for data connection bug finding:</para>
+                
+                <table frame="topbot">
+                    <title>Data Allowed Checking reasons</title>
+                    <tgroup cols="2">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                    <thead>
+                        <row><entry>Reason</entry><entry>Note</entry></row>
+                    </thead>
+                    <tbody>
+                    <row><entry>gprs = 1</entry><entry>Voice Call not Attached</entry></row>
+                    <row><entry>SIM not loaded</entry><entry>Failed detect the SIM card</entry></row>
+                    <row><entry>psState = 1</entry><entry>Data is Disabled by user</entry></row>
+                    </tbody>
+                    </tgroup>
+                </table>
+            </sect3>
             
             <sect3>
                 <title>Data Registration State</title>
@@ -263,13 +396,11 @@
             <sect3>
                 <title>CDMA 1xEV Network</title>
                 
-                <para>deafult 460036131837427@mycdma.cn</para>
-                
+                <para>deafult 460036131837427@mycdma.cn, needs re-program the user name and password.</para>
+                <para>In QPST Service Program, <guimenu>PPP Config</guimenu>, <guimenu>Um</guimenu> tab username:</para>
                 <table frame="topbot">
                 <title>NV Items for China TeleCom Auth</title>
                 <tgroup cols="2">
-                <colspec colwidth="1*" />
-                <colspec colwidth="2*" />
                 <thead>
                     <row><entry>NV Item</entry><entry>Notes</entry></row>
                 </thead>
@@ -290,7 +421,7 @@
                 </informalexample>
                 
                 
-                <para>In QPST Service Program, <guimenu>PPP Config</guimenu>, <guimenu>Um</guimenu> tab username:</para>
+                
             </sect3>
             
         </sect2>
@@ -313,7 +444,7 @@
             <title>Overall Layout</title>
             <para>cover libril in hardware/ dir.</para>
         </sect2>
-        
+        <!-- Entry Point of Vendro RIL -->
         <sect2>
             <title>Entry Point of Vendro RIL</title>
             
@@ -410,15 +541,16 @@
                     <row><entry>RIL_REQUEST_VOICE_REGISTRATION_STATE(20)</entry><entry>Get voice regiteration state</entry></row>
                 </tbody>
                 </tgroup>
-                </table>
+            </table>
         </sect2>
     </sect1>
-    
+    <!-- QualComm BP -->
     <sect1>
         <title>QualComm BP</title>
         <!-- Telecom Terminology -->
         <sect2>
             <title>Telecom Terminology</title>
+            <!-- ESN/MEID/IMEI -->
             <sect3>
                 <title>ESN/MEID/IMEI</title>
                     <indexterm><primary>ESN</primary></indexterm>
@@ -477,7 +609,7 @@ MEID 00000000000000</programlisting>
                     </mediaobject>
                 </figure>
                 
-                <para>QualComm stored above IDs in NV items:</para>
+                <para>QualComm stored these IDs in NV items:</para>
                  <table frame="topbot">
                     <title>NV Items for ESN/MEID/IMEI</title>
                     <tgroup cols="2">
@@ -488,9 +620,61 @@ MEID 00000000000000</programlisting>
                     <row><entry>NV_ESN_I(0)</entry><entry>ESN</entry></row>
                     <row><entry>NV_MEID_I(1943)</entry><entry>MEID</entry></row>
                     <row><entry>NV_UE_IMEI_I(550)</entry><entry>IMEI</entry></row>
+                    <row><entry>NV_UE_IMEISV_SVN_I(5153)</entry><entry>IMEISV SVN</entry></row>
                 </tbody>
                 </tgroup>
                 </table>
+                
+                <para>The NV_UE_IMEI_I's structure is:</para>
+                
+                <example>
+                    <title>Struct for NV_UE_IMEI_I</title>
+                    <programlisting>/* Type to hold UE IMEI */
+typedef struct PACKED_POST{
+  /* International Mobile Equipment Identity */
+  byte   ue_imei[NV_UE_IMEI_SIZE]; //<userinput>NV_UE_IMEI_SIZE 9</userinput>
+} nv_ue_imei_type;
+<userinput>// ue_imei[0] indicate length.</userinput></programlisting>
+                </example>
+                
+                <para>Most of NV_UE_IMEI_I is 8-byte, as conversion between MEID and IMEI occupy extra byte.</para>
+                <para>So, the <userinput>ue_imei[0]</userinput> usually be <command>0x08</command>, and <userinput>ue_imei[1]~[8]</userinput> 
+                are the byte value.</para>
+                
+                <para>The inner NV IMEI item data is not plain data shown in the UI, it invovle some conversion of nibble
+                swap. Below is a sample how to convert plain IMEI data into the NV item byte data:</para>
+                
+                <example>
+                    <title>An Conversion Number to NV bytes</title>
+                    <programlisting><![CDATA[     |  1  |  2  |  3  |  4  |  5  |  6  |  7  | 
+     |=========================================|
+IMEI | 9 9 | 0 0 | 0 1 | 1 7 | 2 4 | 5 1 | 9 3 | 4  (4 is CHKSM)
+     |=========================================|
+             
+1. First nibble + a', next bytes' nibble combine, consider CHKSM 0
+     |----------------------------------------------------|
+     | 9+'a'  9 | 0  0 | 0  1 | 1  7 | 2  4 | 5  1 | 9  3 |
+     |----------------------------------------------------|
+2.      9a     90     00     11     72     45     19    3   0
+
+3. By pass first byte, next byte nibble swap:
+        9a     09     00     11     27     54     91     03
+        
+4. Now, get the whole payload of IMEI NV, add leading byte length(0x08):
+(NV_UE_IMEI_I ue_imei[0~8] 0x08 0x9a 0x09 0x00 0x11 0x27 0x54 0x91 0x03)]]></programlisting>
+                </example>
+                
+                <para>The MEID inner data structure is just UINT64, i.e, 8-byte array. The leading byte is 0x00,
+                left byte is just MEID's value.</para>
+                <para>So, the MEID NV data is plain data stored, which is not like IMEI.</para>
+                
+                <example>
+                    <title>MEID's inner NV data</title>
+                    <programlisting>MEID: 99 0C F1 17 24 5A 93
+Then NV bytes(8-byte) 00 99 0C F1 17 24 5A 93</programlisting>
+                </example>
+                
+                <para>These code processing on MSM8960 can be found at <xref linkend="qcom.msm8960.sn" />.</para>
             </sect3>
             
             <!-- MCC/MNC/PLMN -->
@@ -557,9 +741,21 @@ MEID 00000000000000</programlisting>
                 </tgroup>
                 </table>
             </sect3>
+            <!-- NITZ -->
+            <sect3>
+                <title>NITZ</title>
+                    <indexterm><primary>NITZ</primary></indexterm>
+                <para>Network Identity and Time Zone(NITZ), provides time service.</para>
+                <para>Android RIL defined <userinput>RIL_UNSOL_NITZ_TIME_RECEIVED</userinput> msg, which data is
+                in string format <userinput>yy/mm/dd,hh:mm:ss(+/-)tz,dt</userinput>.</para>
+                <informalexample>
+                    <programlisting>D RILJ    : [UNSL]&lt; UNSOL_NITZ_TIME_RECEIVED 12/03/12,08:10:16+32,00</programlisting>
+                </informalexample>
+                <para>nitz_nw_info_mnc/nitz_nw_info_mcc</para>
+                
+            </sect3>
         </sect2>
-        
-        
+               
         <!-- AT Commands -->
         <sect2>
             <title>AT Commands</title>
@@ -567,7 +763,7 @@ MEID 00000000000000</programlisting>
             3gpp standard, and some are moto-specific, or QualComm-specific.</para>
             
             <para>Here lists these commands' referenc information.</para>
-            
+            <!-- CIEV -->
             <sect3>
                 <title>CIEV</title>
                 
@@ -769,7 +965,25 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
                     <indexterm>
                         <primary>RSSI</primary>
                     </indexterm>
-                <para></para>
+                <para>As 3gpp's definition, it defined RSSI into a range of 32(0~31) for the signal strength.</para>
+                <para>Below table is mapping between the 32-RSSI and dBm:</para>
+                <table frame="topbot">
+                    <title>RSSI V.S. dBm(3gpp protocol)</title>
+                    <tgroup cols="2">
+                <thead>
+                    <row><entry>RSSI Value</entry><entry>dBm Strength</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>0</entry><entry>-113dBm, or weaker</entry></row>
+                    <row><entry>1</entry><entry>-111dBm</entry></row>
+                    <row><entry>2</entry><entry>-109dBm</entry></row>
+                    <row><entry>...</entry><entry>...</entry></row>
+                    <row><entry>30</entry><entry>-53dBm</entry></row>
+                    <row><entry>31</entry><entry>-51dBm, or stronger</entry></row>
+                    <row><entry>99</entry><entry>unknown strength</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
             </sect3>
         </sect2>
         
@@ -815,7 +1029,138 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
         <!-- Call Manager(CM) -->
         <sect2>
             <title>Call Manager(CM)</title>
-            <para></para>
+            
+            <para>The CM component is under <filename>modem/mmode/cm/</filename></para>
+            <table frame="topbot">
+                <title>CM Components</title>
+            <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="1*" />
+                <thead>
+                    <row><entry></entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>cmcall.c</entry><entry>Can be considered as <emphasis>Base CM Call</emphasis>.</entry></row>
+                    <row><entry>cmxcall.c</entry><entry>Extended Call, based on cmcall.c</entry></row>
+                    <row><entry>cm.c</entry><entry>Core CM Entry</entry></row>
+                </tbody>
+            </tgroup>
+            </table>
+            
+            <sect3>
+                <title>CM SS Event</title>
+                
+                <para>The <emphasis>SS Event</emphasis> can indicate a voice call (service status) registration, from
+                BP view.</para>
+                <example>
+                    <title>SS Event</title>
+                    <programlisting>void cm_client_ss_event_ntfy()
+{
+  CM_MSG_MED("<userinput>ss evt %d ct %d cid id %d</userinput>", ss_event, client_type, ..);
+  client_ptr->ss_event_func( ss_event, ss_info_ptr );
+}</programlisting>
+                </example>
+                
+                <para><userinput>CM_SS_EVENT_SRV_CHANGED</userinput> event record the changed fields' info. For example,
+                below snippet is <emphasis>Vanquish</emphasis> scaned China Unicom network, and it's signal strength, etc.</para>
+                <para>As <emphasis>Vanquish</emphasis> is World phone, but only CDMA SIM card inserted, the status is limited, and not
+                attached here:</para>
+                <example>
+                    <title>CM_SS_EVENT_SRV_CHANGED when scaned GSM network</title>
+                    <programlisting>Event = 0 (CM_SS_EVENT_SRV_CHANGED) Sevice Status = 1 (Limited Service)
+Service Domain = 4 (Found the right system, not yet registered/attached)
+Service Capability = 1 (Circuit Switched capable)
+System ID Type = UMTS (PLMN = 0x64F010 => [MCC, MNC] = [460, 0115], LAC  = 13348)
+RSSI = -62 (dBm)</programlisting>
+                </example>
+                <para>After the scan, <emphasis>Vanquish</emphasis> finally fond the CDMA network:</para>
+                <example>
+                    <title>CM_SS_EVENT_SRV_CHANGED when scaned CDMA network</title>
+                    <programlisting>Event = 0 (CM_SS_EVENT_SRV_CHANGED)
+Sevice Status = 2 (Service Available)
+Service Domain = 3 (Circuit and Packet Switched capable)
+Service Capability = 3 (Circuit and Packet Switched capable)
+System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
+                </example>
+            </sect3>
+            
+            <sect3>
+                <title>Making Call</title>
+                <para>the <emphasis>MO Call</emphasis> can always started from <userinput>cmcall_orig_proc()</userinput> in
+                <filename>cmcall.c</filename>, and eventually go though <filename>cmxcall.c</filename>.</para>
+                
+                <para>The <emphasis>Plus Dial</emphasis>:</para>
+                <example>
+                    <title>Plus Dial Handling</title>
+                    <programlisting>static void cmcall_send_mc_orig()
+{
+  /* <userinput>If number begins with "+" try to convert into digits</userinput> */
+  conver_result  = cm_util_perform_num_conversion (num_conv_req,);
+  ... ...
+  /* If + disabled, BP would log out <userinput>Plus dial is disabled</userinput> */
+}</programlisting>
+                </example>
+                
+                <example>
+                    <title>Accept Incomming Call</title>
+                    <programlisting></programlisting>
+                </example>
+            </sect3>
+            
+            <!-- Call End / Failed -->
+            <sect3>
+                <title>Call End/Failed</title>
+                
+                <para><userinput>cmxcall_end()</userinput> in <filename>cmxcall.c</filename> would take care of the end call
+                action.</para>
+                
+                <para>This function contains useful log for <emphasis>Call Status</emphasis>, <emphasis>Call Type</emphasis>, etc.
+                We usually need check these value in QXDM log:</para>
+                <example>
+                    <title>cmxcall_end() for ending call</title>
+                    <programlisting>void cmxcall_end()
+{
+  LOG(<userinput>"CallEnd state=%d status=%d"</userinput>, call_ptr->call_state, call_ptr->end_status);
+  LOG(<userinput>"CallType=%d SrvType=%d"</userinput>, call_ptr->call_type, call_ptr->srv_type);
+  ...
+  ...
+}</programlisting>
+                </example>
+                
+                <para>The <emphasis>Call State</emphasis> indicate current Call's state(such as MO/MT/etc). QualComm
+                defined it as an enum(<userinput>cm_call_state_e</userinput>).</para>
+                <table frame="topbot">
+                <title>Call State in BP</title>
+                <tgroup cols="2">
+                
+                <thead>
+                    <row><entry>Value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>CM_CALL_STATE_IDLE(0)</entry><entry>Call is in idle state, i.e. no call </entry></row>
+                    <row><entry>CM_CALL_STATE_ORIG(1)</entry><entry>Call is in origination state</entry></row>
+                    <row><entry>CM_CALL_STATE_INCOM(2)</entry><entry>Call is in alerting state</entry></row>
+                    <row><entry>CM_CALL_STATE_CONV(3)</entry><entry>Call is in conversation state</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+            
+                <table frame="topbot">
+                <title>Call End Status in BP</title>
+                <tgroup cols="2">
+                
+                <thead>
+                    <row><entry>Value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>CM_CALL_END_OFFLINE(0)</entry><entry>The phone is offline</entry></row>
+                    <row><entry>CM_CALL_END_NO_SRV(21)</entry><entry>No Service, This is for backward compatibility,NO_CDMA_SRV and NO_GW_SRV are mapped to this.</entry></row>
+                    <row><entry>CM_CALL_END_INTERCEPT(23)</entry><entry>Received an intercept from the BS -- originating only. CDMA only.</entry></row>
+                    <row><entry>CM_CALL_END_CLIENT_END(29)</entry><entry>The client ended the call.</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+            </sect3>
         </sect2>
         
         <!-- NV Items -->
@@ -1086,6 +1431,39 @@ Error in file err_f3_trace.c, line 2090</programlisting>
                 
                 <para>The <filename>AAAAANAZQ.elf</filename> is BP build symbol file, usually in <filename>build/AAAAANAZ/</filename> dir.</para>
             </sect3>
+        </sect2>
+    
+        <sect2 id="qcom.msm8960.sn">
+            <title>MSM8960 for ESN/MEID/IMEI</title>
+            
+            <para><filename>modem/datamodem/interface/qmidata/src/ds_qmi_dms.c</filename> handle device's serial number. </para>
+            <para>The function usually be <userinput>qmi_dmsi_get_device_serial_numbers()</userinput>, it touched all these 3
+            NV items, and it handle a <userinput>NV_UE_IMEISV_SVN_I</userinput> as well.</para>
+            
+            <para>After get all above data, the <userinput>qmi_dmsi_get_device_serial_numbers()</userinput> return the combined
+            response to caller. Below is it's logic flow:</para>
+            
+            <example>
+                <title>Device's ESN/MEID/IMEI handle logic</title>
+                <programlisting>static dsm_item_type * qmi_dmsi_get_device_serial_numbers()
+{
+  dcc_get_nv_item( NV_UE_IMEI_I, dcc_nv_item_ptr ); <lineannotation>get IMEI NV</lineannotation>
+  for(i = 1; i &lt;= dcc_nv_item_ptr->ue_imei[0]; i++){
+    1. code decode to 14-digit IMEI.
+    2. check sum a digit, as the 15-th digit
+    3. copy the 15-digit to a value. <lineannotation>RIL use GET_IMEI to get this value.</lineannotation>
+  }
+  dcc_get_nv_item (NV_ESN_I, dcc_nv_item_ptr); <lineannotation>get ESN NV</lineannotation>
+  dcc_get_nv_item (NV_MEID_I, dcc_nv_item_ptr); <lineannotation>get MEID NV</lineannotation>
+  dcc_get_nv_item ( NV_UE_IMEISV_SVN_I , dcc_nv_item_ptr); 
+  
+  return response; <lineannotation>data contain all above data.</lineannotation>
+}</programlisting>
+            </example>
+            
+            <para><emphasis>Vanquish</emphasis> handles the MEID/IMEI specially, as required by VZW, it directly
+            take 7-byte MEID + 1-digit CHKSM as IMEI, which also be 15-digit. But this required the MEID should not
+            have hex nibble!</para>
         </sect2>
     </sect1>
     <!-- ============= Glossary =================  -->

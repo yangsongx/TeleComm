@@ -23,19 +23,19 @@
 
 <indexentry>
   <primaryie>CIEV,
-    <ulink url="x293.html#AEN409" role="AEN413">CIEV</ulink>
+    <ulink url="x413.html#AEN565" role="AEN569">CIEV</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>COPS,
-    <ulink url="x293.html#AEN573" role="AEN576">COPS</ulink>
+    <ulink url="x413.html#AEN729" role="AEN732">COPS</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>CREG,
-    <ulink url="x293.html#AEN508" role="AEN512">CREG</ulink>
+    <ulink url="x413.html#AEN664" role="AEN668">CREG</ulink>
   </primaryie>
 </indexentry>
 
@@ -44,7 +44,7 @@
 
 <indexentry>
   <primaryie>ESN,
-    <ulink url="x293.html#AEN297" role="AEN299">ESN/MEID/IMEI</ulink>
+    <ulink url="x413.html#AEN417" role="AEN419">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
@@ -53,13 +53,13 @@
 
 <indexentry>
   <primaryie>IMEI,
-    <ulink url="x293.html#AEN297" role="AEN303">ESN/MEID/IMEI</ulink>
+    <ulink url="x413.html#AEN417" role="AEN423">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>IMSI,
-    <ulink url="x293.html#AEN592" role="AEN594">IMSI</ulink>
+    <ulink url="x413.html#AEN778" role="AEN780">IMSI</ulink>
   </primaryie>
 </indexentry>
 
@@ -68,19 +68,19 @@
 
 <indexentry>
   <primaryie>MCC,
-    <ulink url="x293.html#AEN355" role="AEN357">MCC/MNC/PLMN</ulink>
+    <ulink url="x413.html#AEN500" role="AEN502">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>MEID,
-    <ulink url="x293.html#AEN297" role="AEN301">ESN/MEID/IMEI</ulink>
+    <ulink url="x413.html#AEN417" role="AEN421">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>MNC,
-    <ulink url="x293.html#AEN355" role="AEN359">MCC/MNC/PLMN</ulink>
+    <ulink url="x413.html#AEN500" role="AEN504">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -88,8 +88,23 @@
 <indexdiv><title>N</title>
 
 <indexentry>
+  <primaryie>NITZ,
+    <ulink url="x413.html#AEN550" role="AEN552">NITZ</ulink>
+  </primaryie>
+</indexentry>
+
+<indexentry>
   <primaryie>nv_items_enum_type,
-    <ulink url="x293.html#AEN633" role="AEN640">NV Items</ulink>
+    <ulink url="x413.html#AEN914" role="AEN921">NV Items</ulink>
+  </primaryie>
+</indexentry>
+
+</indexdiv>
+<indexdiv><title>O</title>
+
+<indexentry>
+  <primaryie>OPERATOR,
+    <ulink url="x34.html#AEN183" role="AEN189">Operator</ulink>
   </primaryie>
 </indexentry>
 
@@ -98,7 +113,7 @@
 
 <indexentry>
   <primaryie>PLMN,
-    <ulink url="x293.html#AEN355" role="AEN361">MCC/MNC/PLMN</ulink>
+    <ulink url="x413.html#AEN500" role="AEN506">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -107,13 +122,13 @@
 
 <indexentry>
   <primaryie>RIL_RadioState,
-    <ulink url="x33.html#AEN35" role="AEN50">Phone Creation</ulink>
+    <ulink url="x34.html#AEN36" role="AEN51">Phone Creation</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>RSSI,
-    <ulink url="x293.html#AEN579" role="AEN586">RSSI</ulink>
+    <ulink url="x413.html#AEN735" role="AEN742">RSSI</ulink>
   </primaryie>
 </indexentry>
 
@@ -121,8 +136,14 @@
 <indexdiv><title>S</title>
 
 <indexentry>
+  <primaryie>SETUP_DATA_CALL,
+    <ulink url="x34.html#AEN212" role="AEN217">Setup Data Call</ulink>
+  </primaryie>
+</indexentry>
+
+<indexentry>
   <primaryie>sys_mode,
-    <ulink url="x293.html#AEN597" role="AEN600">Sys Mode</ulink>
+    <ulink url="x413.html#AEN783" role="AEN786">Sys Mode</ulink>
   </primaryie>
 </indexentry>
 
