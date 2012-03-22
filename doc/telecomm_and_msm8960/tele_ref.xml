@@ -129,8 +129,6 @@
             <table frame="topbot">
                 <title>Radio State Related RIL msg</title>
                 <tgroup cols="2">
-                <colspec colwidth="1*" />
-                <colspec colwidth="2*" />
                 <thead>
                     <row><entry>Msg</entry><entry>Note</entry></row>
                 </thead>
@@ -306,6 +304,16 @@
 RILJ    : [0252]&lt; OPERATOR {46003, , 46003}</programlisting>
                 </informalexample>
             </sect3>
+            
+            <sect3>
+                <title>Special Calling</title>
+                
+                <para>There're some <emphasis>special call number</emphasis> by carriers, provide extra service for user.</para>
+                
+                <para>For example, Verizon always has below service:</para>
+                <para><userinput>*67</userinput> - Caller ID Selective Blocking, let you block your name 
+                and number from being sent on calls as you make them by pressing <userinput>*67</userinput> before dialing.</para>
+            </sect3>
         </sect2>
         
         <!-- Setup Data Call -->
@@ -425,7 +433,7 @@ RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState:
             </sect3>
             
         </sect2>
-        
+        <!-- FTM and Tools -->
         <sect2>
             <title>FTM and Tools</title>
             
@@ -527,6 +535,7 @@ RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState:
         <!-- Voice Call Support -->
         <sect2>
             <title>Voice Call Support</title>
+            
             <para></para>
             <table frame="topbot" id="tbl.ril.voicecall.item">
                 <title>Voice Call Related Msg in RIL</title>
@@ -542,6 +551,40 @@ RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState:
                 </tbody>
                 </tgroup>
             </table>
+            
+            <para>The request dial's data is a structure(<userinput>RIL_Dial</userinput>):</para>
+            <example>
+                <title>Dial Data Structure</title>
+                <programlisting>typedef struct {
+    char * address;
+    int clir; /* (same as 'n' paremeter in TS 27.007 7.7 "+CLIR"
+               * clir == 0 on "use subscription default value"
+               * clir == 1 on "CLIR invocation" (restrict CLI presentation)
+               * clir == 2 on "CLIR suppression" (allow CLI presentation)
+               */
+    RIL_UUS_Info *  uusInfo; /* NULL or Pointer to User-User Signaling Information */
+} RIL_Dial;</programlisting>
+            </example>
+            
+            <para>A flow of an incomming call is like below:</para>
+            <example>
+                <title>Incomming Call Logic Flow</title>
+                    <programlisting><![CDATA[
+ RIL                                     BP
+  |   UNSOL_RESPONSE_CALL_STATE_CHANGED   |
+  | <------------------------------------ |
+  |                                       |
+  |      REQUEST_GET_CURRENT_CALLS        |
+  | ------------------------------------> |
+  | <------------------------------------ |
+  |     (contained Caller ID info)        |]]></programlisting>
+            </example>
+            
+            <para>We call the incomming call's info as <emphasis>Caller ID</emphasis>, it contained the incomming call's
+            number, and other extra info(such as the city, etc).</para>
+            
+            <para>These info, sometimes, also called as <emphasis>Calling Line Identity</emphasis>(CLI).</para>
+            
         </sect2>
     </sect1>
     <!-- QualComm BP -->
@@ -674,6 +717,10 @@ IMEI | 9 9 | 0 0 | 0 1 | 1 7 | 2 4 | 5 1 | 9 3 | 4  (4 is CHKSM)
 Then NV bytes(8-byte) 00 99 0C F1 17 24 5A 93</programlisting>
                 </example>
                 
+                <para>As an architecture view, the IMEI last 1-digit checksum can be implementaed either in AP or BP.</para>
+                <para>For example, <emphasis>RadioComm</emphasis> would read out raw NV data, and calculate the checksum
+                by itself.</para>
+                
                 <para>These code processing on MSM8960 can be found at <xref linkend="qcom.msm8960.sn" />.</para>
             </sect3>
             
@@ -759,8 +806,11 @@ Then NV bytes(8-byte) 00 99 0C F1 17 24 5A 93</programlisting>
         <!-- AT Commands -->
         <sect2>
             <title>AT Commands</title>
+            
             <para>For non-single-chip hardware, most of data was exchanged via AT commands. Some of them are
             3gpp standard, and some are moto-specific, or QualComm-specific.</para>
+            
+            <note><para>3gpp's 27.007 defined these AT commands.</para></note>
             
             <para>Here lists these commands' referenc information.</para>
             <!-- CIEV -->
@@ -984,6 +1034,8 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
                 </tbody>
                 </tgroup>
                 </table>
+                
+                <para>There's another term, <userinput>ECIO</userinput>, which is for CDMA</para>
             </sect3>
         </sect2>
         
@@ -1027,10 +1079,10 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
         </sect2>
         
         <!-- Call Manager(CM) -->
-        <sect2>
+        <sect2 id="qc.cm">
             <title>Call Manager(CM)</title>
             
-            <para>The CM component is under <filename>modem/mmode/cm/</filename></para>
+            <para>The CM component is under <filename>modem/mmode/cm/</filename>, below are some code files:</para>
             <table frame="topbot">
                 <title>CM Components</title>
             <tgroup cols="2">
@@ -1040,18 +1092,20 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
                     <row><entry></entry><entry>Notes</entry></row>
                 </thead>
                 <tbody>
+                    <row><entry>cm.c</entry><entry>CM Main Entry</entry></row>
                     <row><entry>cmcall.c</entry><entry>Can be considered as <emphasis>Base CM Call</emphasis>.</entry></row>
-                    <row><entry>cmxcall.c</entry><entry>Extended Call, based on cmcall.c</entry></row>
-                    <row><entry>cm.c</entry><entry>Core CM Entry</entry></row>
+                    <row><entry>cmxcall.c</entry><entry><emphasis>Extended Call</emphasis>, based on cmcall.c</entry></row>
+                    <row><entry>cmss.c</entry><entry>Service System code, the RSSI handling is here.</entry></row>
                 </tbody>
             </tgroup>
             </table>
-            
+            <!-- CM SS Event -->
             <sect3>
                 <title>CM SS Event</title>
                 
                 <para>The <emphasis>SS Event</emphasis> can indicate a voice call (service status) registration, from
                 BP view.</para>
+                
                 <example>
                     <title>SS Event</title>
                     <programlisting>void cm_client_ss_event_ntfy()
@@ -1063,17 +1117,20 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
                 
                 <para><userinput>CM_SS_EVENT_SRV_CHANGED</userinput> event record the changed fields' info. For example,
                 below snippet is <emphasis>Vanquish</emphasis> scaned China Unicom network, and it's signal strength, etc.</para>
-                <para>As <emphasis>Vanquish</emphasis> is World phone, but only CDMA SIM card inserted, the status is limited, and not
+
+                <para>As <emphasis>Vanquish</emphasis> inserts CDMA SIM card in this case, the status is limited, and not
                 attached here:</para>
                 <example>
                     <title>CM_SS_EVENT_SRV_CHANGED when scaned GSM network</title>
                     <programlisting>Event = 0 (CM_SS_EVENT_SRV_CHANGED) Sevice Status = 1 (Limited Service)
 Service Domain = 4 (Found the right system, not yet registered/attached)
 Service Capability = 1 (Circuit Switched capable)
-System ID Type = UMTS (PLMN = 0x64F010 => [MCC, MNC] = [460, 0115], LAC  = 13348)
+System ID Type = UMTS (PLMN = 0x64F010 => [MCC, MNC] = [460, 0115])
 RSSI = -62 (dBm)</programlisting>
                 </example>
+
                 <para>After the scan, <emphasis>Vanquish</emphasis> finally fond the CDMA network:</para>
+
                 <example>
                     <title>CM_SS_EVENT_SRV_CHANGED when scaned CDMA network</title>
                     <programlisting>Event = 0 (CM_SS_EVENT_SRV_CHANGED)
@@ -1082,11 +1139,27 @@ Service Domain = 3 (Circuit and Packet Switched capable)
 Service Capability = 3 (Circuit and Packet Switched capable)
 System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
                 </example>
+                    <indexterm><primary>CM SS Event</primary></indexterm>
+                <table frame="topbot">
+                    <title>CM SS Event</title>
+                <tgroup cols="2">
+                
+                <thead>
+                    <row><entry>Value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>CM_SS_EVENT_SRV_CHANGED(0)</entry><entry>Serving system information changed</entry></row>
+                    <row><entry>CM_SS_EVENT_RSSI(1)</entry><entry>RSSI changed</entry></row>
+                    <row><entry>CM_SS_EVENT_SRV_NEW(7)</entry><entry>Serving system information changed.</entry></row>
+                    <row><entry>CM_SS_EVENT_PS_DATA_AVAIL(9)</entry><entry>Received PS data available request</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
             </sect3>
-            
+            <!-- Making Call -->
             <sect3>
                 <title>Making Call</title>
-                <para>the <emphasis>MO Call</emphasis> can always started from <userinput>cmcall_orig_proc()</userinput> in
+                <para>The <emphasis>MO Call</emphasis> always starts from <userinput>cmcall_orig_proc()</userinput> in
                 <filename>cmcall.c</filename>, and eventually go though <filename>cmxcall.c</filename>.</para>
                 
                 <para>The <emphasis>Plus Dial</emphasis>:</para>
@@ -1105,6 +1178,59 @@ System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
                     <title>Accept Incomming Call</title>
                     <programlisting></programlisting>
                 </example>
+                
+                <para>The call related events are defined as <userinput>cm_call_event_e_type</userinput> in QualComm:</para>
+                
+                    <indexterm><primary>CM Call Event</primary></indexterm>
+                <table frame="topbot">
+                    <title>CM Call Event</title>
+                <tgroup cols="2">
+                
+                <thead>
+                    <row><entry>Value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>CM_CALL_EVENT_ORIG(0)</entry><entry>Phone originated a call.</entry></row>
+                    <row><entry>CM_CALL_EVENT_ANSWER(1)</entry><entry>Incoming call was answered.</entry></row>
+                    <row><entry>CM_CALL_EVENT_END(3)</entry><entry>Originated/incoming call was ended.</entry></row>
+                    <row><entry>CM_CALL_EVENT_INCOM(5)</entry><entry>Phone received an incoming call.</entry></row>
+                    <row><entry>CM_CALL_EVENT_CONNECT(6)</entry><entry>Originated/incoming call was connected.</entry></row>
+                    <row><entry>CM_CALL_EVENT_CALLER_ID(10)</entry><entry>Caller ID info was received from the BS. CDMA only.</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+                <para>These events log can be found in <filename>modem/dsatcmif.c</filename>(for MSM8960 case):</para>
+                <example>
+                    <title>CM CALL EVENT log</title>
+                    <programlisting>void cmif_call_event_cb_func()
+{
+  MSG_MED(<userinput>"ATCOP: cm event cb, event: %d, type: %d, state: %d"</userinput>,
+     event, event_ptr->call_type, event_ptr->call_state);
+}</programlisting>
+                </example>
+            </sect3>
+            <!-- Incomming Call -->
+            <sect3 id="qc.cm.incommingcall">
+                <title>Incomming Call</title>
+                <para>For incomming call, the QualComm's CM flow is like this:</para>
+                <example>
+                    <title>Incomming Call CM event</title>
+                    <programlisting><![CDATA[ CM_CALL_EVENT_INCOM(5) (Got from network)
+ ---------------->     
+     CM_CALL_EVENT_CALLER_ID (10) (Tell the caller info(CLI))
+                ---------->   CM_CALL_EVENT_END (3) (user reject the call)]]></programlisting>
+                </example>
+                
+                <para>QualComm defines a <userinput>cm_num_s_type</userinput> as the phone number structure.</para>
+                
+                <para>If a phone(13022593515) calling another mobile phone, the MO phone number would store as:</para>
+                <informalexample>
+                    <programlisting>struct {
+  uint8 buf[CM_MAX_NUMBER_CHARS]; <userinput>13022593515</userinput>
+  uint8 len;  <userinput>11</userinput>
+  ...   ...
+}cm_num_s_type;</programlisting>
+                </informalexample>
             </sect3>
             
             <!-- Call End / Failed -->
@@ -1161,6 +1287,24 @@ System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
                 </tgroup>
                 </table>
             </sect3>
+        
+            <sect3>
+                <title>FDN</title>
+                <para>The <emphasis>FDN</emphasis> will restrict your calling.</para>
+                <para>It usually needs input your SIM card PIN2 code, before enable FDN.</para>
+                    <indexterm>
+                        <primary>FDN</primary>
+                    </indexterm>
+                <para>QualComm code has a <userinput>FEATURE_PACKET_CALL_FDN_CHECK</userinput> flag for support FDN, from
+                modem layer.</para>
+                <para>So, for <emphasis>MSM8960</emphasis> product, Moto didn't enable it at earlier stage. Later,
+                it can add into <filename>build/ms/custaaaaakazq.h</filename> file, to let FDN work.</para>
+            </sect3>
+        </sect2>
+
+        <sect2>
+            <title>Call Forward</title>
+            <para>Call Forward topic here</para>
         </sect2>
         
         <!-- NV Items -->
