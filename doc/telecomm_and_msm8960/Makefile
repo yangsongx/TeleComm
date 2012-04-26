@@ -23,7 +23,7 @@ all:pdf html word
 pdf:
 	docbook2pdf $(SRC)
 html:
-	docbook2html --nochunks -o html_doc $(SRC)
+	docbook2html --nochunks -o html_doc $(TELE_REF_SRC)
 word:
 	docbook2rtf $(SRC)
 tele:

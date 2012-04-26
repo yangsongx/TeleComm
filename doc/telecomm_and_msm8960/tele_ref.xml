@@ -74,6 +74,12 @@
         <para>The vendor ril and baseband code is totally customerizable, and varies on different products.</para>
         
         <para>arch/arm/include/asm/bootinfo.h:34:#define PU_REASON_USB_CABLE    0x00000010 /* Bit 4  */</para>
+        
+        <sect2>
+            <title>Powerup Reason</title>
+            <para>motorola/system/core/mot_boot_mode/mot_boot_mode.c</para>
+            <para><filename>/proc/bootinfo</filename> contained boot up reason info.</para>
+        </sect2>
     </sect1>
     
     <!-- Upper app layer -->
@@ -269,6 +275,11 @@
                 <title>Subscribe with SIM/NV</title>
                 <para></para>
             </sect3>
+            <!-- Roaming -->
+            <sect3>
+                <title>Roaming</title>
+                <para></para>
+            </sect3>
             
             <!-- Operator -->
             <sect3>
@@ -372,7 +383,7 @@ RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState:
        ifname='rmnet0' addresses=[49.90.136.7/28] 
        dnses=[61.177.7.1,218.2.135.1] gateways=[49.90.136.1]}</programlisting>
             </example>
-            
+            <!-- Condition Checking -->
             <sect3>
                 <title>Condition Checking</title>
                 <para>The <userinput>isDataAllowed()</userinput> would do all the condition checking. If any of them have
@@ -395,7 +406,7 @@ RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState:
                     </tgroup>
                 </table>
             </sect3>
-            
+            <!-- Data Registration State -->
             <sect3>
                 <title>Data Registration State</title>
                 <para>DATA_REGISTRATION_STATE</para>
@@ -427,8 +438,6 @@ RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState:
  9929   byte   nai[NV_MAX_AN_AUTH_NAI_LENGTH];
  9930 } nv_hdr_an_auth_nai_type;</programlisting>
                 </informalexample>
-                
-                
                 
             </sect3>
             
@@ -565,11 +574,42 @@ RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState:
     RIL_UUS_Info *  uusInfo; /* NULL or Pointer to User-User Signaling Information */
 } RIL_Dial;</programlisting>
             </example>
+            <!-- Voice Registration -->
+            <sect3>
+                <title>Voice Registration</title>
+                
+                <para>A <emphasis>network registration</emphasis>, usually means voice call service is available.</para>
+                
+                <para><userinput>RIL_REQUEST_VOICE_REGISTRATION_STATE</userinput> is the message indicate current
+                registration state.</para>
+                
+                    <indexterm>
+                        <primary>VOICE_REGISTRATION_STATE</primary>
+                    </indexterm>
+                    
+                <table frame="topbot">
+                    <title>VOICE_REGISTRATION_STATE response data</title>
+                    <tgroup cols="3">
+                    <thead>
+                        <row><entry>Field</entry><entry>Notes</entry><entry>Meaning</entry></row>
+                    </thead>
+                    <tbody>
+                        <row><entry>1</entry><entry>reg state</entry><entry>0-Not Reg,and is not searching,1-Reg,home network,2-Not Reg, but is under searching,3-Reg denied,4-Unknow,5-Reg,roaming.</entry></row>
+                        <row><entry>2</entry><entry>LAC</entry><entry>Available for GSM/WCDMA system, or NULL if not.</entry></row>
+                        <row><entry>3</entry><entry>CID</entry><entry>Available for GSM/WCDMA system, or NULL if not.</entry></row>
+                        <row><entry>4</entry><entry>voice radio technology</entry><entry>RIL_RadioTechnology</entry></row>
+                    </tbody>
+                    </tgroup>
+                </table>
+                
+                
+            </sect3>
             
+            <!-- Get Current Call -->
             <sect3>
                 <title>Get Current Call</title>
                 
-                <para>The MT/MO Call info usually can be find via <emphasis>REQUEST_GET_CURRENT_CALLS</emphasis> message</para>
+                <para>The MT/MO Call info usually can be find via <emphasis>REQUEST_GET_CURRENT_CALLS</emphasis> message.</para>
                 <indexterm>
                     <primary>GET_CURRENT_CALLS</primary>
                 </indexterm>
@@ -594,41 +634,58 @@ private Object responseCallList(Parcel p) {
 }</programlisting>
                 </example>
                 
-                <para>The <userinput>DriverCall</userinput> class takes care of the call info format string.</para>
-                <para>Usually, the <userinput>DriverCall::toString()</userinput> is code for the read-able formatting:</para>
+                <para>The <userinput>DriverCall</userinput> class takes care of the call info data, and<userinput>DriverCall::toString()</userinput> 
+                is used for compose a read-able formatting string:</para>
                 <informalexample>
                     <programlisting>public String toString() {
-  return "id=" + index +"," + state + "....;
+  return "id=" + index +"," + state +  "toa=" + TOA + "," +
+       (isMT ? "mt" : "mo") + + als + "," +
+       + (isVoice ? "voc" : "nonvoc") + ","
+       + (isVoicePrivacy ? "evp" : "noevp") + "," 
+       /*+ "number=" + number */ + ",cli=" + numberPresentation + ","
+       /*+ "name="+ name */ + "," + namePresentation;
 }</programlisting>
                 </informalexample>
                 
                 <para>Below is a demo of RIL log containing the call info:</para>
                 <informalexample>
-                    <programlisting>D RILJ    : [0169]&lt; GET_CURRENT_CALLS  [id=1,DIALING,toa=129,norm,mo,0,voc,noevp,,cli=1,,1]</programlisting>
+                    <programlisting>GET_CURRENT_CALLS[id=1,DIALING,toa=129,norm,mo,0,voc,noevp,,cli=1,,1]</programlisting>
                 </informalexample>
                 
                 <para>Below table list each fields of the <userinput>GET_CURRENT_CALLS</userinput></para>
                 <table frame="topbot">
                     <title>GET_CURRENT_CALLS fields</title>
                     <tgroup cols="3">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                    <colspec colwidth="3*" />
                 <thead>
                     <row><entry>No.</entry><entry>Field</entry><entry>Notes</entry></row>
                 </thead>
                 <tbody>
-                    <row><entry>1</entry><entry>Index</entry><entry>Usually 1</entry></row>
+                    <row><entry>1</entry><entry>Index</entry><entry>Usually 1, Line-1</entry></row>
                     <row><entry>2</entry><entry>call state</entry><entry>0-Active,1-Holding,2-Dialing,3-Alerting,4-Incoming,5-WAITING</entry></row>
-                    <row><entry>3</entry><entry>Type of Address(TOA)</entry><entry></entry></row>
+                    <row><entry>3</entry><entry>Type of Address(TOA)</entry><entry>129-Domestic Num,145-International num</entry></row>
+                    <row><entry>4</entry><entry>isMpty</entry><entry></entry></row>
+                    <row><entry>5</entry><entry>MT,or MO Call</entry><entry>MO, MT</entry></row>
+                    <row><entry>6</entry><entry>als</entry><entry>Currently always be 0</entry></row>
+                    <row><entry>7</entry><entry>Voice Call, or not</entry><entry>"voc" for Voice Call, otherwise "nonvoc"</entry></row>
+                    <row><entry>8</entry><entry>Privacy</entry><entry>"evp"(PrivacyCall), otherwise "noevp"</entry></row>
                 </tbody>
                 </tgroup>
                 </table>
+                
+                <para>Usually, if the number is starting with <userinput>+</userinput>, we will consider this as international, and
+                mark the TOA field as <userinput>145</userinput>(International Number).</para>
             </sect3>
-            
+            <!-- MO Call -->
             <sect3>
                 <title>MO Call</title>
                 
                 <para>The MO Call's status can also get via <emphasis>GET_CURRENT_CALLS</emphasis> message.</para>
             </sect3>
             
+            <!-- MT Call -->
             <sect3>
                 <title>MT Call</title>
             <para>A flow of an incomming call is like below:</para>
@@ -649,19 +706,98 @@ private Object responseCallList(Parcel p) {
             
             <para>These info, sometimes, also called as <emphasis>Calling Line Identity</emphasis>(CLI).</para>
             </sect3>
-            
-            
-            
+
         </sect2>
-        
+        <!-- SMS -->
         <sect2>
             <title>SMS</title>
+            
             <para></para>
+            <!-- MO SMS -->
+            <sect3>
+                <title>MO SMS</title>
+                
+                <para><userinput>RIL_REQUEST_SEND_SMS</userinput></para>
+                <para><userinput>REQUEST_CDMA_SEND_SMS</userinput> is RIL message for CDMA sending SMS data.</para>
+                
+                <informalexample>
+                    <programlisting> 273 typedef struct {
+ 274     int messageRef;   /* TP-Message-Reference for GSM,
+ 275                          and BearerData MessageId for CDMA
+ 276                          (See 3GPP2 C.S0015-B, v2.0, table 4.5-1). */
+ 277     char *ackPDU;     /* or NULL if n/a */
+ 278     int errorCode;    /* See 3GPP 27.005, 3.2.5 for GSM/UMTS,
+ 279                          3GPP2 N.S0005 (IS-41C) Table 171 for CDMA,
+ 280                          -1 if unknown or not applicable*/
+ 281 } RIL_SMS_Response;</programlisting>
+                </informalexample>
+            </sect3>
+            
+            <sect3>
+                <title>QCRIL Part</title>
+                
+                <para>QCRIL would handle SMS:</para>
+                <table frame="topbot">
+                <title>SMS Handling in QCRIL</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="1*" />
+                <thead>
+                    <row><entry>Filename</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>qcril_ami_sms.c</entry><entry>qcril_mo_sms_cb(), for MO SMS</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+            </sect3>
         </sect2>
     </sect1>
     <!-- QualComm BP -->
     <sect1>
         <title>QualComm BP</title>
+        <!-- Overview -->
+        <sect2>
+            <title>Overview</title>
+            
+            <para>As current Moto's product design, BP code in always in a dir, like <userinput>mdm6600/</userinput>,
+            Moto's specific code is put in <userinput>bpqcom/</userinput> dir, and embeded in 
+            <userinput>mdm6600/core/</userinput>:</para>
+            
+            <informalexample>
+                <programlisting><![CDATA[
+mdm6600/                bpqcom/
+  ./core/bpqcom            ^
+       |                   |  
+       +-------------------+]]></programlisting>
+            </informalexample>
+            
+            <para>BP source code is build via <userinput>SCONS</userinput>, which is a <emphasis>Python Makefile</emphasis>
+            build system.</para>
+            
+            <para><filename>bpqcom/build/paths.sconscript</filename></para>
+            
+            <example>
+                <title>Moto API Exporting</title>
+                <programlisting>  1 Import('env')
+  2 
+  3 # Public APIs these are accecible by anyone
+  4 env.PublishPublicApi('MOTOROLA', [
+  5    "${INC_ROOT}/core/bpqcom/mot_base/inc",
+  6 ])
+  7 
+  8 env.PublishPublicApi('MOTUTILS', [
+  9    "${INC_ROOT}/core/bpqcom/mot_base/inc",
+ 10    "${INC_ROOT}/core/bpqcom/mot_utils/inc",
+ 11 ])
+ 12 
+ 13 env.PublishPublicApi('MOTNV', [
+ 14    "${INC_ROOT}/core/bpqcom/mot_base/inc",
+ 15    "${INC_ROOT}/core/bpqcom/mot_nv/inc",
+ 16 ])</programlisting>
+            </example>
+        </sect2>
+        
         <!-- Telecom Terminology -->
         <sect2>
             <title>Telecom Terminology</title>
@@ -1116,6 +1252,7 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
             <title>SIM Card</title>
             
             <para>Usually, we needs three type of SIM card, GSM/WCDMA/CDMA:</para>
+            
             <itemizedlist spacing="compact">
             <listitem>
                 <para>SIM - GSM SIM</para>
@@ -1135,10 +1272,53 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
             CDMA RUIM card type.</para>
             
             <para>Run Time RUIM Enable (RTRE)</para>
+            
             <sect3>
                 <title>IMSI</title>
                     <indexterm><primary>IMSI</primary></indexterm>
                 <para>EF_IMSI 0x6F07</para>
+            </sect3>
+            <!-- SIM PIN -->
+            <sect3>
+                <title>SIM PIN</title>
+                
+                <para>There're 2 types of PIN for SIM card:</para>
+                <itemizedlist>
+                <listitem>
+                    <para>PIN1, or call it <emphasis>PIN code</emphasis>, usually be <userinput>1234</userinput>,
+                    or <userinput>0000</userinput>.</para>
+                </listitem>
+                <listitem>
+                    <para>PIN2, it related with Carrier and internal Smart Card Info. It's transparent for end user.</para>
+                </listitem>
+                </itemizedlist>
+                
+                <para>As SIM card standard definition, the <emphasis>PIN status</emphasis> would contain below
+                values:</para>
+                <table frame="topbot">
+                <title>PIN Status of SIM card</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>Filename</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>not verify</entry><entry>verify</entry></row>
+                </tbody>
+            </tgroup>
+            </table>
+            </sect3>
+            
+            <sect3>
+                <title>MMGSDI/GSDI</title>
+                
+                <para><emphasis>Generic SIM Device Interface</emphasis>(GSDI) is a set of API lib, for all types of SIM.</para>
+                <para>QualComm added <emphasis>Mult-Mode GSDI</emphasis>(MMGSDI) to obsolete GSDI API. So in the QualComm's
+                source code, the <userinput>FEATURE_MMGSDI_SESSION_LIB</userinput> can be found everywhere.</para>
+                
+                <example>
+                    <title>Verify SIM PIN(PIN1)</title>
+                    <programlisting>gsdi_verify_pin(GSDI_PIN1,);</programlisting>
+                </example>
             </sect3>
             
             <sect3>
@@ -1152,9 +1332,42 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
             </sect3>
         </sect2>
         
+        <!-- Voice Registration -->
         <sect2>
-            <title>Sys Mode</title>
-            <para></para>
+            <title>Voice Registration</title>
+            
+            <para>Though voice reg is related with the Call Manager, it is still a little different than purly Calling, so add
+            this topic in a separate section.</para>
+            
+            <para><filename>modem/nas/reg/</filename> is component related with the registration.</para>
+            
+            <para>And QualComm added <userinput>=REG=</userinput> mark for those reg message, to ease the log search and filter.</para>
+            
+            <para>modem/nas/reg/src/reg_sim.c:4197:    MSG_ERROR_DS(REG_LOCAL_SUB, "=REG= Remove undefined PLMN from GPRS FPLMN list", 0,0,0);</para>
+            <!-- OTA Log -->
+            <sect3>
+                <title>OTA Log</title>
+                <para></para>
+            </sect3>
+            <!-- Service State -->
+            <sect3>
+                <title>Service State</title>
+                
+                <para>QualComm used <userinput>reg_state_service_state</userinput> global variable to indicate the registrate
+                state.</para>
+                
+                <para>This variable is an important struct, contained many useful reg info.</para>
+                
+                <example>
+                    <title></title>
+                    <programlisting></programlisting>
+                </example>
+                
+            </sect3>
+            
+            <sect3>
+                <title>Sys Mode</title>
+                <para></para>
                     <indexterm>
                         <primary>sys_mode</primary>
                     </indexterm>
@@ -1175,8 +1388,14 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
                     <row><entry>SYS_SYS_MODE_WLAN 8</entry><entry>SYS_SYS_MODE_LTE 9</entry></row>
                     <row><entry>SYS_SYS_MODE_GWL 10(GSM+WCDMA+LTE)</entry><entry>SYS_SYS_MODE_TDS 11</entry></row>
                 </tbody>
-            </tgroup>
-            </table>
+                </tgroup>
+                </table>
+            </sect3>
+            
+            <sect3>
+                <title>Roaming Indication</title>
+                <para></para>
+            </sect3>
         </sect2>
         
         <!-- Call Manager(CM) -->
@@ -1195,7 +1414,8 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
                 <tbody>
                     <row><entry>cm.c</entry><entry>CM Main Entry</entry></row>
                     <row><entry>cmcall.c</entry><entry>Can be considered as <emphasis>Base CM Call</emphasis>.</entry></row>
-                    <row><entry>cmxcall.c</entry><entry><emphasis>Extended Call</emphasis>, based on cmcall.c</entry></row>
+                    <row><entry>cmxcall.c</entry><entry>CMXxxx.c, is CDMA/HDR specific</entry></row>
+                    <row><entry>cmwcall.c</entry><entry>CMWxxx.c, is GMS/WCDMA specific</entry></row>
                     <row><entry>cmss.c</entry><entry>Service System code, the RSSI handling is here.</entry></row>
                 </tbody>
             </tgroup>
@@ -1321,7 +1541,8 @@ System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
                 <note><para>Above example should replaced by <filename>void cm_client_call_event_ntfy</filename> in
                 cmclient.c! that's the root plase of code!!!</para></note>
                 
-                <para>The Call Type <userinput>cm_call_type_e_type</userinput></para>
+                <para>The Call Type <userinput>cm_call_type_e_type</userinput>:</para>
+                
                 <table frame="topbot">
                     <title>CM Call Type Values</title>
                 <tgroup cols="2">
@@ -1337,6 +1558,39 @@ System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
                 </tbody>
                 </tgroup>
                 </table>
+                
+                <para>The MO(Orig) Call failure code is defined as <userinput>cm_call_orig_fail_e_type</userinput> enum.</para>
+                
+                <example>
+                    <title>Orig Fail Code</title>
+                    <programlisting>(cmdbg.c)
+void cmdbg_print_mc_rpt()
+{
+  case CM_CALL_ORIG_FAIL_F:
+    LOG("==CM== CM&lg;&lg; orig fail code %d",
+       mc_rpt_ptr->orig_fail.code);
+}</programlisting>
+                </example>
+                
+                <table frame="topbot">
+                <title>Orig Failure Code</title>
+                <tgroup cols="2">
+                
+                <thead>
+                    <row><entry>Value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>CM_CALL_ORIG_ERR_NO_SRV(1)</entry><entry>No Service</entry></row>
+                    <row><entry>CM_CALL_ORIG_ERR_ACC_FAIL(2)</entry><entry>Fails due to system access failure.</entry></row>
+                    <row><entry>CM_CALL_ORIG_ERR_ABORT(3)</entry><entry>MC cannot process the orig cmd.</entry></row>
+                    <row><entry>CM_CALL_ORIG_ACC_IN_PROG(6)</entry><entry>Fails due to access being in progress.</entry></row>
+                    <row><entry>CM_CALL_ORIG_ERR_ALREADY_IN_TC(16)</entry><entry>There is already a traffic channel.</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+                
+                <para>Please be note that the <emphasis>Failure Code</emphasis> is not the same as <emphasis>End Status</emphasis>,
+                there's map relationship between them.</para>
             </sect3>
             
             <!-- Incomming Call -->
@@ -1430,6 +1684,7 @@ System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
                 <para>So, for <emphasis>MSM8960</emphasis> product, Moto didn't enable it at earlier stage. Later,
                 it can add into <filename>build/ms/custaaaaakazq.h</filename> file, to let FDN work.</para>
             </sect3>
+            <!-- Speed Dial -->
             <sect3>
                 <title>Speed Dial</title>
                 
@@ -1446,7 +1701,7 @@ System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
             </sect3>
         
         </sect2>
-        
+        <!-- Short Message Service -->
         <sect2>
             <title>Short Message Service</title>
             
@@ -1463,7 +1718,7 @@ System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
                 </thead>
                 <tbody>
                     <row><entry>cmsms.c</entry><entry>The base SMS entry.</entry></row>
-                    <row><entry>cmxsms.c</entry><entry><emphasis>Extended SMS</emphasis>, based on cmsms.c</entry></row>
+                    <row><entry>cmxsms.c</entry><entry>CDMA specific SMS</entry></row>
                 </tbody>
             </tgroup>
             </table>
@@ -1493,6 +1748,29 @@ System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
   ...  ...
 }</programlisting>
             </example>
+            
+                <para>Keep in mind, above logic is SMS already be handled by Modem.</para>
+                
+                <para>For some error case, we would failed find above log as the SMS req is already rejected earlier, so
+                the earliest SMS event would be in <filename>wmscm.c</filename></para>
+                
+                <example>
+                    <title>MO of SMS</title>
+                    <programlisting>void wms_cm_call_orig()
+{
+  // so usually be '6'(S06) for this
+  MSG_HIGH("Originating SMS call: so=%d", so, 0, 0);
+  cm_mm_call_cmd_orig(...
+      CM_CALL_TYPE_SMS,
+      &amp; cm_s_ptr->called_number, /* called number */
+      );
+}</programlisting>
+                </example>
+                
+                <example>
+                    <title></title>
+                    <programlisting></programlisting>
+                </example>
             
             <sect3>
                 <title>MO SMS</title>
@@ -1526,9 +1804,9 @@ System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
                 <title>MT SMS</title>
                 <para></para>
             </sect3>
-            
+            <!-- NV Info to control SMS -->
             <sect3>
-                <title>NV Info to control SMSM</title>
+                <title>NV Info to control SMS</title>
                 
                 <para>The SMS's <emphasis>Access Channel</emphasis>, <emphasis>Traffic Channel</emphasis> can be specified by
                 QualComm's 2 NV items:</para>
@@ -1548,6 +1826,26 @@ System Mode = 2 (CDMA) RSSI = -102 (dBm) ...</programlisting>
                 </table>
                 
                 <para>Above 2 items can't be 1 at the same time, as there's only one single valid channel for SMS.</para>
+                
+                <para><filename>modem/wms/src/WMSE/wmsmsg.c</filename> handle the channels, and we can find which channel
+                is used currently, via the QXDM Log:</para>
+                
+                <example>
+                    <title>Channel Of MO SMS</title>
+                    <programlisting>wms_cmd_err_e_type wms_msg_cdma_send_mo_channel()
+{
+  if(<userinput>is_access_channel_enabled &amp;&amp;!is_traffic_channel_enabled</userinput>){
+    MSG_HIGH("Only Access Channel is enabled", 0, 0, 0);
+    return wms_msg_cdma_send_MO();
+  }else if(<userinput>!is_access_channel_enabled &amp;&amp;is_traffic_channel_enabled</userinput>){
+    MSG_HIGH("Only Traffic Channel is enabled", 0, 0, 0);
+    ... ...
+  }else if(<userinput>is_access_channel_enabled &amp;&amp;is_traffic_channel_enabled</userinput>){
+    /* Send on Access First and if Fail try on Trafffic Channel */
+    wms_msg_cdma_send_MO();
+  }
+}</programlisting>
+                </example>
                 
             </sect3>
         </sect2>
@@ -1819,9 +2117,52 @@ Error in file err_f3_trace.c, line 2090</programlisting>
                 </example>
                 
                 <para>The <filename>AAAAANAZQ.elf</filename> is BP build symbol file, usually in <filename>build/AAAAANAZ/</filename> dir.</para>
+                
+                <para>For silent BP panic, the dump file is under <filename>/sdcard/bp-dumps/</filename></para>
+                
+                <example>
+                    <title>Parse BP silent panic dump file</title>
+                    <programlisting># <userinput>dumpsys dropbox --print MODEM_SILENT_PANIC</userinput>
+Hardware	: Vanquish
+
+Subtype: Error in file qmi_motext_utils_handler.c, line 137
+ERR crash log report.  Version 3.
+Time of crash (m-d-y h:m:s): 04-24-2012 1:15:14
+...   ...</programlisting>
+                </example>
             </sect3>
         </sect2>
-    
+        <!-- EFS -->
+        <sect2>
+            <title>EFS</title>
+            
+            <para><userinput>core/storage/efs/</userinput> is EFS component source code, it provided a 
+            file system service, the APIs is similar as glibc's <userinput>open()/read()</userinput>.</para>
+            
+                <indexterm>
+                    <primary>efs_open()</primary>
+                </indexterm>
+            <example>
+                <title>Usage of EFS APIs</title>
+                <programlisting>#include <userinput>&lt;fs_public.h&gt;</userinput>
+int fd;
+char buf[32];
+fd = <userinput>efs_open("/motorola/fi.na", O_APPEND | O_RDWR | O_CREAT)</userinput>;
+if(fd != -1){
+  <userinput>efs_read</userinput>(fd, buf, sizeof(buf));
+  sprintf(buf, "hello:%d", i);
+  <userinput>efs_write</userinput>(fd, buf, strlen(buf));
+  <userinput>efs_close</userinput>(fd);
+}</programlisting>
+            </example>
+            
+            <para>Sometimes, when we call <userinput>err_fatal_handler()</userinput> to trigger a panic,
+            this would let the efs file creation/write/read failed.</para>
+            
+            <para>In order to avoid this , we needs add an <userinput>efs_sync("/")</userinput> to force
+            the efs operation completed immediately.</para>
+        </sect2>
+        
         <sect2 id="qcom.msm8960.sn">
             <title>MSM8960 for ESN/MEID/IMEI</title>
             
@@ -1854,7 +2195,14 @@ Error in file err_f3_trace.c, line 2090</programlisting>
             take 7-byte MEID + 1-digit CHKSM as IMEI, which also be 15-digit. But this required the MEID should not
             have hex nibble!</para>
         </sect2>
+        
     </sect1>
+    <!-- QMI -->
+    <sect1>
+        <title>QMI</title>
+        <para></para>
+    </sect1>
+    
     <!-- ============= Glossary =================  -->
     &section_glossary;
 
