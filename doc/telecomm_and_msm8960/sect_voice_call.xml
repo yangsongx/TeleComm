@@ -1,0 +1,390 @@
+<sect1>
+    <title>Voice Call Service</title>
+    
+    <para>The <emphasis>voice service</emphasis> is core component for a mobile phone. It include
+    the service registration, MT/MO call, etc.</para>
+    <!-- Service Registration -->
+    <sect2>
+        <title>Service Registration</title>
+        
+        <sect3>
+            <title>Subscribtion Method</title>
+            <para>Android support below <emphasis>NV</emphasis> and <emphasis>SIM</emphasis></para>
+        </sect3>
+        
+        <!-- Registration State -->
+        <sect3>
+            <title>Registration State</title>
+            
+            <para>A <emphasis>network registration</emphasis>, usually means voice call service is available.</para>
+            <para><userinput>RIL_REQUEST_VOICE_REGISTRATION_STATE</userinput> is the message indicate current
+            registration state.</para>
+                    <indexterm>
+                        <primary>VOICE_REGISTRATION_STATE</primary>
+                    </indexterm>
+                    
+            <table frame="topbot">
+                <title>VOICE_REGISTRATION_STATE response data</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>Field</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>1 - reg state</entry>
+                        
+                        <entry>0-Not Reg,and is not searching,1-Reg,home network,2-Not Reg, but is under searching,3-Reg denied,4-Unknow,5-Reg,roaming.</entry></row>
+                        
+                        <row><entry>2 - LAC</entry>
+                        <entry>Available for GSM/WCDMA system, or NULL if not.</entry></row>
+                        
+                        <row><entry>3 - CID</entry>
+                        <entry>Available for GSM/WCDMA system, or NULL if not.</entry></row>
+                        
+                        <row><entry>4 - Radio Tech</entry>
+                        <entry>RIL_RadioTechnology Value(<xref linkend="exp.ril.radiotech"/></entry>
+                    </row>
+                </tbody>
+                </tgroup>
+            </table>            
+            
+            <para>For example, phone firstly camped on WCDMA network, and user clicked the <guimenu>GSM only(2G)</guimenu>, we
+            can see this change in RIL log:</para>
+            
+            <example>
+                <title>WCDMA changed to GSM</title>
+                <programlisting>> VOICE_REGISTRATION_STATE
+&lt; VOICE_REGISTRATION_STATE {1,d108,06080522,3,... ...}
+      <userinput>== Reged(1), with RADIO_TECH_UMTS(3)</userinput>
+
+&lt; VOICE_REGISTRATION_STATE {1, 3424, 00007545, 2,... ...}
+      <userinput>== Now, reged with RADIO_TECH_EDGE(2), GSM only.</userinput></programlisting>
+            </example>
+        </sect3>
+        
+        <sect3>
+            <title>Radio Technology</title>
+            
+            <para>The radio technology is usually for <emphasis>Data Call</emphasis> service.</para>
+            
+            <example id="exp.ril.radiotech">
+                <title>Radio Tech definition in RIL</title>
+                <programlisting>typedef enum {
+    RADIO_TECH_GPRS   =  1,   RADIO_TECH_EDGE   =  2, 
+    RADIO_TECH_UMTS   =  3,   RADIO_TECH_IS95A  =  4, 
+    RADIO_TECH_IS95B  =  5,   RADIO_TECH_1xRTT  =  6,
+    RADIO_TECH_EVDO_0 =  7,   RADIO_TECH_EVDO_A =  8, 
+    RADIO_TECH_HSDPA  =  9,   RADIO_TECH_HSUPA  = 10,
+    RADIO_TECH_HSPA   = 11,   RADIO_TECH_EVDO_B = 12,
+    RADIO_TECH_EHRPD  = 13,   RADIO_TECH_LTE    = 14,
+    RADIO_TECH_HSPAP  = 15, // HSPA+
+    RADIO_TECH_GSM = 16 
+} RIL_RadioTechnology;</programlisting>
+            </example>
+        </sect3>
+        
+        <!-- QualComm Registration Component -->
+        <sect3>
+            <title>QualComm Registration Component</title>
+            <para><filename>modem/nas/reg/</filename> is component related with the registration.</para>
+            <para>And QualComm added <userinput>=REG=</userinput> mark for those reg message, to ease the log search and filter.</para>
+            
+            <para>modem/nas/reg/src/reg_sim.c:4197:    MSG_ERROR_DS(REG_LOCAL_SUB, "=REG= Remove undefined PLMN from GPRS FPLMN list", 0,0,0);</para>
+            
+            <para>QualComm used <userinput>reg_state_service_state</userinput> global variable to indicate the registrate
+            state.</para>
+            
+            <para>This variable is an important struct, contained many useful reg info.</para>
+            
+            <example>
+                <title></title>
+                <programlisting></programlisting>
+            </example>
+            
+            <para>There's a <emphasis>sys_mode</emphasis> for current registrate network.</para>
+            
+                    <indexterm>
+                        <primary>sys_mode</primary>
+                    </indexterm>
+                    
+            <table frame="topbot">
+                <title>sys_mode values</title>
+            <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="1*" />
+                <thead>
+                    <row><entry>value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>SYS_SYS_MODE_NO_SRV 0</entry><entry>SYS_SYS_MODE_AMPS 1</entry></row>
+                    <row><entry>SYS_SYS_MODE_CDMA 2</entry><entry>SYS_SYS_MODE_GSM  3</entry></row>
+                    <row><entry>SYS_SYS_MODE_HDR 4</entry><entry>SYS_SYS_MODE_WCDMA 5</entry></row>
+                    <row><entry>SYS_SYS_MODE_GPS 6</entry><entry>SYS_SYS_MODE_GW 7 (GSM+WCDMA)</entry></row>
+                    <row><entry>SYS_SYS_MODE_WLAN 8</entry><entry>SYS_SYS_MODE_LTE 9</entry></row>
+                    <row><entry>SYS_SYS_MODE_GWL 10(GSM+WCDMA+LTE)</entry><entry>SYS_SYS_MODE_TDS 11</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <example>
+                <title>GSM/WCDMA Registration OTA Log</title>
+                <programlisting>GMM/Attach Request
+GMM/Attach Complete</programlisting>
+            </example>
+            
+        </sect3>
+    </sect2>
+    
+    <!-- Service Network -->
+    <sect2>
+        <title>Service Network</title>
+        
+        <!-- Prefer Network Mode -->
+        <sect3>
+            <title>Prefer Network Mode</title>
+            
+            <para><emphasis>Prefer network mode</emphasis> can be choosed by user, to select a prefer network.</para>
+            
+            <para>RIL uses <userinput>SET_PREFERRED_NETWORK_TYPE</userinput> to set a pref network, the set value
+            is defined by RIL(which is not consistent with BP Modem):</para>
+            
+            <example>
+                <title>RIL prefer network mode value</title>
+                <programlisting>typedef enum {
+ PREF_NET_TYPE_GSM_WCDMA                = 0, /* GSM/WCDMA (WCDMA preferred) */
+ PREF_NET_TYPE_GSM_ONLY                 = 1, /* GSM only */
+ PREF_NET_TYPE_WCDMA                    = 2, /* WCDMA  */
+ PREF_NET_TYPE_GSM_WCDMA_AUTO           = 3, /* GSM/WCDMA (auto mode, according to PRL) */
+ PREF_NET_TYPE_CDMA_EVDO_AUTO           = 4, /* CDMA and EvDo (auto mode, according to PRL) */
+ PREF_NET_TYPE_CDMA_ONLY                = 5, /* CDMA only */
+ PREF_NET_TYPE_EVDO_ONLY                = 6, /* EvDo only */
+ PREF_NET_TYPE_GSM_WCDMA_CDMA_EVDO_AUTO = 7, /* GSM/WCDMA, CDMA, and EvDo (auto mode, according to PRL) */
+ PREF_NET_TYPE_LTE_CDMA_EVDO            = 8, /* LTE, CDMA and EvDo */
+ PREF_NET_TYPE_LTE_GSM_WCDMA            = 9, /* LTE, GSM/WCDMA */
+ PREF_NET_TYPE_LTE_CMDA_EVDO_GSM_WCDMA  = 10, /* LTE, CDMA, EvDo, GSM/WCDMA */
+ PREF_NET_TYPE_LTE_ONLY                 = 11, /* LTE only */
+ PREF_NET_TYPE_LTE_WCDMA                = 12  /* LTE/WCDMA */
+} RIL_PreferredNetworkType;</programlisting>
+            </example>
+            
+            <para>Below is a snapshot from Vanquish(Android 4.0) UI, a global phone(support LTE, GSM and CDMA):</para>
+            
+            <figure>
+                <title>Prefer Networ Mode of Multi-Mode Phone</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata scale="50" fileref="res/prefer_nwmode.png" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+            
+            <para>RIL map above UI like this:</para>
+            
+            <table frame="topbot">
+                <title>RIL pref networ mode mapping</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>RIL Value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                <row><entry>LTE_CMDA_EVDO_GSM_WCDMA(10)</entry><entry>Mapping UI <userinput>Global</userinput></entry></row>
+                <row><entry>LTE_CDMA_EVDO(8)</entry><entry>Mapping UI <userinput>LTE/CDMA</userinput></entry></row>
+                <row><entry>GSM_WCDMA(0)</entry><entry>Mapping UI <userinput>GSM/UMTS</userinput></entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <para>QualComm use <userinput>NV_PREF_MODE_I(10)</userinput> to indicate the prefer network mode.</para>
+            
+            <informalexample>
+                <programlisting>struct{
+  bye               nam; /* NAM id 0-N */
+  nv_mode_enum_type mode;
+}nv_pref_mode_type</programlisting>
+            </informalexample>
+            
+            <table frame="topbot">
+                <title>QCOM Prefer Mode NV Item</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>Value</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                <row><entry>NV_MODE_AUTOMATIC(4)</entry><entry>Auto, Mapping UI <userinput>Global</userinput></entry></row>
+                <row><entry>NV_MODE_GSM_WCDMA_ONLY(17)</entry><entry>Mapping UI <userinput>GSM/UMTS</userinput></entry></row>
+                <row><entry>NV_MODE_CDMA_HDR_ONLY(19)</entry><entry>Mapping UI <userinput>CDMA Only</userinput></entry></row>
+                <row><entry>NV_MODE_CDMA_HDR_LTE_ONLY(36)</entry><entry>Mapping UI <userinput>LTE/CDMA</userinput></entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+        </sect3>
+        
+        <!--  Network Operator Name-->
+        <sect3>
+            <title>Network Operator Name</title>
+            
+            <para>The <emphasis>Operator</emphasis> is network carrier PLMN, or Name, dependend on
+            implementation.</para>
+                <indexterm>
+                    <primary>OPERATOR</primary>
+                </indexterm>
+            <para>UI's operator name can be got from <userinput>OPERATOR</userinput>, which is a response
+            for RIL's <userinput>RIL_REQUEST_OPERATOR</userinput> request msg.</para>
+            
+            <para>It contained 3-fields:</para>
+            <table frame="topbot">
+                <title>OPERATOR data field</title>
+                <tgroup cols="2">
+                
+                <thead>
+                    <row><entry>Field</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>1</entry><entry>long alpha ONS or EONS</entry></row>
+                    <row><entry>2</entry><entry>short alpha ONS or EONS</entry></row>
+                    <row><entry>3</entry><entry>PLMN(MCC+MNC)</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <para>Below is an example of <emphasis>China Unicom</emphasis> WCDMA network:</para>
+            <informalexample>
+                <programlisting>RILJ    : [0248]> OPERATOR
+RILJ    : [0252]&lt; OPERATOR {CHN-UNICOM, CU-GSM, 46001}</programlisting>
+            </informalexample>
+            
+            
+            <para>This include: SPN( Service Provider Name) /EON dispaly</para>
+            
+            <para>SIM EF PNN (PLMN Network Name), OPL (Operator PLMN List)</para>
+            
+            
+        </sect3>
+        
+    </sect2>
+    
+    <!-- MO Call -->
+    <sect2>
+        <title>MO Call</title>
+        
+        <para>RIL uses <userinput>RIL_REQUEST_DIAL</userinput> to begin a MO call, it's struct is
+        <userinput>RIL_Dial</userinput>:</para>
+        <example>
+                <title>Dial Data Structure</title>
+                <programlisting>typedef struct {
+    char * address;
+    int clir; /* (same as 'n' paremeter in TS 27.007 7.7 "+CLIR"
+               * clir == 0 on "use subscription default value"
+               * clir == 1 on "CLIR invocation" (restrict CLI presentation)
+               * clir == 2 on "CLIR suppression" (allow CLI presentation)
+               */
+    RIL_UUS_Info *  uusInfo; /* NULL or Pointer to User-User Signaling Information */
+} RIL_Dial;</programlisting>
+        </example>
+        
+        <para>The MO Call's status can also get via <emphasis>GET_CURRENT_CALLS</emphasis> message.</para>
+                <indexterm>
+                    <primary>GET_CURRENT_CALLS</primary>
+                </indexterm>
+        <para>As the RIL's design, a <userinput>RIL_Call</userinput> structure represents the call's info, and it will
+        parse this structure in a read-able format.</para>
+        
+        <para>This is implemented by <filename>RIL.java</filename></para>
+        <example>
+            <title>RIL parse the GET_CURRENT_CALL</title>
+            <programlisting>private void processSolicited (Parcel p) {
+  case RIL_REQUEST_GET_CURRENT_CALLS: 
+     <userinput>ret =  responseCallList(p)</userinput>; 
+     break;
+}
+private Object responseCallList(Parcel p) {
+  for (int i = 0 ; i &lt; num ; i++) {
+    dc = new DriverCall();
+    dc.state = DriverCall.stateFromCLCC(p.readInt());
+    dc.index = p.readInt();
+    ...  ...
+  }
+}</programlisting>
+        </example>
+        
+        <para>The <userinput>DriverCall</userinput> class takes care of the call info data, and<userinput>DriverCall::toString()</userinput> 
+        is used for compose a read-able formatting string:</para>
+        <informalexample>
+            <programlisting>public String toString() {
+  return "id=" + index +"," + state +  "toa=" + TOA + "," +
+       (isMT ? "mt" : "mo") + + als + "," +
+       + (isVoice ? "voc" : "nonvoc") + ","
+       + (isVoicePrivacy ? "evp" : "noevp") + "," 
+       /*+ "number=" + number */ + ",cli=" + numberPresentation + ","
+       /*+ "name="+ name */ + "," + namePresentation;
+}</programlisting>
+                </informalexample>
+                
+         <para>Below is a demo of RIL log containing the call info:</para>
+         <informalexample>
+             <programlisting>GET_CURRENT_CALLS[id=1,DIALING,toa=129,norm,mo,0,voc,noevp,,cli=1,,1]</programlisting>
+         </informalexample>
+        <para>Below table list each fields of the <userinput>GET_CURRENT_CALLS</userinput></para>
+                <table frame="topbot">
+                    <title>GET_CURRENT_CALLS fields</title>
+                    <tgroup cols="3">
+                    <colspec colwidth="1*" />
+                    <colspec colwidth="2*" />
+                    <colspec colwidth="3*" />
+                <thead>
+                    <row><entry>No.</entry><entry>Field</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>1</entry><entry>Index</entry><entry>Usually 1, Line-1</entry></row>
+                    <row><entry>2</entry><entry>call state</entry><entry>0-Active,1-Holding,2-Dialing,3-Alerting,4-Incoming,5-WAITING</entry></row>
+                    <row><entry>3</entry><entry>Type of Address(TOA)</entry><entry>129-Domestic Num,145-International num</entry></row>
+                    <row><entry>4</entry><entry>isMpty</entry><entry></entry></row>
+                    <row><entry>5</entry><entry>MT,or MO Call</entry><entry>MO, MT</entry></row>
+                    <row><entry>6</entry><entry>als</entry><entry>Currently always be 0</entry></row>
+                    <row><entry>7</entry><entry>Voice Call, or not</entry><entry>"voc" for Voice Call, otherwise "nonvoc"</entry></row>
+                    <row><entry>8</entry><entry>Privacy</entry><entry>"evp"(PrivacyCall), otherwise "noevp"</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+                
+                <para>Usually, if the number is starting with <userinput>+</userinput>, we will consider this as international, and
+                mark the TOA field as <userinput>145</userinput>(International Number).</para> 
+     
+        
+        <sect3>
+            <title>Call Process in OTA</title>
+            
+            <para></para>
+        </sect3>
+    </sect2>
+    <sect2>
+        <title>MT Call</title>
+        <para>A flow of an incomming call is like below:</para>
+        <example>
+            <title>Incomming Call Logic Flow</title>
+                <programlisting><![CDATA[ RIL                                     BP
+  |   UNSOL_RESPONSE_CALL_STATE_CHANGED   |
+  | <------------------------------------ |
+  |                                       |
+  |      REQUEST_GET_CURRENT_CALLS        |
+  | ------------------------------------> |
+  | <------------------------------------ |
+  |     (contained Caller ID info)        |]]></programlisting>
+        </example>
+        
+        <para>We call the incomming call's info as <emphasis>Caller ID</emphasis>, it contained the incomming call's
+        number, and other extra info(such as the city, etc).</para>
+        
+        <para>These info, sometimes, also called as <emphasis>Calling Line Identity</emphasis>(CLI).</para>
+    </sect2>
+    
+    <sect2>
+        <title>Special Calling</title>
+        <para>There're some <emphasis>special call number</emphasis> by carriers, provide extra service for user.</para>
+                
+        <para>For example, Verizon always has below service:</para>
+        <para><userinput>*67</userinput> - Caller ID Selective Blocking, let you block your name 
+        and number from being sent on calls as you make them by pressing <userinput>*67</userinput> before dialing.</para>
+    </sect2>
+</sect1>

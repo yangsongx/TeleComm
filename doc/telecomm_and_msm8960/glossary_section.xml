@@ -27,6 +27,20 @@
                 </glossdef>
             </glossentry>
         </glossdiv>
+        
+        <!--   L   -->
+        <glossdiv>
+            <title>L</title>
+            
+            <glossentry>
+                <glossterm>LPM</glossterm>
+                <glossdef>
+                    <para><emphasis>Low Power Mode</emphasis>, QualComm defined this as a
+                    power-save phone mode.</para>
+                </glossdef>
+            </glossentry>
+        </glossdiv>
+        
         <!--   N   -->
         <glossdiv>
             <title>N</title>

@@ -1,0 +1,125 @@
+<sect1>
+    <title>Panic Topic</title>
+    
+    <sect2>
+        <title>BP Panic</title>
+        <para>The <emphasis>BP Panic</emphasis> is a very huge topic, and always met in product development,
+        especially in bring-up stage.</para>
+        
+        <sect3 id="qbp.bppanic.diagdumpcmd">
+                <title>Common DIAG Coredump Command</title>
+                
+                <para>First, BP needs support QualComm's QXDM force panice, which is core dump action of diag extended
+                msg.</para>
+                
+                <para>Type below commands in QXDM <guimenu>command</guimenu> window:</para>
+                <informalexample>
+                    <programlisting>send_data 75 37 03 00</programlisting>
+                </informalexample>
+                
+                <para>The <userinput>75 37 03 00</userinput> is a DIAG payload which indicates:</para>
+                
+                <informalexample>
+                    <programlisting>typedef struct{
+  uint8 command_code; <userinput>DIAG_SUBSYS_CMD_F(75)</userinput>
+  uint8 subsys_id;  <userinput>DIAG_SUBSYS_DEBUG(37)</userinput>
+  uint16 subsys_cmd_code; <userinput>ERR_F3_TRACE_CORE_DUMP(0x0003)</userinput>
+};</programlisting>
+                </informalexample>
+                
+                <para>The corresponding handler is in <filename>core/debugtools/err/</filename>:</para>
+                
+                <example>
+                    <title>Sample of handling the Panic Diag CMD</title>
+                    <programlisting>/* core/debugtools/err/src/err_f3_trace.c */
+static const diagpkt_user_table_entry_type err_f3_trace_tbl[] = {
+<userinput>{ERR_F3_TRACE_CORE_DUMP,ERR_F3_TRACE_CORE_DUMP,err_f3_trace_core_dump_handler},</userinput>
+{ERR_TEST_INVOKE_CRASH,ERR_TEST_INVOKE_CRASH,err_invoke_crash_handler},
+...    ...
+}</programlisting>
+                </example>
+            </sect3>
+            <!-- Panic on MSM8960 -->
+            <sect3>
+                <title>Panic on MSM8960</title>
+                
+                <para>MSM8960 is one-single chip, BP is a <emphasis>subsystem</emphasis>, so there would 2 different
+                result for a BP panic:</para>
+                
+                <itemizedlist>
+                    <listitem>
+                        <para><emphasis>Silent Reset</emphasis>, AP would try recovery the BP, the coredump file
+                        would store somewhere. This won't cause AP restart.</para>
+                    </listitem>
+                    <listitem>
+                        <para><emphasis>Download Dump Mode</emphasis>, whole chip goes into Download mode, using QualComm's
+                        <emphasis>QPST</emphasis> to get the coredump. This would cause AP/BP down.</para>
+                    </listitem>
+                </itemizedlist>
+                
+                <para>Silent reset is prefered as it not required the whole system restart. It can be configured runtime to 
+                decide to dump the panic file or not.</para>
+                
+                <para>This dump configured option can be either a property or a sysfs flag.</para>
+                
+                <para><userinput>setprop persist.radio.qc.ramdump.enable 1</userinput> will enable the ramdump, it would always
+                enabled after system restart.</para>
+                
+                <para><userinput>echo "1">/sys/module/subsystem_restart/parameters/enable_ramdumps</userinput> is a one-shot
+                enable, after system restart, it would be the default value set in kernel code(which is 0).</para>
+                
+                <para>In order to let MSM8960 system go into Download mode, it needs:</para>
+                <itemizedlist spacing="compact">
+                    <listitem>
+                        <para>Set 2 NV items value to enable dump(see <xref linkend="tbl.qcom.msm8960.dumpnv" />)</para>
+                    </listitem>
+                    <listitem>
+                        <para>Set <filename>/sys/module/restart/parameters/download_mode</filename> value to 1.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Set <filename>/sys/module/subsystem_restart/parameters/restart_level</filename> value to 1.</para>
+                    </listitem>
+                </itemizedlist>
+                
+                <table frame="topbot" id="tbl.qcom.msm8960.dumpnv">
+                <title>NV Items of Donwload Dump Mode</title>
+                    <tgroup cols="2">
+                    <thead>
+                    <row><entry>NV Item</entry><entry>Value</entry></row>
+                    </thead>
+                <tbody>
+                    <row><entry>NV_ERR_FATAL_OPTIONS_I(ID-905)</entry><entry>0</entry></row>
+                    <row><entry>NV_DETECT_HW_RESET_I(ID-4399)</entry><entry>1</entry></row>
+                </tbody>
+                    </tgroup>
+                </table>
+                
+                <para>After system go into Download mode, using QPST to fetch the memory dump, the most important dump
+                file is <filename>EBICS0.BIN</filename>. Use the wrapper script to figure out which line cause the crash:</para>
+                
+                <example>
+                    <title></title>
+                    <programlisting>$ <userinput>./bp-ramdump-parse.py -e AAAAANAZQ.elf -c EBICS0.BIN</userinput>
+Error Message:Forced core dump %d, %d, %d
+Error in file err_f3_trace.c, line 2090</programlisting>
+                </example>
+                
+                <para>The <filename>AAAAANAZQ.elf</filename> is BP build symbol file, usually in <filename>build/AAAAANAZ/</filename> dir.</para>
+                
+                <para>For silent BP panic, the dump file is under <filename>/sdcard/bp-dumps/</filename></para>
+                
+                <example>
+                    <title>Parse BP silent panic dump file</title>
+                    <programlisting># <userinput>dumpsys dropbox --print MODEM_SILENT_PANIC</userinput>
+Hardware	: Vanquish
+
+Subtype: Error in file qmi_motext_utils_handler.c, line 137
+ERR crash log report.  Version 3.
+Time of crash (m-d-y h:m:s): 04-24-2012 1:15:14
+...   ...</programlisting>
+                </example>
+            </sect3>
+            
+        
+    </sect2>
+</sect1>

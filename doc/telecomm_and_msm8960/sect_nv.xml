@@ -1,0 +1,186 @@
+<!-- The NV Topic -->
+<sect1>
+    <title>NV Item</title>
+    
+    <para>The <emphasis>NV Items</emphasis> stored most of the BP-related config on the phone. They are specified
+    by numerical number(NV ID), and QualComm uses <userinput>nv_items_enum_type</userinput> enum to represent it.</para>
+    
+    <para>Usually, Motorola extended the nv item, adding own items as well. To avoid conflict, these
+    moto-specific items are began from offset <userinput>8000</userinput>:</para>
+    
+    <indexterm><primary>nv_items_enum_type</primary></indexterm>
+            <informalexample>
+                <programlisting> 1023 typedef enum {
+ 1024 
+ 1025   NV_ESN_I                     = 0,
+ 1026   NV_ESN_CHKSUM_I              = 1,
+ 8205   NV_MAX_I                     = 7225
+ 8207 #ifdef MOT_FEATURE_MOT_NV
+ 8208   ,
+ 8209   MOT_NV_FIRST_I             = 8000,
+ 8210   MOT_NV_FIELD_TEST_ENABLE_I = MOT_NV_FIRST_I,
+ 8211   MOT_NV_IN_FACTORY_I        = MOT_NV_FIRST_I+1,
+ ...    ...
+ } nv_items_enum_type;</programlisting>
+    </informalexample>
+    
+    <para><filename>core/api/services/nv_items.h</filename> is the header defined all the NV items IDs, and their inner
+    data structure.</para>
+    <para>As so many IDs, and so many different structure for each ID, QualComm combines all these stuff into an union
+    data type, <userinput>nv_item_type</userinput>.</para>
+    
+    <table frame="topbot">
+        <title>QCOM NV Items Info</title>
+    <tgroup cols="2">
+        <colspec colwidth="1*" />
+        <colspec colwidth="2*" />
+        <thead>
+            <row><entry>Field</entry><entry>Notes</entry></row>
+        </thead>
+        <tbody>
+            <row><entry>Definition Header</entry><entry>core/api/services/nv_items.h</entry></row>
+            <row><entry>Source Code</entry><entry>core/services/nv/</entry></row>
+            <row><entry>ID</entry><entry>nv_items_enum_type, enum number</entry></row>
+            <row><entry>Data Structure</entry><entry>nv_item_type, union.</entry></row>
+            <row><entry>Moto Extend</entry><entry>start from offset 8000.</entry></row>
+        </tbody>
+    </tgroup>
+    </table>
+    
+    <sect2>
+        <title>Read/Write NV Items</title>
+        <para>QualComm allows read/write NV items through diag packet, and it defines a read/write protocol 
+        in diag specification.</para>
+        <para>The read/write action would finally be dispatched to R/W the EFS <filename>/nvm/ID</filename> data.</para>
+        <para>The draft logic flow is like this:</para>
+        <informalexample>
+                    <programlisting><![CDATA[
+                 +----------+                      +----------+
+ R/W diag req -> | nvdiag.c | --> nvio.c --------> | /nvm/xx/ |
+                 +----------+            (EFS API) +----------+]]></programlisting>
+        </informalexample>
+        
+        <para>Sometimes, we met the <emphasis>Inactive Items</emphasis> error when read a item, this is usually 
+        caused as there's no NV file there, below is a sample code for this case:</para>
+        
+        <example>
+            <title>Inactive Item Cases</title>
+            <programlisting>nvio_read_item(nv_items_enum_type item, void *data_ptr,){
+  snprintf(f_name,sizeof(f_name),"/nvm/num/%d",item);
+  <userinput>if(efs_stat(f_name,&amp;temp_buf) == -1)
+    return NV_NOTACTIVE_S;</userinput>
+    
+  status = efs_get(f_name, data_ptr, item_size);
+  return status;
+}</programlisting>
+        </example>
+    </sect2>
+    
+    <sect2>
+        <title>NV Protection</title>
+        <para>As QualComm's implementation, there's protection when R/W the nv items. This can be found
+        in below code:</para>
+        <example>
+            <title>Protection of R/W</title>
+            <programlisting>void *nvdiag_read()
+{
+  //First check to see if this item is not allowed to be read.
+  //NOTE:  These items are unreadable, even if security is unlocked!
+  <userinput>if (unreadable_nv_item(eItem))</userinput> {
+    return( diagpkt_err_rsp( DIAG_BAD_PARM_F, req_pkt, pkt_len ));
+  }
+}
+boolean unreadable_nv_item(nv_items_enum_type item)
+{
+  switch(item){
+    /* Keys, secrets, and passwords are unreadable */
+    case NV_A_KEY_I:
+     ...   ....
+    case NV_SEC_DEVICE_KEY_I :
+      return true;
+      
+    default: return false;
+  }
+}</programlisting>
+        </example>
+        
+        <para>Some NV items' write would require Service Programming Code(SPC) unlock. These
+        protection can be found in <userinput>nvdiag_write()</userinput> implementation.</para>
+        
+        <para>The <emphasis>Service Programming Code Lock</emphasis>(SPC Lock) here, is a 
+        protection when accessing NV items. QualComm defined it as a DIAG msg(DIAG_SPC_F, 0x41).</para>
+        
+        <para>The code value stored in <command>NV_SEC_CODE_I</command>(ID-85), which is a 6-digit number, 
+        the NV inner structure is:</para>
+        <example>
+            <title>NV_SEC_CODE_I SPC data</title>
+            <programlisting>typedef PACKED struct PACKED_POST{
+    /* The security code is fixed length(6),
+       and is stored as ASCII string.*/
+    byte  digits[NV_SEC_CODE_SIZE]; // NV_SEC_CODE_SIZE 6
+}</programlisting>
+        </example>
+    </sect2>
+    <!-- Common NV Info -->
+    <sect2>
+        <title>Common NV Info</title>
+        
+        <para>As Moto's design, any NV item R/W should be called via <userinput>mot_nv_read()</userinput> instead
+        of the QualComm's native DIAG API.</para>
+        <example>
+            <title>Usage of Moto NV Read API</title>
+            <programlisting>nv_stat_enum_type nv_rd_status;
+mot_nv_type       nv_data;
+int               nv_data_length = sizeof(nv_data);
+nv_rd_status = mot_nv_read(MOT_NV_DEFINITION_I, 
+                           &amp;nv_data, 
+                           &amp;nv_data_length);
+if(nv_rd_status == NV_DONE_S){
+  Log("good to read out NV data");
+}</programlisting>
+        </example>
+        
+        <para>There're some commonly-used NV items, that MUST be very familiar with them.</para>
+        <table frame="topbot">
+        <title>Some Commonly-used NV Items Info</title>
+        <tgroup cols="2">
+        <colspec colwidth="1*" />
+        <colspec colwidth="2*" />
+        <thead>
+            <row><entry>NV Item</entry><entry>Notes</entry></row>
+        </thead>
+        <tbody>
+            <row><entry>NV_HDR_AN_AUTH_NAI_I(579)</entry><entry></entry></row>
+            <row><entry>NV_HDR_AN_AUTH_PASSWORD_I(580)</entry><entry></entry></row>
+        </tbody>
+        </tgroup>
+        </table>
+    </sect2>
+    <!-- NV Value Setting (FLEX) -->
+    <sect2>
+        <title>NV Value Setting</title>
+        <para>The NV value setting usually put under a separate section, which called as <emphasis>FLEX</emphasis></para>
+        
+        <sect3>
+            <title>Flex on MSM8960</title>
+            <para>For MSM8960(such as <emphasis>Vanquish</emphasis>), there's a <userinput>fsg</userinput>
+                partition, and a <filename>fsg.mbn</filename> image file, which contain the EFS data. Thus loading a new NV data
+                setting would be simple:</para>
+                
+            <informalexample>
+                    <programlisting>$ <userinput>fastboot flash fsg fsg.mbn</userinput></programlisting>
+                </informalexample>
+                
+                <para>The <filename>fsg.mbn</filename> file can be extracted by below commands:</para>
+                <example>
+                    <title>Dump the fsg.mbn</title>
+                    <programlisting>mkdir temp
+xxd -s 40 -p fsg.mbn | xxd -r -p - | tar xvf - -C temp
+xxd temp/nvm/num/8034</programlisting>
+                </example>
+                
+                <para>All <userinput>ID-XXX</userinput> item values are the <filename>/nvm/num/ID-XXX</filename> files,
+                in binary format.</para>
+        </sect3>
+    </sect2>
+</sect1>

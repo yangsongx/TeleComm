@@ -1,0 +1,354 @@
+<sect1>
+    <title>SMS</title>
+    <!-- Protocol Introduction -->
+    <sect2>
+        <title>Protocol Introduction</title>
+        <para>The 3gpp protocol for SMS is <emphasis>24.040</emphasis>.</para>
+        
+        
+        <sect3>
+            <title>PDU</title>
+            <para></para>
+        </sect3>
+        
+        <sect3>
+            <title>TeleService ID</title>
+            
+            <para>Wireless Enhanced Messaging Teleservice(WEMT), Wireless Messaging Teleservice(WMT)</para>
+            
+            <table frame="topbot">
+                <title>TeleService ID in SMS</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Msg Type</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>TELESERVICE_WMT 4098</entry><entry>Single SMS message</entry></row>
+                    <row><entry>TELESERVICE_WEMT 4101</entry><entry>EMS(multi-page SMS)</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+        </sect3>
+        
+    </sect2>
+    <!-- Upper Level of SMS -->
+    <sect2>
+        <title>Upper Level of SMS</title>
+        
+        <sect3>
+            <title>APP Logic</title>
+            <para>The SMS dispatcher in telephony is divided as <emphasis>CDMA</emphasis>, <emphasis>GSM</emphasis>, etc,
+            as their logic are different.</para>
+        
+            <para>CdmaSMSDispatcher.java/GsmSMSDispatcher.java</para>
+        
+        </sect3>
+        
+        <sect3>
+            <title>RIL Layer </title>
+            
+            <para>As CDMA/GSM SMS are different, RIL provided 2 requests for the 2 different SMS logic.</para>
+            
+            <para>The <userinput>SEND_SMS</userinput> is for GSM/WCDMA, while <userinput>CDMA_SEND_SMS</userinput>
+            is for CDMA:</para>
+            <table frame="topbot">
+                <title>RIL Msg for SMS</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>Msg Type</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>RIL_REQUEST_SEND_SMS(25)</entry><entry>Original SMS send request</entry></row>
+                    <row><entry>RIL_REQUEST_CDMA_SEND_SMS(87)</entry><entry>CDMA MO SMS</entry></row>
+                    <row><entry>RIL_REQUEST_IMS_SEND_SMS(110)</entry><entry>SMS message over IMS</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <para>On MSM8960 platform, QCRIL would handle the SMS like below:</para>
+            <table frame="topbot">
+                <title>SMS Handling in QCRIL</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="1*" />
+                <thead>
+                    <row><entry>Filename</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>qcril_qmi_sms.c</entry><entry>qcril_mo_sms_cb(), for MO SMS</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+            
+        </sect3>
+    </sect2>
+    <!-- QualComm SMS Component -->
+    <sect2>
+        <title>QualComm SMS Component</title>
+        <para>SMS is a part of CM, as it using voice call's service.</para>
+        <table frame="topbot">
+            <title>SMS in CM Components</title>
+        <tgroup cols="2">
+            <colspec colwidth="1*" />
+            <colspec colwidth="1*" />
+            <thead>
+                <row><entry>Filename</entry><entry>Notes</entry></row>
+            </thead>
+            <tbody>
+                <row><entry>cmsms.c</entry><entry>The base SMS entry.</entry></row>
+                <row><entry>cmxsms.c</entry><entry>CDMA specific SMS</entry></row>
+            </tbody>
+        </tgroup>
+        </table>
+        
+        <sect3>
+            <title>SMS Event</title>
+             <para>QualComm using <userinput>cm_sms_event_e_type</userinput> enum as the SMS event.</para>
+            
+            <table frame="topbot">
+                <title>SMS Event</title>
+                <tgroup cols="2">
+                
+                <thead>
+                    <row><entry>Event</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>CM_SMS_EVENT_MO_MSG(0)</entry><entry>MO SMS</entry></row>
+                    <row><entry>CM_SMS_EVENT_MO_STATUS(2)</entry><entry>Status of MO SMS</entry></row>
+                    <row><entry>CM_SMS_EVENT_MT_MSG(3)</entry><entry>MT SMS</entry></row>
+                </tbody>
+            </tgroup>
+            </table>
+            <para>The SMS event usually can be found in the <filename>cmsms.c</filename> file:</para>
+            <example>
+                <title>SMS Event Log</title>
+                <programlisting>void cmsms_event(cm_sms_event_e_type sms_event)
+{
+  CM_MSG_MED(<userinput>"sms event=%d"</userinput>,sms_event,0,0 );
+  ...  ...
+}</programlisting>
+            </example>
+            
+                <para>Keep in mind, above logic is SMS already be handled by Modem.</para>
+                
+                <para>For some error cases, we would failed find above log as the SMS req is already rejected earlier, so
+                the earliest SMS event would be in <filename>wmscm.c</filename></para>
+                
+                <example>
+                    <title>MO of SMS</title>
+                    <programlisting>void wms_cm_call_orig()
+{
+  // so usually be '6'(S06) for this
+  MSG_HIGH("Originating SMS call: so=%d", so, 0, 0);
+  cm_mm_call_cmd_orig(...
+      CM_CALL_TYPE_SMS,
+      &amp; cm_s_ptr->called_number, /* called number */
+      );
+}</programlisting>
+                </example>
+                
+                <example>
+                    <title></title>
+                    <programlisting></programlisting>
+                </example>
+            
+     
+        </sect3>
+        
+        <sect3>
+            <title>MO SMS</title>
+            
+            <para>Sending a SMS, the SMS events got in BP is:</para>
+            
+            <informalexample>
+                    <programlisting><![CDATA[
+  o   CM_SMS_EVENT_MO_MSG(0)
+     o    CM_SMS_EVENT_MO_STATUS(2)
+         o     CM_SMS_EVENT_MT_MSG(3)]]></programlisting>
+                </informalexample>
+                
+            <para>Each time user send a SMS, BP would receive <userinput>CM_SMS_EVENT_MO_MSG</userinput>.</para>
+            <para>Next, there's a <userinput>CM_SMS_EVENT_MO_STATUS</userinput>, to indicate current MO status is OK, or not.</para>
+                
+            <example>
+                <title>Get MO SMS Status</title>
+                <programlisting>void wms_msg_mc_mo_status_proc()
+{
+  if( msg_s_ptr->mc_msg.is_valid == FALSE ){
+  }else if( msg_s_ptr->mc_msg.is_ack == TRUE ){
+  }else{ /* a teleservice M.O. msg was sent */
+    <userinput>MSG_HIGH("got MO status = %d", cmd_ptr->cmd.mc_mo_status.status);</userinput>
+  }
+}</programlisting>
+            </example>
+            
+            <para>For GSM/WCDMA MO SMS, the OTA Log is different with CDMA's. Below is a sample, which failed
+            send a <userinput>Hellow World</userinput> SMS to my <guimenu>13815882359</guimenu> phone:</para>
+            <example>
+                <title>GSM/WCDMA MO SMS OTA Log Sample</title>
+                <programlisting>OTA LOG  <userinput>SMS/CP Data</userinput>     Direction: MS To Network, Length: 37
+dest_address
+    length = 11 (0xb)
+    <userinput>addr_value[0]..[] = 13815882359</userinput>
+tp_user_data
+    user_data_len = 11 (0xb)
+    <userinput>user_data_7_bit[0]..[10] = "Hello World"</userinput>
+OTA LOG  <userinput>SMS/CP ACK</userinput>     Direction: Network To MS, Length: 2
+OTA LOG  <userinput>SMS/CP Data</userinput>     Direction: Network To MS, Length: 7
+  rp_error_to_ue
+  <userinput>cause_value = 38 (0x26)</userinput></programlisting>
+            </example>
+            
+            <tip><para>The CP here means <emphasis>Control Protocol</emphasis>. Hate these abbrv!</para></tip>
+            
+            <para>The <emphasis>report cause</emphasis> in the OTA indicate the error code for this MO SMS failure.</para>
+            <para>The cause type is defined by <emphasis>TS 24.011</emphasis>, <userinput>Section 8.2.5.4</userinput>. Below
+            table lists some of the value:</para>
+            <table frame="topbot">
+                <title>GSM/WCDMA MO SMS RP(Relay Protocol) cause type</title>
+                <tgroup cols="2">
+                
+                <thead>
+                    <row><entry>Value</entry><entry>Value</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>UNASSIGNED_NUMBER(1)</entry><entry>OPERATOR_DETERMINED_BARRINGS(8)</entry></row>
+                    <row><entry>CALL_BARRED(10)</entry><entry>NETWORK_FAILURE(17)</entry></row>
+                    <row><entry>SM_REJECTED(21)</entry><entry>MEMORY_EXCEEDED(22)</entry></row>
+                    <row><entry>DESTINATION_OUT_OF_ORDER(27)</entry><entry>UNIDENTIFIED_SUBSCRIBER(28)</entry></row>
+                    <row><entry>FACILITY_REJECTED(29)</entry><entry>UNKNOWN_SUBSCRIBER(30)</entry></row>
+                    <row><entry>NETWORK_OUT_OF_ORDER(38)</entry><entry>MESSAGE_TYPE_NOT_COMPATIBLE(98)</entry></row>
+                </tbody>
+            </tgroup>
+            </table>
+        </sect3>
+            
+        <sect3>
+            <title>MT SMS</title>
+            <para></para>
+        </sect3>
+        
+    </sect2>
+    <!-- SMS Channel Control -->
+    <sect2>
+        <title>SMS Channel Control</title>
+        
+        <para>The SMS's <emphasis>Access Channel</emphasis>, <emphasis>Traffic Channel</emphasis> can be specified by
+        QualComm's 2 NV items:</para>
+                
+        <table frame="topbot">
+            <title>NV Item for MO SMS Channel Selection</title>
+            <tgroup cols="2">
+        
+        <thead>
+            <row><entry>Event</entry><entry>Notes</entry></row>
+        </thead>
+        <tbody>
+            <row><entry>NV_SMS_MO_ON_ACCESS_CHANNEL_I(4228)</entry><entry>Spcify Access Channel</entry></row>
+            <row><entry>NV_SMS_MO_ON_TRAFFIC_CHANNEL_I(4229)</entry><entry>Go though traffic channel</entry></row>
+        </tbody>
+            </tgroup>
+        </table>
+                
+        <para>Usually, above 2 items can't be 1 at the same time, as there's only one single valid channel for SMS.</para>
+        <para>Otherwise, QualComm would firstly try <emphasis>Access Channel</emphasis>, if failed, try <emphasis>Traffic Channel</emphasis> then.</para>
+        
+        <para><filename>modem/wms/src/WMSE/wmsmsg.c</filename> handle the channels, and we can find which channel
+        is used currently, via the QXDM Log:</para>
+        
+        <example>
+            <title>Channel Of MO SMS</title>
+            <programlisting>wms_cmd_err_e_type wms_msg_cdma_send_mo_channel()
+{
+  if(<userinput>is_access_channel_enabled &amp;&amp;!is_traffic_channel_enabled</userinput>){
+    MSG_HIGH("Only Access Channel is enabled", 0, 0, 0);
+    return wms_msg_cdma_send_MO();
+  }else if(<userinput>!is_access_channel_enabled &amp;&amp;is_traffic_channel_enabled</userinput>){
+    MSG_HIGH("Only Traffic Channel is enabled", 0, 0, 0);
+    ... ...
+  }else if(<userinput>is_access_channel_enabled &amp;&amp;is_traffic_channel_enabled</userinput>){
+    /* Send on Access First and if Fail try on Trafffic Channel */
+    wms_msg_cdma_send_MO();
+  }
+}</programlisting>
+        </example>
+        
+        <para>These NV setting reading up happened in <filename>wmsnv.c</filename>:</para>
+        
+        <example>
+            <title>Channel Setting Read Up</title>
+            <programlisting>void wms_nv_read_cdma_channel_setting(void)
+{
+  if(NV_DONE_S == wms_nv_read_wait(NV_SMS_MO_ON_ACCESS_CHANNEL_I, &amp;nvi)){
+    dc_s_ptr->is_access_channel_enabled = nvi.sms_mo_on_access_channel;
+  }else{
+    /* For failed case, write the NV to be 1 */
+    wms_nv_write_wait(NV_SMS_MO_ON_ACCESS_CHANNEL_I, 1);
+  }
+  
+  if(NV_DONE_S == wms_nv_read_wait(NV_SMS_MO_ON_TRAFFIC_CHANNEL_I, &amp;nvi)){
+  }else{
+    /* For failed case, write the NV to be 1 */
+    wms_nv_write_wait(NV_SMS_MO_ON_TRAFFIC_CHANNEL_I, 1);
+  }
+}</programlisting>
+        </example>
+        
+        <para>As QualComm's design, the DC is logic pipe, for R/W SMS data.</para>
+        
+        <para>And for CDMA, DC for SMS is <emphasis>Traffic Channel</emphasis>, message data is <emphasis>Data Burst message</emphasis>.</para>
+    </sect2>
+    
+    <sect2>
+        <title>OTA of SMS</title>
+        
+        <para>The <emphasis>Reverse/Data Burst</emphasis> OTA log contained the MO SMS info.</para>
+        <para>Below demo some fileds that in the OTA Log.</para>
+        
+        <example>
+            <title>OTA Log in Data Burst</title>
+            <programlisting>protocol_rev = 6 (0x6) (IS2000 Rev 0)
+chan_type = 4 (0x4) (Reverse Traffic)
+chan
+    gen
+      <userinput>msg_type = 4 (0x4) (Data Burst)</userinput>
+    rtc_burst
+      burst_data
+        sms_msg
+          sms_msg_type = 0 (0x0) (SMS Point-to-Point)
+          sms_parms[0]
+            sms_pp_parms
+              parameter_id = 0 (0x0) (Teleservice Identifier)
+              teleservice_id
+                <userinput>telesvc_id = 4098 (0x1002) (Wireless Messaging Teleservice WMT)</userinput>
+          sms_parms[3]
+            sms_pp_parms
+              parameter_id = 8 (0x8) (Bearer Data)
+              bearer_data
+                header_ind = 0 (0x0)
+                num_subparms = 4 (0x4)
+                bd[0]
+                  subparameter_id = 0 (0x0) (Message Identifier)
+                  message_identifier
+                    message_type = 2 (0x2) (Submit)
+                    message_id = 27 (0x1b)
+                bd[1]
+                  subparameter_id = 1 (0x1) (User Data)
+                  user_data
+                    msg_encoding = 2 (0x2) (7-bit ASCII - 7 bits)
+                    num_fields = 6 (0x6)
+                    sm_tp_user_data_ascii_7
+                      <userinput>user_data_7_bit[0] = 65 (0x41) ('A')
+                      user_data_7_bit[1] = 98 (0x62) ('b')
+                      user_data_7_bit[2] = 99 (0x63) ('c')
+                      user_data_7_bit[3] = 49 (0x31) ('1')
+                      user_data_7_bit[4] = 50 (0x32) ('2')
+                      user_data_7_bit[5] = 51 (0x33) ('3')</userinput></programlisting>
+        </example>
+        
+        <para>In the OTA log, <emphasis>Forward</emphasis> is <userinput>Network -> MS</userinput>, <emphasis>Reverse</emphasis> is
+        <userinput>MS -> Network</userinput>.</para>
+    </sect2>
+</sect1>

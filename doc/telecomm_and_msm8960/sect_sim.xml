@@ -1,0 +1,102 @@
+<sect1>
+    <title>SIM Card</title>
+    
+    <sect2>
+        <title>Basic Knowlege</title>
+        
+        <para>Usually, we needs three type of SIM card, GSM/WCDMA/CDMA:</para>
+        
+        <itemizedlist spacing="compact">
+            <listitem>
+                <para>SIM - GSM SIM</para>
+            </listitem>
+            <listitem>
+                <para>USIM - WCDMA SIM(Like China Unicom)</para>
+            </listitem>
+            <listitem>
+                <para>RUIM - CDMA SIM(Like China Telecomm)</para>
+            </listitem>
+        </itemizedlist>
+        
+        <para>QualComm handle all of them under <filename>modem/uim/</filename>, as in <emphasis>UIM</emphasis>
+        component.</para>
+            
+        <para>And there's some flag, like <userinput>FEATURE_UIM_RUIM</userinput>, to indicate the code support
+        CDMA RUIM card type.</para>
+        
+        <para>Run Time RUIM Enable (RTRE)</para>
+        
+        <para><emphasis>Generic SIM Device Interface</emphasis>(GSDI) is a set of API lib, for all types of SIM.</para>
+        <para>QualComm added <emphasis>Mult-Mode GSDI</emphasis>(MMGSDI) to obsolete GSDI API. So in the QualComm's
+        source code, the <userinput>FEATURE_MMGSDI_SESSION_LIB</userinput> can be found everywhere.</para>
+        
+    </sect2>
+    
+    <sect2>
+        <title>SIM Detection</title>
+        <para>As QXDM needs USB system initialized, while the UIM init in parallel, we usually unable to 
+        see these SIM init log in QXDM.</para>
+        
+        <para>We can adding some dealy in <userinput>uim_power_up()</userinput>, to let QXDM be able to collect
+        these init Log.</para>
+    </sect2>
+    
+    <!-- SIM PIN -->
+    <sect2>
+        <title>SIM PIN</title>
+        
+        <sect3>
+            <title>Overview</title>
+            
+            <para>There're 2 types of PIN for SIM card:</para>
+            <itemizedlist>
+                <listitem>
+                    <para>PIN1, or call it <emphasis>PIN code</emphasis>, usually be <userinput>1234</userinput>,
+                    or <userinput>0000</userinput>.</para>
+                </listitem>
+                <listitem>
+                    <para>PIN2, it related with Carrier and internal Smart Card Info. It's transparent for end user.</para>
+                </listitem>
+            </itemizedlist>
+            
+            <para>The PIN protected the phone at the power up. After user entered correct code, PIN won't required
+            anymore until next power up.</para>
+            
+            <para>If PIN is incorrectly inputed at 3 times, PUK code is required. After input correct PUK code, you can
+            re-define a new PIN code.</para>
+            
+            <para>If PUK code also incorrectly inputed at 10 times, SIM card would be destroyed, and can't be usable anymore.</para>
+            
+            <para>As SIM card standard definition, the <emphasis>PIN status</emphasis> would contain below
+            values:</para>
+            <table frame="topbot">
+                <title>PIN Status of SIM card</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>Filename</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>not verify</entry><entry>verify</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+        </sect3>
+        
+        <sect3>
+            <title>Verify PIN API in QualComm</title>
+            <para></para>
+            <example>
+                <title>Verify SIM PIN(PIN1)</title>
+                <programlisting>gsdi_verify_pin(GSDI_PIN1,);</programlisting>
+            </example>
+        </sect3>
+    </sect2>
+    
+    <sect2>
+        <title>STK/CAT</title>
+        
+        <para>SIM Toolkit(STK), Card Application Toolkit(CAT)</para>
+    </sect2>
+    
+</sect1>

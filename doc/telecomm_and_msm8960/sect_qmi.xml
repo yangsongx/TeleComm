@@ -1,0 +1,66 @@
+<sect1>
+    <title>QMI</title>
+    <!-- Overview -->
+    <sect2>
+        <title>Overview</title>
+        
+        <para><emphasis>QMI</emphasis> is QualComm's msg exchange format. It is widely used in
+        MSM8960 platform, as AP/BP in one-single chipset.</para>
+        
+        <para>We can simply consider it as a <emphasis>MUX</emphasis> used in Hubble platform,
+        or a <emphasis>Language</emphasis> talking to BP.</para>
+        
+        <para>So, in MSM8960, there's no MUX channels, and AT commands I/O between AP/BP. All AP/BP
+        data I/O is via QMI channel.</para>
+        
+        <para>The whole QMI msg is organized by header and vary-length TLV data payload.</para>
+        
+        <example>
+            <title>QMI msg format</title>
+            <programlisting>struct{
+  uint8  <userinput>I/F Type</userinput>; //Interface Type, be 0x01(means QMUX msg)
+  uint16 <userinput>Length</userinput>; // Length, exclude "I/F Type" byte.
+  uint8  <userinput>Control Flag</userinput>;
+  uint8  <userinput>QMI Type</userinput>; // Types of QMI(such as UIM,NAS,WDS,etc)
+  uint8  <userinput>Client ID</userinput>;
+  uint8  <userinput>DATA[0]</userinput>;
+};</programlisting>
+        </example>
+        
+        <para>qmi_service_id_type</para>
+    </sect2>
+    
+    <sect2>
+        <title>Filter QMI data</title>
+        
+        <para>The QMI data can be found in QXDM log. We can right-click the item view window,
+        and choose <guimenu>Refilter Items...</guimenu> to get pop dialog.</para>
+        
+        <para>Then choose <guimenu>Log Packets</guimenu> in lefe panel, and choose <guimenu>Common</guimenu> -> <guimenu>QMI</guimenu>
+        in right panel.</para>
+        
+        <para>Below is a sample on MSM8960:</para>
+        
+        <figure>
+            <title>Filter QMI from QXDM</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata scale="60" fileref="res/qmi.png" />
+                </imageobject>
+            </mediaobject>
+        </figure>
+        
+        <para>After filter out, all QMI data can be found in these QMUX channels.</para>
+        
+        <para>We can use <emphasis>QCAT</emphasis> to open the filtered .isf file, each field
+        can be parsed and displayed in the UI.</para>
+        
+    </sect2>
+    
+    <sect2>
+        <title>DMS_SET_EVENT</title>
+        
+        <para>DMS(Device Management Service)</para>
+        <para>qmi_dmsi_set_operating_mode</para>
+    </sect2>
+</sect1>

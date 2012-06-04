@@ -1,0 +1,151 @@
+<sect1>
+    <title>Data Call Service</title>
+    
+    <para>The <emphasis>data call service</emphasis> is used for data connection like browser, etc.</para>
+    <!-- Setup Data Call -->
+    <sect2>
+        <title>Setup Data Call</title>
+        <para>RIL uses SETUP_DATA_CALL(27) request for this. AP framework would do
+        a lot of check to make sure all conditions are meet, before sending this request to BP.</para>
+        <para>These checking logic can found in framework code.</para>
+            <indexterm>
+                <primary>SETUP_DATA_CALL</primary>
+            </indexterm>
+        <para>After all condition meets, the setup request would send to RIL. The whole setup request
+        contains many fields, current definition is:</para>
+        
+            <table frame="topbot">
+                <title>SETUP_DATA_CALL request</title>
+                <tgroup cols="3">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <colspec colwidth="3*" />
+                <thead>
+                    <row><entry>Field</entry><entry>Meaning</entry><entry>Notes</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>1</entry><entry>Radio technology</entry><entry>0(CDMA), 1(GSM/UMTS), above 2 is <userinput>RIL_RadioTechnology+2</userinput></entry></row>
+                    <row><entry>2</entry><entry>RIL_DataProfile</entry><entry>This is optional</entry></row>
+                    <row><entry>3</entry><entry>APN</entry><entry>For GSM/UMTS case</entry></row>
+                    <row><entry>4</entry><entry>APN username</entry><entry>For GSM/UMTS case</entry></row>
+                    <row><entry>5</entry><entry>APN password</entry><entry>For GSM/UMTS case</entry></row>
+                    <row><entry>6</entry><entry>PAP/CHAP auth type</entry><entry>0(Never PAP/CHAP), 1(may PAP, Never CHAP), 2(may CHAP, Never PAP),3(may PAP/CHAP, depend on BP code)</entry></row>
+                    <row><entry>7</entry><entry>Connection type</entry><entry>IP/IPV6/IPV4V6/PPP</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+            <para>Below sample is <emphasis>Vanquish</emphasis>, setup data call with China Telecom CDMA network.</para>
+            <para>It request 2 type of radio tech in this case:</para>
+            <example>
+                <title>China Telecom DataCall Setup</title>
+                <programlisting><userinput>first try RADIO_TECH_EVDO_A(8) setup:</userinput>
+RILJ    : [0133]> SETUP_DATA_CALL 10 0 null null null 3 IP
+<userinput>got IP addrss for RADIO_TECH_EVDO_A(8):</userinput>
+RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState: 
+       {version=6 status=0 retry=-1 cid=0 active=2 type=IP' 
+       ifname='rmnet0' addresses=[49.90.136.7/28] 
+        dnses=[61.177.7.1,218.2.135.1] gateways=[49.90.136.1]}
+<userinput>disconnected due to Out of Service:</userinput>
+CDMA    : [CDMALTEPhone] getDataConnectionState: Data is Out of Service. ret = DISCONNECTED
+CDMA    : [CdmaDCT] Data not allowed due to - psState= 1
+<userinput>send try RADIO_TECH_EVDO_0(7) setup:</userinput>
+RILJ    : [0133]> SETUP_DATA_CALL 9 0 null null null 3 IP
+RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState: 
+       {version=6 status=0 retry=-1 cid=0 active=2 type=IP' 
+       ifname='rmnet0' addresses=[49.90.136.7/28] 
+       dnses=[61.177.7.1,218.2.135.1] gateways=[49.90.136.1]}</programlisting>
+            </example>
+        
+    </sect2>
+    <!-- Condition Checking -->
+    <sect2>
+        <title>Condition Checking</title>
+        
+        <para>The <userinput>isDataAllowed()</userinput> would do all the condition checking. If any of them have
+        incorrect status, it'll refuse send SETUP_DATA_CALL to RIL.</para>
+        <para>So, this function's log is helpful for data connection bug finding:</para>
+        <table frame="topbot">
+            <title>Data Allowed Checking reasons</title>
+            <tgroup cols="2">
+            <colspec colwidth="1*" />
+            <colspec colwidth="2*" />
+            <thead>
+                <row><entry>Reason</entry><entry>Note</entry></row>
+            </thead>
+            <tbody>
+            <row><entry>gprs = 1</entry><entry>Voice Call not Attached</entry></row>
+            <row><entry>SIM not loaded</entry><entry>Failed detect the SIM card</entry></row>
+            <row><entry>psState = 1</entry><entry>Data is Disabled by user</entry></row>
+            </tbody>
+            </tgroup>
+        </table>        
+    </sect2>
+    
+    <!-- Data Registration State -->
+    <sect2>
+        <title>Data Registration State</title>
+        
+        <para>RIL use <userinput>RIL_REQUEST_DATA_REGISTRATION_STATE</userinput> to get current data registration
+        state.</para>
+        
+            <indexterm><primary>DATA_REGISTRATION_STATE</primary></indexterm>
+            
+        <para>The data fields of DATA_REGISTRATION_STATE are similar as voice reg state:</para>
+        
+        <table frame="topbot">
+            <title>DATA_REGISTRATION_STATE response data</title>
+            <tgroup cols="2">
+            <thead>
+                <row><entry>Field</entry><entry>Notes</entry></row>
+            </thead>
+            <tbody>
+                <row>
+                    <entry>1 - reg state</entry>
+                    
+                    <entry>0-Not Reg,and is not searching,1-Reg,home network,2-Not Reg, but is under searching,3-Reg denied,4-Unknow,5-Reg,roaming.</entry></row>
+                    
+                    <row><entry>2 - LAC</entry>
+                    <entry>LAC if registered or NULL if not</entry></row>
+                    
+                    <row><entry>3 - CID</entry>
+                    <entry>CID if registered or NULL if not.</entry></row>
+                    
+                    <row><entry>4 - Radio Tech</entry>
+                    <entry>RIL_RadioTechnology Value(<xref linkend="exp.ril.radiotech"/></entry></row>
+                    
+                    <row><entry>5 - Reason for reg deny</entry>
+                    <entry>deny reason for the registration failure.</entry>
+                </row>
+            </tbody>
+            </tgroup>
+        </table>        
+    </sect2>
+    
+    <sect2>
+        <title>CDMA 1xEV Network</title>
+        <para>deafult 460036131837427@mycdma.cn, needs re-program the user name and password.</para>
+        <para>In QPST Service Program, <guimenu>PPP Config</guimenu>, <guimenu>Um</guimenu> tab username:</para>
+        <table frame="topbot">
+        <title>NV Items for China TeleCom Auth</title>
+        <tgroup cols="2">
+        <thead>
+            <row><entry>NV Item</entry><entry>Notes</entry></row>
+        </thead>
+        <tbody>
+                    <row><entry>NV_HDR_AN_AUTH_NAI_I(579)</entry><entry>ctnet@mycdma.cn</entry></row>
+                    <row><entry>NV_HDR_AN_AUTH_PASSWORD_I(580)</entry><entry>vnet.mobi</entry></row>
+                </tbody>
+                </tgroup>
+                </table>
+                
+                <informalexample>
+                    <programlisting>9925 typedef PACKED struct PACKED_POST{
+ 9926   /* length of NAI */
+ 9927   byte   nai_len;
+ 9928   /* the NAI */
+ 9929   byte   nai[NV_MAX_AN_AUTH_NAI_LENGTH];
+ 9930 } nv_hdr_an_auth_nai_type;</programlisting>
+                </informalexample>        
+    </sect2>
+</sect1>

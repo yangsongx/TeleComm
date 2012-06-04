@@ -1,0 +1,72 @@
+<sect1>
+    <title>EFS</title>
+    
+    <sect2>
+        <title>EFS API</title>
+        
+        <para><userinput>core/storage/efs/</userinput> is EFS component source code, it provided a 
+        file system service, the APIs is similar as glibc's <userinput>open()/read()</userinput>.</para>
+            <indexterm>
+                <primary>efs_open()</primary>
+            </indexterm>
+    <example>
+        <title>Usage of EFS APIs</title>
+        <programlisting>#include <userinput>&lt;fs_public.h&gt;</userinput>
+int fd;
+char buf[32];
+fd = <userinput>efs_open("/motorola/fi.na", O_APPEND | O_RDWR | O_CREAT)</userinput>;
+if(fd != -1){
+  <userinput>efs_read</userinput>(fd, buf, sizeof(buf));
+  sprintf(buf, "hello:%d", i);
+  <userinput>efs_write</userinput>(fd, buf, strlen(buf));
+  <userinput>efs_close</userinput>(fd);
+}</programlisting>
+    </example>
+    </sect2>
+    
+    <sect2>
+        <title>Sync and Flush</title>
+        
+        <para>As QualComm's design, for Non-<userinput>FEATURE_EFS_ROMFS</userinput> case, an EFS write is in RAM firstly. 
+        Later, the background task would try flush these content to EFS storage.</para>
+        
+        <para>The background sync timer was usually defined by <userinput>FS_SYNC_TIMER</userinput> constant.</para>
+        
+        <para>Below is sample on MSM8960:</para>
+        <example>
+            <title>Timer Setting for EFS Sync</title>
+            <programlisting>358 #ifdef FEATURE_EFS_SYNC_TIMER_IN_MILLISECS
+359   #define FS_SYNC_TIMER  (FEATURE_EFS_SYNC_TIMER_IN_MILLISECS)
+360 #else
+361   #define FS_SYNC_TIMER  (90*1000) /* 90 Seconds. */
+362 #endif</programlisting>
+        </example>
+        
+        <para>If we didn't specify <userinput>FEATURE_EFS_SYNC_TIMER_IN_MILLISECS</userinput>, then the default
+        value was 90 seconds.</para>
+        
+        <para>This flush latency would cause some issues, such as we write an NV Item value, or a EFS file,
+        then system immediately panic unexpectly.</para>
+        
+        <para>As no time to flush this for a NON-normal system panic, the write file would loss after system
+        up.</para>
+        
+        <para>Below is an example that I tried on MSM8960 platform:</para>
+        <itemizedlist>
+            <listitem>
+                <para>Modify a Moto's SIM PIN cache NV value from <userinput>1234</userinput>, to <userinput>123456</userinput>.</para>
+            </listitem>
+            <listitem>
+                <para>Using RadioComm read this NV, it's modified <userinput>123456</userinput>, as this is read from RAM.</para>
+            </listitem>
+            <listitem>
+                <para>Trigger a BP Panic, after system up, re-read this NV, the value was <userinput>1234</userinput>, not
+                the modifed one.</para>
+            </listitem>
+        </itemizedlist>
+    
+        <para>In order to avoid this , we can add an <userinput>efs_sync("/")</userinput> to force
+        the efs flush operation completed immediately.</para>    
+    </sect2>        
+    
+</sect1>

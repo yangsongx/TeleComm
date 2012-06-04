@@ -23,31 +23,40 @@
 
 <indexentry>
   <primaryie>CIEV,
-    <ulink url="x577.html#AEN750" role="AEN754">CIEV</ulink>
+    <ulink url="x265.html#AEN447" role="AEN451">CIEV</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>CM Call Event,
-    <ulink url="x577.html#AEN1153" role="AEN1172">Making Call</ulink>
+    <ulink url="x265.html#AEN735" role="AEN754">Making Call</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>CM SS Event,
-    <ulink url="x577.html#AEN1110" role="AEN1131">CM SS Event</ulink>
+    <ulink url="x265.html#AEN692" role="AEN713">CM SS Event</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>COPS,
-    <ulink url="x577.html#AEN914" role="AEN917">COPS</ulink>
+    <ulink url="x265.html#AEN611" role="AEN614">COPS</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>CREG,
-    <ulink url="x577.html#AEN849" role="AEN853">CREG</ulink>
+    <ulink url="x265.html#AEN546" role="AEN550">CREG</ulink>
+  </primaryie>
+</indexentry>
+
+</indexdiv>
+<indexdiv><title>D</title>
+
+<indexentry>
+  <primaryie>DATA_REGISTRATION_STATE,
+    <ulink url="x1318.html#AEN1404" role="AEN1408">Data Registration State</ulink>
   </primaryie>
 </indexentry>
 
@@ -56,13 +65,13 @@
 
 <indexentry>
   <primaryie>efs_open(),
-    <ulink url="x577.html#AEN1637" role="AEN1642">EFS</ulink>
+    <ulink url="x1703.html#AEN1705" role="AEN1710">EFS API</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>ESN,
-    <ulink url="x577.html#AEN597" role="AEN599">ESN/MEID/IMEI</ulink>
+    <ulink url="x265.html#AEN294" role="AEN296">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
@@ -71,7 +80,7 @@
 
 <indexentry>
   <primaryie>FDN,
-    <ulink url="x577.html#AEN1331" role="AEN1336">FDN</ulink>
+    <ulink url="x265.html#AEN913" role="AEN918">FDN</ulink>
   </primaryie>
 </indexentry>
 
@@ -80,7 +89,7 @@
 
 <indexentry>
   <primaryie>GET_CURRENT_CALLS,
-    <ulink url="x343.html#AEN465" role="AEN469">Get Current Call</ulink>
+    <ulink url="x1019.html#AEN1220" role="AEN1230">MO Call</ulink>
   </primaryie>
 </indexentry>
 
@@ -89,13 +98,7 @@
 
 <indexentry>
   <primaryie>IMEI,
-    <ulink url="x577.html#AEN597" role="AEN603">ESN/MEID/IMEI</ulink>
-  </primaryie>
-</indexentry>
-
-<indexentry>
-  <primaryie>IMSI,
-    <ulink url="x577.html#AEN978" role="AEN980">IMSI</ulink>
+    <ulink url="x265.html#AEN294" role="AEN300">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
@@ -104,19 +107,19 @@
 
 <indexentry>
   <primaryie>MCC,
-    <ulink url="x577.html#AEN683" role="AEN685">MCC/MNC/PLMN</ulink>
+    <ulink url="x265.html#AEN380" role="AEN382">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>MEID,
-    <ulink url="x577.html#AEN597" role="AEN601">ESN/MEID/IMEI</ulink>
+    <ulink url="x265.html#AEN294" role="AEN298">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>MNC,
-    <ulink url="x577.html#AEN683" role="AEN687">MCC/MNC/PLMN</ulink>
+    <ulink url="x265.html#AEN380" role="AEN384">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -125,13 +128,13 @@
 
 <indexentry>
   <primaryie>NITZ,
-    <ulink url="x577.html#AEN733" role="AEN735">NITZ</ulink>
+    <ulink url="x265.html#AEN430" role="AEN432">NITZ</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>nv_items_enum_type,
-    <ulink url="x577.html#AEN1451" role="AEN1458">NV Items</ulink>
+    <ulink url="x1748.html" role="AEN1755">NV Item</ulink>
   </primaryie>
 </indexentry>
 
@@ -140,7 +143,7 @@
 
 <indexentry>
   <primaryie>OPERATOR,
-    <ulink url="x39.html#AEN189" role="AEN195">Operator</ulink>
+    <ulink url="x1019.html#AEN1187" role="AEN1191">Network Operator Name</ulink>
   </primaryie>
 </indexentry>
 
@@ -149,7 +152,7 @@
 
 <indexentry>
   <primaryie>PLMN,
-    <ulink url="x577.html#AEN683" role="AEN689">MCC/MNC/PLMN</ulink>
+    <ulink url="x265.html#AEN380" role="AEN386">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -157,14 +160,20 @@
 <indexdiv><title>R</title>
 
 <indexentry>
+  <primaryie>rex_sleep(),
+    <ulink url="x265.html#AEN284" role="AEN286">Timer</ulink>
+  </primaryie>
+</indexentry>
+
+<indexentry>
   <primaryie>RIL_RadioState,
-    <ulink url="x39.html#AEN41" role="AEN56">Phone Creation</ulink>
+    <ulink url="x79.html#AEN81" role="AEN96">Phone Creation</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>RSSI,
-    <ulink url="x577.html#AEN920" role="AEN927">RSSI</ulink>
+    <ulink url="x265.html#AEN617" role="AEN624">RSSI</ulink>
   </primaryie>
 </indexentry>
 
@@ -173,13 +182,22 @@
 
 <indexentry>
   <primaryie>SETUP_DATA_CALL,
-    <ulink url="x39.html#AEN226" role="AEN231">Setup Data Call</ulink>
+    <ulink url="x1318.html#AEN1322" role="AEN1326">Setup Data Call</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>sys_mode,
-    <ulink url="x577.html#AEN1041" role="AEN1044">Sys Mode</ulink>
+    <ulink url="x1019.html#AEN1073" role="AEN1088">QualComm Registration Component</ulink>
+  </primaryie>
+</indexentry>
+
+</indexdiv>
+<indexdiv><title>T</title>
+
+<indexentry>
+  <primaryie>time_get_secs(),
+    <ulink url="x265.html#AEN284" role="AEN289">Timer</ulink>
   </primaryie>
 </indexentry>
 
@@ -188,7 +206,7 @@
 
 <indexentry>
   <primaryie>VOICE_REGISTRATION_STATE,
-    <ulink url="x343.html#AEN432" role="AEN438">Voice Registration</ulink>
+    <ulink url="x1019.html#AEN1030" role="AEN1036">Registration State</ulink>
   </primaryie>
 </indexentry>
 

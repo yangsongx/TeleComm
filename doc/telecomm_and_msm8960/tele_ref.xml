@@ -14,6 +14,14 @@
 <!DOCTYPE article SYSTEM "/usr/share/sgml/docbook/sgml-dtd-4.4-1.0-30.1/docbook.dtd"
 [
 <!ENTITY cmd_ping "<userinput>ping_mdm</userinput>">
+<!ENTITY section_NV  SYSTEM "sect_nv.xml">
+<!ENTITY section_EFS  SYSTEM "sect_efs.xml">
+<!ENTITY section_SIM  SYSTEM "sect_sim.xml">
+<!ENTITY section_VOICE  SYSTEM "sect_voice_call.xml">
+<!ENTITY section_DATA  SYSTEM "sect_data_call.xml">
+<!ENTITY section_QMI  SYSTEM "sect_qmi.xml">
+<!ENTITY section_SMS  SYSTEM "sect_sms.xml">
+<!ENTITY section_PANIC  SYSTEM "sect_panic.xml">
 <!ENTITY section_glossary SYSTEM "glossary_section.xml">
 <!ENTITY section_index SYSTEM "the_index.xml">
 ]>
@@ -44,7 +52,7 @@
         </abstract>
         
     </articleinfo>
-    
+    <!-- Overview -->
     <sect1>
         <title>Overview</title>
         
@@ -55,10 +63,10 @@
                 <para>App/Framework/Base RIL, which is high layer, as part of Android's source code.</para>
             </listitem>
             <listitem>
-                <para>Vendor RIL, which is middle layer, can be proprietary.</para>
+                <para>Vendor RIL, middle layer, can be proprietary.</para>
             </listitem>
             <listitem>
-                <para>Baseband(BP), which is lower layer, usually be QualComm's.</para>
+                <para>Baseband(BP), the lower layer, usually be QualComm's.</para>
             </listitem>
         </itemizedlist>
         
@@ -71,12 +79,64 @@
         and messages, that communicate with vendor ril. Refer <xref linkend="ril.overall_layout" /> for
         more details on the native RIL.</para>
         
-        <para>The vendor ril and baseband code is totally customerizable, and varies on different products.</para>
+        <para>The vendor ril and baseband code varies on different products.</para>
         
-        <para>arch/arm/include/asm/bootinfo.h:34:#define PU_REASON_USB_CABLE    0x00000010 /* Bit 4  */</para>
+        <para>QualComm sometimes call the GSM/WCDMA/UMTS as <emphasis>3gpp</emphasis>, while call CDMA as <emphasis>3gpp2</emphasis>.</para>
+        
+        <para>So, RIL defined an enum like this:</para>
+        
+        <informalexample>
+            <programlisting>typedef enum {
+  RADIO_TECH_3GPP = 1, /* 3GPP Technologies - GSM, WCDMA */
+  RADIO_TECH_3GPP2 = 2 /* 3GPP2 Technologies - CDMA */
+}RIL_RadioTechnologyFamily;</programlisting>
+        </informalexample>
+        <!-- Getting Source Code -->
+        <sect2>
+            <title>Getting Source Code</title>
+            
+            <para>The Andorid system source code is managed by <emphasis>git/repo</emphasis> tool.</para>
+            <para><filename>.repo/manifests/default.xml</filename> contained all projects dir layout.</para>
+            <para>We would usually needs change the fetch method, to get source code from mirror site:</para>
+            <informalexample>
+                <programlisting> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;manifest&gt;
+   &lt;remote  name=&quot;repo-blurdev&quot;
+<userinput>-           fetch=&quot;ssh://gerrit.pcs.mot.com&quot;</userinput>
+<userinput>+           fetch=&quot;/proj/repo01/mirror&quot;</userinput>
+            review=&quot;http://gerrit.blurdev.com&quot; /&gt;</programlisting>
+            </informalexample>
+            <para>We can use <userinput>sed</userinput> tool to do this, the below command is try replace 
+            <emphasis>fetch=xxx</emphasis> with <emphasis>fetch=yyy</emphasis>:</para>
+            <informalexample>
+                <programlisting>sed -i 's/fetch=".*"/fetch="\/proj\/repo01\/mirror"/g' default.xml</programlisting>
+            </informalexample>
+        </sect2>
         
         <sect2>
+            <title>System Build</title>
+            
+            <para>Except the full build command, Android also provided <userinput>mm</userinput> shell command
+            to do quick build.</para>
+            
+            <para>In order to use the <userinput>mm</userinput>, following items are required:</para>
+            <itemizedlist>
+            <listitem>
+                <para><userinput>. build/envsetup.sh</userinput> to enable the <userinput>mm</userinput> shell command.</para>
+            </listitem>
+            <listitem>
+                <para>Export the <userinput>$TARGET_PRODUCT</userinput></para>
+            </listitem>
+            <listitem>
+                <para>Export the <userinput>$TARGET_BUILD_VARIANT</userinput></para>
+            </listitem>
+            </itemizedlist>
+        </sect2>
+        
+         <sect2>
             <title>Powerup Reason</title>
+            
+            <para>arch/arm/include/asm/bootinfo.h:34:#define PU_REASON_USB_CABLE    0x00000010 /* Bit 4  */</para>
             <para>motorola/system/core/mot_boot_mode/mot_boot_mode.c</para>
             <para><filename>/proc/bootinfo</filename> contained boot up reason info.</para>
         </sect2>
@@ -256,192 +316,6 @@
             
         </sect2>
         
-        <!-- Voice Call -->
-        <sect2>
-            <title>Voice Call</title>
-            
-            <para>The <emphasis>Voice Call</emphasis> is composed by below items:</para>
-            <itemizedlist>
-            <listitem>
-                <para>Subscribe with either SIM card, or NV.</para>
-            </listitem>
-            <listitem>
-                <para>Search matching operator, based on subscription(SIM/NV).</para>
-            </listitem>
-            </itemizedlist>
-            
-            <!-- Subscribe with SIM/NV -->
-            <sect3>
-                <title>Subscribe with SIM/NV</title>
-                <para></para>
-            </sect3>
-            <!-- Roaming -->
-            <sect3>
-                <title>Roaming</title>
-                <para></para>
-            </sect3>
-            
-            <!-- Operator -->
-            <sect3>
-                <title>Operator</title>
-                
-                <para>The <emphasis>Operator</emphasis> is network carrier PLMN, or Name, dependend on
-                implementation.</para>
-                
-                <para>Telephony is sending <userinput>RIL_REQUEST_OPERATOR</userinput> to RIL, and RIL would
-                response 3-field data:</para>
-                
-                    <indexterm>
-                        <primary>OPERATOR</primary>
-                    </indexterm>
-                <table frame="topbot">
-                <title>OPERATOR data field</title>
-                <tgroup cols="2">
-                
-                <thead>
-                    <row><entry>Field</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>1</entry><entry>long alpha ONS or EONS</entry></row>
-                    <row><entry>2</entry><entry>short alpha ONS or EONS</entry></row>
-                    <row><entry>3</entry><entry>PLMN(MCC+MNC)</entry></row>
-                </tbody>
-                </tgroup>
-                </table>
-                
-                <para>Below is an example of <emphasis>China TeleComm</emphasis> CDMA network, it didn't show up the short alpha:</para>
-                <informalexample>
-                    <programlisting>RILJ    : [0248]> OPERATOR
-RILJ    : [0252]&lt; OPERATOR {46003, , 46003}</programlisting>
-                </informalexample>
-            </sect3>
-            
-            <sect3>
-                <title>Special Calling</title>
-                
-                <para>There're some <emphasis>special call number</emphasis> by carriers, provide extra service for user.</para>
-                
-                <para>For example, Verizon always has below service:</para>
-                <para><userinput>*67</userinput> - Caller ID Selective Blocking, let you block your name 
-                and number from being sent on calls as you make them by pressing <userinput>*67</userinput> before dialing.</para>
-            </sect3>
-        </sect2>
-        
-        <!-- Setup Data Call -->
-        <sect2>
-            <title>Setup Data Call</title>
-            
-            <para>The data call setup is for data service for browser, etc.</para>
-            <para>RIL uses SETUP_DATA_CALL(27) request for this. AP framework would do
-            a lot of check to make sure all conditions are meet, before sending this request to BP.</para>
-            <para>These checking logic can found in framework code.</para>
-                <indexterm>
-                    <primary>SETUP_DATA_CALL</primary>
-                </indexterm>
-            <para>After all condition meets, the setup request would send to RIL. The whole setup request
-            contains many fields, current definition is:</para>
-            
-            <table frame="topbot">
-                <title>SETUP_DATA_CALL request</title>
-                <tgroup cols="3">
-                <colspec colwidth="1*" />
-                <colspec colwidth="2*" />
-                <colspec colwidth="3*" />
-                <thead>
-                    <row><entry>Field</entry><entry>Meaning</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>1</entry><entry>Radio technology</entry><entry>0(CDMA), 1(GSM/UMTS), above 2 is <userinput>RIL_RadioTechnology+2</userinput></entry></row>
-                    <row><entry>2</entry><entry>RIL_DataProfile</entry><entry>This is optional</entry></row>
-                    <row><entry>3</entry><entry>APN</entry><entry>For GSM/UMTS case</entry></row>
-                    <row><entry>4</entry><entry>APN username</entry><entry>For GSM/UMTS case</entry></row>
-                    <row><entry>5</entry><entry>APN password</entry><entry>For GSM/UMTS case</entry></row>
-                    <row><entry>6</entry><entry>PAP/CHAP auth type</entry><entry>0(Never PAP/CHAP), 1(may PAP, Never CHAP), 2(may CHAP, Never PAP),3(may PAP/CHAP, depend on BP code)</entry></row>
-                    <row><entry>7</entry><entry>Connection type</entry><entry>IP/IPV6/IPV4V6/PPP</entry></row>
-                </tbody>
-                </tgroup>
-            </table>
-            
-            <para>Below sample is <emphasis>Vanquish</emphasis>, setup data call with China Telecom CDMA network.</para>
-            <para>It request 2 type of radio tech in this case:</para>
-            <example>
-                <title>China Telecom DataCall Setup</title>
-                <programlisting><userinput>first try RADIO_TECH_EVDO_A(8) setup:</userinput>
-RILJ    : [0133]> SETUP_DATA_CALL 10 0 null null null 3 IP
-<userinput>got IP addrss for RADIO_TECH_EVDO_A(8):</userinput>
-RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState: 
-       {version=6 status=0 retry=-1 cid=0 active=2 type=IP' 
-       ifname='rmnet0' addresses=[49.90.136.7/28] 
-        dnses=[61.177.7.1,218.2.135.1] gateways=[49.90.136.1]}
-<userinput>disconnected due to Out of Service:</userinput>
-CDMA    : [CDMALTEPhone] getDataConnectionState: Data is Out of Service. ret = DISCONNECTED
-CDMA    : [CdmaDCT] Data not allowed due to - psState= 1
-<userinput>send try RADIO_TECH_EVDO_0(7) setup:</userinput>
-RILJ    : [0133]> SETUP_DATA_CALL 9 0 null null null 3 IP
-RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState: 
-       {version=6 status=0 retry=-1 cid=0 active=2 type=IP' 
-       ifname='rmnet0' addresses=[49.90.136.7/28] 
-       dnses=[61.177.7.1,218.2.135.1] gateways=[49.90.136.1]}</programlisting>
-            </example>
-            <!-- Condition Checking -->
-            <sect3>
-                <title>Condition Checking</title>
-                <para>The <userinput>isDataAllowed()</userinput> would do all the condition checking. If any of them have
-                incorrect status, it'll refuse send SETUP_DATA_CALL to RIL.</para>
-                <para>So, this function's log is helpful for data connection bug finding:</para>
-                
-                <table frame="topbot">
-                    <title>Data Allowed Checking reasons</title>
-                    <tgroup cols="2">
-                    <colspec colwidth="1*" />
-                    <colspec colwidth="2*" />
-                    <thead>
-                        <row><entry>Reason</entry><entry>Note</entry></row>
-                    </thead>
-                    <tbody>
-                    <row><entry>gprs = 1</entry><entry>Voice Call not Attached</entry></row>
-                    <row><entry>SIM not loaded</entry><entry>Failed detect the SIM card</entry></row>
-                    <row><entry>psState = 1</entry><entry>Data is Disabled by user</entry></row>
-                    </tbody>
-                    </tgroup>
-                </table>
-            </sect3>
-            <!-- Data Registration State -->
-            <sect3>
-                <title>Data Registration State</title>
-                <para>DATA_REGISTRATION_STATE</para>
-            </sect3>
-            
-            <sect3>
-                <title>CDMA 1xEV Network</title>
-                
-                <para>deafult 460036131837427@mycdma.cn, needs re-program the user name and password.</para>
-                <para>In QPST Service Program, <guimenu>PPP Config</guimenu>, <guimenu>Um</guimenu> tab username:</para>
-                <table frame="topbot">
-                <title>NV Items for China TeleCom Auth</title>
-                <tgroup cols="2">
-                <thead>
-                    <row><entry>NV Item</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>NV_HDR_AN_AUTH_NAI_I(579)</entry><entry>ctnet@mycdma.cn</entry></row>
-                    <row><entry>NV_HDR_AN_AUTH_PASSWORD_I(580)</entry><entry>vnet.mobi</entry></row>
-                </tbody>
-                </tgroup>
-                </table>
-                
-                <informalexample>
-                    <programlisting>9925 typedef PACKED struct PACKED_POST{
- 9926   /* length of NAI */
- 9927   byte   nai_len;
- 9928   /* the NAI */
- 9929   byte   nai[NV_MAX_AN_AUTH_NAI_LENGTH];
- 9930 } nv_hdr_an_auth_nai_type;</programlisting>
-                </informalexample>
-                
-            </sect3>
-            
-        </sect2>
         <!-- FTM and Tools -->
         <sect2>
             <title>FTM and Tools</title>
@@ -519,243 +393,12 @@ RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState:
   33 #define RIL_VERSION_MIN 2 /* Minimum RIL_VERSION supported */</programlisting>
             </example>
         </sect2>
-        <!-- SIM Card Support -->
-        <sect2>
-            <title>SIM Card Support</title>
-            
-            <para>The basic and generic information of a SIM card can be found at <xref linkend="qc.simcard" /></para>
-            
-            <table frame="topbot" id="tbl.ril.simcard.item">
-                <title>SIM Related Msg in RIL</title>
-                <tgroup cols="2">
-                <colspec colwidth="1*" />
-                <colspec colwidth="2*" />
-                <thead>
-                    <row><entry>Msg Type</entry><entry>Note</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>RIL_REQUEST_GET_SIM_STATUS(1)</entry><entry>Get SIM status</entry></row>
-                    <row><entry>RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED(1019)</entry><entry>SIM status changed unsol msg</entry></row>
-                    <row><entry>RIL_UNSOL_SIM_SMS_STORAGE_FULL(1016)</entry><entry>SMS storage on the SIM is full.</entry></row>
-                </tbody>
-                </tgroup>
-            </table>
-        </sect2>
-        <!-- Voice Call Support -->
-        <sect2>
-            <title>Voice Call Support</title>
-            
-            <para>Some of Voice Call's RIL messages are:</para>
-            <table frame="topbot" id="tbl.ril.voicecall.item">
-                <title>Voice Call Related Msg in RIL</title>
-                <tgroup cols="2">
-                <colspec colwidth="1*" />
-                <colspec colwidth="2*" />
-                <thead>
-                    <row><entry>Msg Type</entry><entry>Note</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>RIL_REQUEST_DIAL(10)</entry><entry>Making a phone call</entry></row>
-                    <row><entry>RIL_REQUEST_VOICE_REGISTRATION_STATE(20)</entry><entry>Get voice regiteration state</entry></row>
-                </tbody>
-                </tgroup>
-            </table>
-            
-            <para>The request dial's data is a structure(<userinput>RIL_Dial</userinput>):</para>
-            <example>
-                <title>Dial Data Structure</title>
-                <programlisting>typedef struct {
-    char * address;
-    int clir; /* (same as 'n' paremeter in TS 27.007 7.7 "+CLIR"
-               * clir == 0 on "use subscription default value"
-               * clir == 1 on "CLIR invocation" (restrict CLI presentation)
-               * clir == 2 on "CLIR suppression" (allow CLI presentation)
-               */
-    RIL_UUS_Info *  uusInfo; /* NULL or Pointer to User-User Signaling Information */
-} RIL_Dial;</programlisting>
-            </example>
-            <!-- Voice Registration -->
-            <sect3>
-                <title>Voice Registration</title>
-                
-                <para>A <emphasis>network registration</emphasis>, usually means voice call service is available.</para>
-                
-                <para><userinput>RIL_REQUEST_VOICE_REGISTRATION_STATE</userinput> is the message indicate current
-                registration state.</para>
-                
-                    <indexterm>
-                        <primary>VOICE_REGISTRATION_STATE</primary>
-                    </indexterm>
-                    
-                <table frame="topbot">
-                    <title>VOICE_REGISTRATION_STATE response data</title>
-                    <tgroup cols="3">
-                    <thead>
-                        <row><entry>Field</entry><entry>Notes</entry><entry>Meaning</entry></row>
-                    </thead>
-                    <tbody>
-                        <row><entry>1</entry><entry>reg state</entry><entry>0-Not Reg,and is not searching,1-Reg,home network,2-Not Reg, but is under searching,3-Reg denied,4-Unknow,5-Reg,roaming.</entry></row>
-                        <row><entry>2</entry><entry>LAC</entry><entry>Available for GSM/WCDMA system, or NULL if not.</entry></row>
-                        <row><entry>3</entry><entry>CID</entry><entry>Available for GSM/WCDMA system, or NULL if not.</entry></row>
-                        <row><entry>4</entry><entry>voice radio technology</entry><entry>RIL_RadioTechnology</entry></row>
-                    </tbody>
-                    </tgroup>
-                </table>
-                
-                
-            </sect3>
-            
-            <!-- Get Current Call -->
-            <sect3>
-                <title>Get Current Call</title>
-                
-                <para>The MT/MO Call info usually can be find via <emphasis>REQUEST_GET_CURRENT_CALLS</emphasis> message.</para>
-                <indexterm>
-                    <primary>GET_CURRENT_CALLS</primary>
-                </indexterm>
-                <para>As the RIL's design, a <userinput>RIL_Call</userinput> structure represents the call's info, and it will
-                parse this structure in a read-able format.</para>
-                
-                <para>This is implemented by <filename>RIL.java</filename></para>
-                <example>
-                    <title>RIL parse the GET_CURRENT_CALL</title>
-                    <programlisting>private void processSolicited (Parcel p) {
-  case RIL_REQUEST_GET_CURRENT_CALLS: 
-     <userinput>ret =  responseCallList(p)</userinput>; 
-     break;
-}
-private Object responseCallList(Parcel p) {
-  for (int i = 0 ; i &lt; num ; i++) {
-    dc = new DriverCall();
-    dc.state = DriverCall.stateFromCLCC(p.readInt());
-    dc.index = p.readInt();
-    ...  ...
-  }
-}</programlisting>
-                </example>
-                
-                <para>The <userinput>DriverCall</userinput> class takes care of the call info data, and<userinput>DriverCall::toString()</userinput> 
-                is used for compose a read-able formatting string:</para>
-                <informalexample>
-                    <programlisting>public String toString() {
-  return "id=" + index +"," + state +  "toa=" + TOA + "," +
-       (isMT ? "mt" : "mo") + + als + "," +
-       + (isVoice ? "voc" : "nonvoc") + ","
-       + (isVoicePrivacy ? "evp" : "noevp") + "," 
-       /*+ "number=" + number */ + ",cli=" + numberPresentation + ","
-       /*+ "name="+ name */ + "," + namePresentation;
-}</programlisting>
-                </informalexample>
-                
-                <para>Below is a demo of RIL log containing the call info:</para>
-                <informalexample>
-                    <programlisting>GET_CURRENT_CALLS[id=1,DIALING,toa=129,norm,mo,0,voc,noevp,,cli=1,,1]</programlisting>
-                </informalexample>
-                
-                <para>Below table list each fields of the <userinput>GET_CURRENT_CALLS</userinput></para>
-                <table frame="topbot">
-                    <title>GET_CURRENT_CALLS fields</title>
-                    <tgroup cols="3">
-                    <colspec colwidth="1*" />
-                    <colspec colwidth="2*" />
-                    <colspec colwidth="3*" />
-                <thead>
-                    <row><entry>No.</entry><entry>Field</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>1</entry><entry>Index</entry><entry>Usually 1, Line-1</entry></row>
-                    <row><entry>2</entry><entry>call state</entry><entry>0-Active,1-Holding,2-Dialing,3-Alerting,4-Incoming,5-WAITING</entry></row>
-                    <row><entry>3</entry><entry>Type of Address(TOA)</entry><entry>129-Domestic Num,145-International num</entry></row>
-                    <row><entry>4</entry><entry>isMpty</entry><entry></entry></row>
-                    <row><entry>5</entry><entry>MT,or MO Call</entry><entry>MO, MT</entry></row>
-                    <row><entry>6</entry><entry>als</entry><entry>Currently always be 0</entry></row>
-                    <row><entry>7</entry><entry>Voice Call, or not</entry><entry>"voc" for Voice Call, otherwise "nonvoc"</entry></row>
-                    <row><entry>8</entry><entry>Privacy</entry><entry>"evp"(PrivacyCall), otherwise "noevp"</entry></row>
-                </tbody>
-                </tgroup>
-                </table>
-                
-                <para>Usually, if the number is starting with <userinput>+</userinput>, we will consider this as international, and
-                mark the TOA field as <userinput>145</userinput>(International Number).</para>
-            </sect3>
-            <!-- MO Call -->
-            <sect3>
-                <title>MO Call</title>
-                
-                <para>The MO Call's status can also get via <emphasis>GET_CURRENT_CALLS</emphasis> message.</para>
-            </sect3>
-            
-            <!-- MT Call -->
-            <sect3>
-                <title>MT Call</title>
-            <para>A flow of an incomming call is like below:</para>
-            <example>
-                <title>Incomming Call Logic Flow</title>
-                    <programlisting><![CDATA[ RIL                                     BP
-  |   UNSOL_RESPONSE_CALL_STATE_CHANGED   |
-  | <------------------------------------ |
-  |                                       |
-  |      REQUEST_GET_CURRENT_CALLS        |
-  | ------------------------------------> |
-  | <------------------------------------ |
-  |     (contained Caller ID info)        |]]></programlisting>
-            </example>
-            
-            <para>We call the incomming call's info as <emphasis>Caller ID</emphasis>, it contained the incomming call's
-            number, and other extra info(such as the city, etc).</para>
-            
-            <para>These info, sometimes, also called as <emphasis>Calling Line Identity</emphasis>(CLI).</para>
-            </sect3>
-
-        </sect2>
-        <!-- SMS -->
-        <sect2>
-            <title>SMS</title>
-            
-            <para></para>
-            <!-- MO SMS -->
-            <sect3>
-                <title>MO SMS</title>
-                
-                <para><userinput>RIL_REQUEST_SEND_SMS</userinput></para>
-                <para><userinput>REQUEST_CDMA_SEND_SMS</userinput> is RIL message for CDMA sending SMS data.</para>
-                
-                <informalexample>
-                    <programlisting> 273 typedef struct {
- 274     int messageRef;   /* TP-Message-Reference for GSM,
- 275                          and BearerData MessageId for CDMA
- 276                          (See 3GPP2 C.S0015-B, v2.0, table 4.5-1). */
- 277     char *ackPDU;     /* or NULL if n/a */
- 278     int errorCode;    /* See 3GPP 27.005, 3.2.5 for GSM/UMTS,
- 279                          3GPP2 N.S0005 (IS-41C) Table 171 for CDMA,
- 280                          -1 if unknown or not applicable*/
- 281 } RIL_SMS_Response;</programlisting>
-                </informalexample>
-            </sect3>
-            
-            <sect3>
-                <title>QCRIL Part</title>
-                
-                <para>QCRIL would handle SMS:</para>
-                <table frame="topbot">
-                <title>SMS Handling in QCRIL</title>
-                <tgroup cols="2">
-                <colspec colwidth="1*" />
-                <colspec colwidth="1*" />
-                <thead>
-                    <row><entry>Filename</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>qcril_ami_sms.c</entry><entry>qcril_mo_sms_cb(), for MO SMS</entry></row>
-                </tbody>
-                </tgroup>
-                </table>
-            </sect3>
-        </sect2>
+        
     </sect1>
     <!-- QualComm BP -->
     <sect1>
         <title>QualComm BP</title>
+        
         <!-- Overview -->
         <sect2>
             <title>Overview</title>
@@ -796,6 +439,23 @@ mdm6600/                bpqcom/
  15    "${INC_ROOT}/core/bpqcom/mot_nv/inc",
  16 ])</programlisting>
             </example>
+            
+            <para>If you want to use any above component API, just add the name ID in target scon file.</para>
+        </sect2>
+        
+        <!-- Timer -->
+        <sect2>
+            <title>Timer</title>
+            
+                <indexterm>
+                    <primary>rex_sleep()</primary>
+                </indexterm>
+            <para>rex_sleep(ms), is the sleep() in QualComm system.</para>
+            
+                <indexterm>
+                    <primary>time_get_secs()</primary>
+                </indexterm>
+            <para>time_get_secs()</para>
         </sect2>
         
         <!-- Telecom Terminology -->
@@ -1247,157 +907,6 @@ regStatus,RadioTech,LAC,CID,Rej_cause,0,0,0,0,0</programlisting>
             </sect3>
         </sect2>
         
-        <!-- SIM Card -->
-        <sect2 id="qc.simcard">
-            <title>SIM Card</title>
-            
-            <para>Usually, we needs three type of SIM card, GSM/WCDMA/CDMA:</para>
-            
-            <itemizedlist spacing="compact">
-            <listitem>
-                <para>SIM - GSM SIM</para>
-            </listitem>
-            <listitem>
-                <para>USIM - WCDMA SIM(Like China Unicom)</para>
-            </listitem>
-            <listitem>
-                <para>RUIM - CDMA SIM(Like China Telecomm)</para>
-            </listitem>
-            </itemizedlist>
-            
-            <para>QualComm handle all of them under <filename>modem/uim/</filename>, as in <emphasis>UIM</emphasis>
-            component.</para>
-            
-            <para>And there's some flag, like <userinput>FEATURE_UIM_RUIM</userinput>, to indicate the code support
-            CDMA RUIM card type.</para>
-            
-            <para>Run Time RUIM Enable (RTRE)</para>
-            
-            <sect3>
-                <title>IMSI</title>
-                    <indexterm><primary>IMSI</primary></indexterm>
-                <para>EF_IMSI 0x6F07</para>
-            </sect3>
-            <!-- SIM PIN -->
-            <sect3>
-                <title>SIM PIN</title>
-                
-                <para>There're 2 types of PIN for SIM card:</para>
-                <itemizedlist>
-                <listitem>
-                    <para>PIN1, or call it <emphasis>PIN code</emphasis>, usually be <userinput>1234</userinput>,
-                    or <userinput>0000</userinput>.</para>
-                </listitem>
-                <listitem>
-                    <para>PIN2, it related with Carrier and internal Smart Card Info. It's transparent for end user.</para>
-                </listitem>
-                </itemizedlist>
-                
-                <para>As SIM card standard definition, the <emphasis>PIN status</emphasis> would contain below
-                values:</para>
-                <table frame="topbot">
-                <title>PIN Status of SIM card</title>
-                <tgroup cols="2">
-                <thead>
-                    <row><entry>Filename</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>not verify</entry><entry>verify</entry></row>
-                </tbody>
-            </tgroup>
-            </table>
-            </sect3>
-            
-            <sect3>
-                <title>MMGSDI/GSDI</title>
-                
-                <para><emphasis>Generic SIM Device Interface</emphasis>(GSDI) is a set of API lib, for all types of SIM.</para>
-                <para>QualComm added <emphasis>Mult-Mode GSDI</emphasis>(MMGSDI) to obsolete GSDI API. So in the QualComm's
-                source code, the <userinput>FEATURE_MMGSDI_SESSION_LIB</userinput> can be found everywhere.</para>
-                
-                <example>
-                    <title>Verify SIM PIN(PIN1)</title>
-                    <programlisting>gsdi_verify_pin(GSDI_PIN1,);</programlisting>
-                </example>
-            </sect3>
-            
-            <sect3>
-                <title>Detect SIM Card</title>
-                
-                <para>As QXDM needs USB system initialized, while the UIM init in parallel, we usually unable to 
-                see these SIM init log in QXDM.</para>
-                
-                <para>We can adding some dealy in <userinput>uim_power_up()</userinput>, to let QXDM be able to collect
-                these init Log.</para>
-            </sect3>
-        </sect2>
-        
-        <!-- Voice Registration -->
-        <sect2>
-            <title>Voice Registration</title>
-            
-            <para>Though voice reg is related with the Call Manager, it is still a little different than purly Calling, so add
-            this topic in a separate section.</para>
-            
-            <para><filename>modem/nas/reg/</filename> is component related with the registration.</para>
-            
-            <para>And QualComm added <userinput>=REG=</userinput> mark for those reg message, to ease the log search and filter.</para>
-            
-            <para>modem/nas/reg/src/reg_sim.c:4197:    MSG_ERROR_DS(REG_LOCAL_SUB, "=REG= Remove undefined PLMN from GPRS FPLMN list", 0,0,0);</para>
-            <!-- OTA Log -->
-            <sect3>
-                <title>OTA Log</title>
-                <para></para>
-            </sect3>
-            <!-- Service State -->
-            <sect3>
-                <title>Service State</title>
-                
-                <para>QualComm used <userinput>reg_state_service_state</userinput> global variable to indicate the registrate
-                state.</para>
-                
-                <para>This variable is an important struct, contained many useful reg info.</para>
-                
-                <example>
-                    <title></title>
-                    <programlisting></programlisting>
-                </example>
-                
-            </sect3>
-            
-            <sect3>
-                <title>Sys Mode</title>
-                <para></para>
-                    <indexterm>
-                        <primary>sys_mode</primary>
-                    </indexterm>
-                    
-            <table frame="topbot">
-                <title>sys_mode values</title>
-            <tgroup cols="2">
-                <colspec colwidth="1*" />
-                <colspec colwidth="1*" />
-                <thead>
-                    <row><entry>value</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>SYS_SYS_MODE_NO_SRV 0</entry><entry>SYS_SYS_MODE_AMPS 1</entry></row>
-                    <row><entry>SYS_SYS_MODE_CDMA 2</entry><entry>SYS_SYS_MODE_GSM  3</entry></row>
-                    <row><entry>SYS_SYS_MODE_HDR 4</entry><entry>SYS_SYS_MODE_WCDMA 5</entry></row>
-                    <row><entry>SYS_SYS_MODE_GPS 6</entry><entry>SYS_SYS_MODE_GW 7 (GSM+WCDMA)</entry></row>
-                    <row><entry>SYS_SYS_MODE_WLAN 8</entry><entry>SYS_SYS_MODE_LTE 9</entry></row>
-                    <row><entry>SYS_SYS_MODE_GWL 10(GSM+WCDMA+LTE)</entry><entry>SYS_SYS_MODE_TDS 11</entry></row>
-                </tbody>
-                </tgroup>
-                </table>
-            </sect3>
-            
-            <sect3>
-                <title>Roaming Indication</title>
-                <para></para>
-            </sect3>
-        </sect2>
-        
         <!-- Call Manager(CM) -->
         <sect2 id="qc.cm">
             <title>Call Manager(CM)</title>
@@ -1701,467 +1210,7 @@ void cmdbg_print_mc_rpt()
             </sect3>
         
         </sect2>
-        <!-- Short Message Service -->
-        <sect2>
-            <title>Short Message Service</title>
-            
-            <para>3gpp <emphasis>24.040</emphasis> discussed the SMS protocol.</para>
-            
-            <para>For QualComm code, SMS is also in CM component, as it using voice call's service:</para>
-            <table frame="topbot">
-                <title>SMS in CM Components</title>
-            <tgroup cols="2">
-                <colspec colwidth="1*" />
-                <colspec colwidth="1*" />
-                <thead>
-                    <row><entry>Filename</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>cmsms.c</entry><entry>The base SMS entry.</entry></row>
-                    <row><entry>cmxsms.c</entry><entry>CDMA specific SMS</entry></row>
-                </tbody>
-            </tgroup>
-            </table>
-            
-            <para>QualComm using <userinput>cm_sms_event_e_type</userinput> enum as the SMS event.</para>
-            
-            <table frame="topbot">
-                <title>SMS Event</title>
-                <tgroup cols="2">
-                
-                <thead>
-                    <row><entry>Event</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>CM_SMS_EVENT_MO_MSG(0)</entry><entry>MO SMS</entry></row>
-                    <row><entry>CM_SMS_EVENT_MO_STATUS(2)</entry><entry>Status of MO SMS</entry></row>
-                    <row><entry>CM_SMS_EVENT_MT_MSG(3)</entry><entry>MT SMS</entry></row>
-                </tbody>
-            </tgroup>
-            </table>
-            <para>The SMS event usually can be found in the <filename>cmsms.c</filename> file:</para>
-            <example>
-                <title>SMS Event Log</title>
-                <programlisting>void cmsms_event(cm_sms_event_e_type sms_event)
-{
-  CM_MSG_MED(<userinput>"sms event=%d"</userinput>,sms_event,0,0 );
-  ...  ...
-}</programlisting>
-            </example>
-            
-                <para>Keep in mind, above logic is SMS already be handled by Modem.</para>
-                
-                <para>For some error case, we would failed find above log as the SMS req is already rejected earlier, so
-                the earliest SMS event would be in <filename>wmscm.c</filename></para>
-                
-                <example>
-                    <title>MO of SMS</title>
-                    <programlisting>void wms_cm_call_orig()
-{
-  // so usually be '6'(S06) for this
-  MSG_HIGH("Originating SMS call: so=%d", so, 0, 0);
-  cm_mm_call_cmd_orig(...
-      CM_CALL_TYPE_SMS,
-      &amp; cm_s_ptr->called_number, /* called number */
-      );
-}</programlisting>
-                </example>
-                
-                <example>
-                    <title></title>
-                    <programlisting></programlisting>
-                </example>
-            
-            <sect3>
-                <title>MO SMS</title>
-                
-                <para>Sending a SMS, the SMS events got in BP is:</para>
-                
-                <informalexample>
-                    <programlisting><![CDATA[
-  o   CM_SMS_EVENT_MO_MSG(0)
-     o    CM_SMS_EVENT_MO_STATUS(2)
-         o     CM_SMS_EVENT_MT_MSG(3)]]></programlisting>
-                </informalexample>
-                
-                <para>Each time user send a SMS, BP would receive <userinput>CM_SMS_EVENT_MO_MSG</userinput>.</para>
-                <para>Next, there's a <userinput>CM_SMS_EVENT_MO_STATUS</userinput>, to indicate current MO status is OK, or not.</para>
-                
-                <example>
-                    <title>Get MO SMS Status</title>
-                    <programlisting>void wms_msg_mc_mo_status_proc()
-{
-  if( msg_s_ptr->mc_msg.is_valid == FALSE ){
-  }else if( msg_s_ptr->mc_msg.is_ack == TRUE ){
-  }else{ /* a teleservice M.O. msg was sent */
-    <userinput>MSG_HIGH("got MO status = %d", cmd_ptr->cmd.mc_mo_status.status);</userinput>
-  }
-}</programlisting>
-                </example>
-            </sect3>
-            
-            <sect3>
-                <title>MT SMS</title>
-                <para></para>
-            </sect3>
-            <!-- NV Info to control SMS -->
-            <sect3>
-                <title>NV Info to control SMS</title>
-                
-                <para>The SMS's <emphasis>Access Channel</emphasis>, <emphasis>Traffic Channel</emphasis> can be specified by
-                QualComm's 2 NV items:</para>
-                
-                <table frame="topbot">
-                <title>NV Item for MO SMS Channel Selection</title>
-                <tgroup cols="2">
-                
-                <thead>
-                    <row><entry>Event</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>NV_SMS_MO_ON_ACCESS_CHANNEL_I(4228)</entry><entry>Spcify Access Channel</entry></row>
-                    <row><entry>NV_SMS_MO_ON_TRAFFIC_CHANNEL_I(4229)</entry><entry>Go though traffic channel</entry></row>
-                </tbody>
-                </tgroup>
-                </table>
-                
-                <para>Above 2 items can't be 1 at the same time, as there's only one single valid channel for SMS.</para>
-                
-                <para><filename>modem/wms/src/WMSE/wmsmsg.c</filename> handle the channels, and we can find which channel
-                is used currently, via the QXDM Log:</para>
-                
-                <example>
-                    <title>Channel Of MO SMS</title>
-                    <programlisting>wms_cmd_err_e_type wms_msg_cdma_send_mo_channel()
-{
-  if(<userinput>is_access_channel_enabled &amp;&amp;!is_traffic_channel_enabled</userinput>){
-    MSG_HIGH("Only Access Channel is enabled", 0, 0, 0);
-    return wms_msg_cdma_send_MO();
-  }else if(<userinput>!is_access_channel_enabled &amp;&amp;is_traffic_channel_enabled</userinput>){
-    MSG_HIGH("Only Traffic Channel is enabled", 0, 0, 0);
-    ... ...
-  }else if(<userinput>is_access_channel_enabled &amp;&amp;is_traffic_channel_enabled</userinput>){
-    /* Send on Access First and if Fail try on Trafffic Channel */
-    wms_msg_cdma_send_MO();
-  }
-}</programlisting>
-                </example>
-                
-            </sect3>
-        </sect2>
-        
-        <!-- NV Items -->
-        <sect2>
-            <title>NV Items</title>
-            
-            <para>The <emphasis>NV Items</emphasis> stored most of the BP-related config on the phone. They are specified
-            by numerical number(NV ID), and QualComm uses <userinput>nv_items_enum_type</userinput> enum to represent it.</para>
-            
-            <para>Usually, Motorola extended the nv item, adding own items as well. To avoid conflict, these
-            moto-specific items are began from offset <userinput>8000</userinput>:</para>
-            
-                <indexterm><primary>nv_items_enum_type</primary></indexterm>
-            <informalexample>
-                <programlisting> 1023 typedef enum {
- 1024 
- 1025   NV_ESN_I                     = 0,
- 1026   NV_ESN_CHKSUM_I              = 1,
- 8205   NV_MAX_I                     = 7225
- 8207 #ifdef MOT_FEATURE_MOT_NV
- 8208   ,
- 8209   MOT_NV_FIRST_I             = 8000,
- 8210   MOT_NV_FIELD_TEST_ENABLE_I = MOT_NV_FIRST_I,
- 8211   MOT_NV_IN_FACTORY_I        = MOT_NV_FIRST_I+1,
- ...    ...
- } nv_items_enum_type;</programlisting>
-            </informalexample>
-            
-            <para><filename>core/api/services/nv_items.h</filename> is the header defined all the NV items IDs, and their inner
-            data structure.</para>
-            <para>As so many IDs, and so many different structure for each ID, QualComm combines all these stuff into an union
-            data type, <userinput>nv_item_type</userinput>.</para>
-            
-            <table frame="topbot">
-                <title>QCOM NV Items Info</title>
-            <tgroup cols="2">
-                <colspec colwidth="1*" />
-                <colspec colwidth="2*" />
-                <thead>
-                    <row><entry>Field</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>Definition Header</entry><entry>core/api/services/nv_items.h</entry></row>
-                    <row><entry>Source Code</entry><entry>core/services/nv/</entry></row>
-                    <row><entry>ID</entry><entry>nv_items_enum_type, enum number</entry></row>
-                    <row><entry>Data Structure</entry><entry>nv_item_type, union.</entry></row>
-                    <row><entry>Moto Extend</entry><entry>start from offset 8000.</entry></row>
-                </tbody>
-            </tgroup>
-            </table>
-            <!-- Read/Write NV Items -->
-            <sect3>
-                <title>Read/Write NV Items</title>
-                
-                <para>QualComm allows read/write NV items through diag packet, and it defines a read/write protocol in diag specification.</para>
-                
-                <para>The read/write action would finally be dispatched to R/W the EFS <filename>/nvm/ID</filename> data.</para>
-                
-                <para>The draft logic flow is like this:</para>
-                <informalexample>
-                    <programlisting><![CDATA[
-                 +----------+                      +----------+
- R/W diag req -> | nvdiag.c | --> nvio.c --------> | /nvm/xx/ |
-                 +----------+            (EFS API) +----------+]]></programlisting>
-                </informalexample>
-                <para>Sometimes, we met the <emphasis>Inactive Items</emphasis> error when read a item, this is usually caused because there's
-                no the NV ID file there, below is a sample code for this case:</para>
-                <example>
-                    <title>Inactive Item Cases</title>
-                    <programlisting>nvio_read_item(nv_items_enum_type item, void *data_ptr,){
-  snprintf(f_name,sizeof(f_name),"/nvm/num/%d",item);
-  <userinput>if(efs_stat(f_name,&amp;temp_buf) == -1)
-    return NV_NOTACTIVE_S;</userinput>
-    
-  status = efs_get(f_name, data_ptr, item_size);
-  return status;
-}</programlisting>
-                </example>
-                
-                <para>As QualComm's implementation, there's protection when R/W the nv items. This can be found
-                in below code:</para>
-                <example>
-                    <title>Protection of R/W</title>
-                    <programlisting>void *nvdiag_read()
-{
-  //First check to see if this item is not allowed to be read.
-  //NOTE:  These items are unreadable, even if security is unlocked!
-  <userinput>if (unreadable_nv_item(eItem))</userinput> {
-    return( diagpkt_err_rsp( DIAG_BAD_PARM_F, req_pkt, pkt_len ));
-  }
-}
-boolean unreadable_nv_item(nv_items_enum_type item)
-{
-  switch(item){
-    /* Keys, secrets, and passwords are unreadable */
-    case NV_A_KEY_I:
-     ...   ....
-    case NV_SEC_DEVICE_KEY_I :
-      return true;
-      
-    default: return false;
-  }
-}</programlisting>
-                </example>
-                
-                <para>And furthermore, some NV items' write would require Service Programming Code(SPC) unlock. These
-                protection can be found in <userinput>nvdiag_write()</userinput> implementation.</para>
-                
-                <para>The <emphasis>Service Programming Code Lock</emphasis>(SPC Lock) here, is a protection when accessing NV items.
-                QualComm defined it as a DIAG msg(DIAG_SPC_F, 0x41).</para>
-                
-                <para>The code is value in <command>NV_SEC_CODE_I</command>(ID-85), which is a 6-digit number, the NV
-                inner structure is:</para>
-                <example>
-                    <title>NV_SEC_CODE_I SPC data</title>
-                    <programlisting>typedef PACKED struct PACKED_POST{
-    /* The security code is fixed length(6),
-       and is stored as ASCII string.*/
-    byte  digits[NV_SEC_CODE_SIZE]; // NV_SEC_CODE_SIZE 6
-}</programlisting>
-                </example>
-            </sect3>
-            
-            <sect3>
-                <title>Some Comm NV Items Info</title>
-                <para>The NV Items value can be a <emphasis>flex</emphasis> config file.</para>
-                <para>For MSM8960(such as <emphasis>Vanquish</emphasis>), there's a <userinput>fsg</userinput>
-                partition, and a <filename>fsg.mbn</filename> image file, which contain the EFS data. Thus loading a new NV data
-                setting would be simple:</para>
-                
-                <informalexample>
-                    <programlisting>$ <userinput>fastboot flash fsg fsg.mbn</userinput></programlisting>
-                </informalexample>
-                
-                <para>The <filename>fsg.mbn</filename> file can be extracted by below commands:</para>
-                <example>
-                    <title>Dump the fsg.mbn</title>
-                    <programlisting>mkdir temp
-xxd -s 40 -p fsg.mbn | xxd -r -p - | tar xvf - -C temp
-xxd temp/nvm/num/8034</programlisting>
-                </example>
-                
-                <para>All <userinput>ID-XXX</userinput> item values are the <filename>/nvm/num/ID-XXX</filename> files,
-                in binary format.</para>
-
-                <para>There're some commonly-used NV items, that MUST be very familiar with them.</para>
-                <table frame="topbot">
-                <title>Some Commonly-used NV Items Info</title>
-                <tgroup cols="2">
-                <colspec colwidth="1*" />
-                <colspec colwidth="2*" />
-                <thead>
-                    <row><entry>NV Item</entry><entry>Notes</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>NV_HDR_AN_AUTH_NAI_I(579)</entry><entry></entry></row>
-                    <row><entry>NV_HDR_AN_AUTH_PASSWORD_I(580)</entry><entry></entry></row>
-                </tbody>
-                </tgroup>
-                </table>
-                
-            </sect3>
-        </sect2>
-        <!-- BP Panic -->
-        <sect2>
-            <title>BP Panic</title>
-            
-            <para>The <emphasis>BP Panic</emphasis> is a very huge topic, and always met in product development,
-            especially in bring-up stage.</para>
-            
-            <sect3 id="qbp.bppanic.diagdumpcmd">
-                <title>Common DIAG Coredump Command</title>
-                
-                <para>First, BP needs support QualComm's QXDM force panice, which is core dump action of diag extended
-                msg.</para>
-                
-                <para>Type below commands in QXDM <guimenu>command</guimenu> window:</para>
-                <informalexample>
-                    <programlisting>send_data 75 37 03 00</programlisting>
-                </informalexample>
-                
-                <para>The <userinput>75 37 03 00</userinput> is a DIAG payload which indicates:</para>
-                
-                <informalexample>
-                    <programlisting>typedef struct{
-  uint8 command_code; <userinput>DIAG_SUBSYS_CMD_F(75)</userinput>
-  uint8 subsys_id;  <userinput>DIAG_SUBSYS_DEBUG(37)</userinput>
-  uint16 subsys_cmd_code; <userinput>ERR_F3_TRACE_CORE_DUMP(0x0003)</userinput>
-};</programlisting>
-                </informalexample>
-                
-                <para>The corresponding handler is in <filename>core/debugtools/err/</filename>:</para>
-                
-                <example>
-                    <title>Sample of handling the Panic Diag CMD</title>
-                    <programlisting>/* core/debugtools/err/src/err_f3_trace.c */
-static const diagpkt_user_table_entry_type err_f3_trace_tbl[] = {
-<userinput>{ERR_F3_TRACE_CORE_DUMP,ERR_F3_TRACE_CORE_DUMP,err_f3_trace_core_dump_handler},</userinput>
-{ERR_TEST_INVOKE_CRASH,ERR_TEST_INVOKE_CRASH,err_invoke_crash_handler},
-...    ...
-}</programlisting>
-                </example>
-            </sect3>
-            <!-- Panic on MSM8960 -->
-            <sect3>
-                <title>Panic on MSM8960</title>
-                
-                <para>MSM8960 is one-single chip, BP is a <emphasis>subsystem</emphasis>, so there would 2 different
-                result for a BP panic:</para>
-                
-                <itemizedlist>
-                    <listitem>
-                        <para><emphasis>Silent Reset</emphasis>, AP would try recovery the BP, the coredump file
-                        would store somewhere. This won't cause AP restart.</para>
-                    </listitem>
-                    <listitem>
-                        <para><emphasis>Download Dump Mode</emphasis>, whole chip goes into Download mode, using QualComm's
-                        <emphasis>QPST</emphasis> to get the coredump. This would cause AP/BP down.</para>
-                    </listitem>
-                </itemizedlist>
-                
-                <para>Silent reset is prefered as it not required the whole system restart. It can be configured runtime to 
-                decide to dump the panic file or not.</para>
-                
-                <para>This dump configured option can be either a property or a sysfs flag.</para>
-                
-                <para><userinput>setprop persist.radio.qc.ramdump.enable 1</userinput> will enable the ramdump, it would always
-                enabled after system restart.</para>
-                
-                <para><userinput>echo "1">/sys/module/subsystem_restart/parameters/enable_ramdumps</userinput> is a one-shot
-                enable, after system restart, it would be the default value set in kernel code(which is 0).</para>
-                
-                <para>In order to let MSM8960 system go into Download mode, it needs:</para>
-                <itemizedlist spacing="compact">
-                    <listitem>
-                        <para>Set 2 NV items value to enable dump(see <xref linkend="tbl.qcom.msm8960.dumpnv" />)</para>
-                    </listitem>
-                    <listitem>
-                        <para>Set <filename>/sys/module/restart/parameters/download_mode</filename> value to 1.</para>
-                    </listitem>
-                    <listitem>
-                        <para>Set <filename>/sys/module/subsystem_restart/parameters/restart_level</filename> value to 1.</para>
-                    </listitem>
-                </itemizedlist>
-                
-                <table frame="topbot" id="tbl.qcom.msm8960.dumpnv">
-                <title>NV Items of Donwload Dump Mode</title>
-                    <tgroup cols="2">
-                    <thead>
-                    <row><entry>NV Item</entry><entry>Value</entry></row>
-                    </thead>
-                <tbody>
-                    <row><entry>NV_ERR_FATAL_OPTIONS_I(ID-905)</entry><entry>0</entry></row>
-                    <row><entry>NV_DETECT_HW_RESET_I(ID-4399)</entry><entry>1</entry></row>
-                </tbody>
-                    </tgroup>
-                </table>
-                
-                <para>After system go into Download mode, using QPST to fetch the memory dump, the most important dump
-                file is <filename>EBICS0.BIN</filename>. Use the wrapper script to figure out which line cause the crash:</para>
-                
-                <example>
-                    <title></title>
-                    <programlisting>$ <userinput>./bp-ramdump-parse.py -e AAAAANAZQ.elf -c EBICS0.BIN</userinput>
-Error Message:Forced core dump %d, %d, %d
-Error in file err_f3_trace.c, line 2090</programlisting>
-                </example>
-                
-                <para>The <filename>AAAAANAZQ.elf</filename> is BP build symbol file, usually in <filename>build/AAAAANAZ/</filename> dir.</para>
-                
-                <para>For silent BP panic, the dump file is under <filename>/sdcard/bp-dumps/</filename></para>
-                
-                <example>
-                    <title>Parse BP silent panic dump file</title>
-                    <programlisting># <userinput>dumpsys dropbox --print MODEM_SILENT_PANIC</userinput>
-Hardware	: Vanquish
-
-Subtype: Error in file qmi_motext_utils_handler.c, line 137
-ERR crash log report.  Version 3.
-Time of crash (m-d-y h:m:s): 04-24-2012 1:15:14
-...   ...</programlisting>
-                </example>
-            </sect3>
-        </sect2>
-        <!-- EFS -->
-        <sect2>
-            <title>EFS</title>
-            
-            <para><userinput>core/storage/efs/</userinput> is EFS component source code, it provided a 
-            file system service, the APIs is similar as glibc's <userinput>open()/read()</userinput>.</para>
-            
-                <indexterm>
-                    <primary>efs_open()</primary>
-                </indexterm>
-            <example>
-                <title>Usage of EFS APIs</title>
-                <programlisting>#include <userinput>&lt;fs_public.h&gt;</userinput>
-int fd;
-char buf[32];
-fd = <userinput>efs_open("/motorola/fi.na", O_APPEND | O_RDWR | O_CREAT)</userinput>;
-if(fd != -1){
-  <userinput>efs_read</userinput>(fd, buf, sizeof(buf));
-  sprintf(buf, "hello:%d", i);
-  <userinput>efs_write</userinput>(fd, buf, strlen(buf));
-  <userinput>efs_close</userinput>(fd);
-}</programlisting>
-            </example>
-            
-            <para>Sometimes, when we call <userinput>err_fatal_handler()</userinput> to trigger a panic,
-            this would let the efs file creation/write/read failed.</para>
-            
-            <para>In order to avoid this , we needs add an <userinput>efs_sync("/")</userinput> to force
-            the efs operation completed immediately.</para>
-        </sect2>
+       
         
         <sect2 id="qcom.msm8960.sn">
             <title>MSM8960 for ESN/MEID/IMEI</title>
@@ -2197,11 +1246,28 @@ if(fd != -1){
         </sect2>
         
     </sect1>
+    
+    <!-- SIM -->
+    &section_SIM;
+    
+    <!-- VOICE -->
+    &section_VOICE;
+    <!-- DATA Call -->
+    &section_DATA;
+    <!-- SMS -->
+    &section_SMS;
+    
+    <!-- EFS -->
+    &section_EFS;
+    
+    <!-- NV Item -->
+    &section_NV;
+    
     <!-- QMI -->
-    <sect1>
-        <title>QMI</title>
-        <para></para>
-    </sect1>
+    &section_QMI;
+    
+    <!-- PANIC -->
+    &section_PANIC;
     
     <!-- ============= Glossary =================  -->
     &section_glossary;
