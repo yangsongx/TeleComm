@@ -63,4 +63,18 @@
         <para>DMS(Device Management Service)</para>
         <para>qmi_dmsi_set_operating_mode</para>
     </sect2>
+    
+    <sect2>
+        <title>SIM Related QMI Msg</title>
+        
+        <para></para>
+        <sect3>
+            <title>QMI_UIM_GET_CARD_STATUS</title>
+            <para></para>
+        </sect3>
+        <sect3>
+            <title>QMI_UIM_STATUS_CHANGE_IND</title>
+            <para></para>
+        </sect3>
+    </sect2>
 </sect1>

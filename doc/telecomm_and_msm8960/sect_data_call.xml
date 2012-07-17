@@ -124,28 +124,46 @@ RILJ    : [0133]&lt; SETUP_DATA_CALL DataCallState:
     
     <sect2>
         <title>CDMA 1xEV Network</title>
-        <para>deafult 460036131837427@mycdma.cn, needs re-program the user name and password.</para>
-        <para>In QPST Service Program, <guimenu>PPP Config</guimenu>, <guimenu>Um</guimenu> tab username:</para>
+        
+        <para>The CDMA data connection is similar as UMTS, actually there's APN name and password, though it is
+        not shown up in the RIL's <userinput>SETUP_DATA_CALL</userinput> field.</para>
+        <para>Deafult name is like <userinput>460036131837427@mycdma.cn</userinput>, in order to let phone camp
+        to China Telecom CDMA network, we needs re-program the user name and password.</para>
+        <para>In QPST Service Program, <guimenu>PPP Config</guimenu>, <guimenu>Um</guimenu> tab, type value in
+        username and password:</para>
+        
         <table frame="topbot">
         <title>NV Items for China TeleCom Auth</title>
-        <tgroup cols="2">
+        <tgroup cols="3">
         <thead>
-            <row><entry>NV Item</entry><entry>Notes</entry></row>
+            <row><entry>NV Item</entry><entry>Field Name</entry><entry>Field Value</entry></row>
         </thead>
         <tbody>
-                    <row><entry>NV_HDR_AN_AUTH_NAI_I(579)</entry><entry>ctnet@mycdma.cn</entry></row>
-                    <row><entry>NV_HDR_AN_AUTH_PASSWORD_I(580)</entry><entry>vnet.mobi</entry></row>
-                </tbody>
-                </tgroup>
-                </table>
-                
-                <informalexample>
-                    <programlisting>9925 typedef PACKED struct PACKED_POST{
- 9926   /* length of NAI */
- 9927   byte   nai_len;
- 9928   /* the NAI */
- 9929   byte   nai[NV_MAX_AN_AUTH_NAI_LENGTH];
- 9930 } nv_hdr_an_auth_nai_type;</programlisting>
-                </informalexample>        
+            <row><entry>NV_PPP_USER_ID_I(910)</entry><entry>Username</entry><entry>ctnet@mycdma.cn</entry></row>
+            <row><entry>NV_PPP_PASSWORD_I(906)</entry><entry>Password</entry><entry>vnet.mobi</entry></row>
+        </tbody>
+        </tgroup>
+        </table>
+        
+        <para>The inner NV item data struct is in <userinput>Len + Val</userinput> format, and below is
+        the definition in source code level:</para>  
+        
+        <informalexample>
+            <programlisting> 8225 /* Type to hold user id for PPP authentication */
+ 8226 typedef PACKED struct PACKED_POST{
+ 8227   /* Length of user id */
+ 8228   byte   user_id_len;
+ 8229   /* The user id */
+ 8230   byte   user_id[NV_MAX_PPP_USER_ID_LENGTH];
+ 8231 } nv_ppp_user_id_type;
+ 
+ 8217 /* Type to hold simple IP PPP password */
+ 8218 typedef PACKED struct PACKED_POST{
+ 8219   /* Length of Password */
+ 8220   byte    password_len;
+ 8221   /* The Password */
+ 8222   byte    password[NV_MAX_PPP_PASSWORD_LENGTH];
+ 8223 } nv_ppp_password_type;</programlisting>
+        </informalexample>        
     </sect2>
 </sect1>

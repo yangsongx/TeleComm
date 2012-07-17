@@ -19,35 +19,44 @@
       sequences of pages into a range.
 -->
 
+<indexdiv><title>A</title>
+
+<indexentry>
+  <primaryie>Airplan Mode,
+    <ulink url="x991.html#AEN1359" role="AEN1361">Airplan Mode</ulink>
+  </primaryie>
+</indexentry>
+
+</indexdiv>
 <indexdiv><title>C</title>
 
 <indexentry>
   <primaryie>CIEV,
-    <ulink url="x265.html#AEN447" role="AEN451">CIEV</ulink>
+    <ulink url="x237.html#AEN419" role="AEN423">CIEV</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>CM Call Event,
-    <ulink url="x265.html#AEN735" role="AEN754">Making Call</ulink>
+    <ulink url="x237.html#AEN707" role="AEN726">Making Call</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>CM SS Event,
-    <ulink url="x265.html#AEN692" role="AEN713">CM SS Event</ulink>
+    <ulink url="x237.html#AEN664" role="AEN685">CM SS Event</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>COPS,
-    <ulink url="x265.html#AEN611" role="AEN614">COPS</ulink>
+    <ulink url="x237.html#AEN583" role="AEN586">COPS</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>CREG,
-    <ulink url="x265.html#AEN546" role="AEN550">CREG</ulink>
+    <ulink url="x237.html#AEN518" role="AEN522">CREG</ulink>
   </primaryie>
 </indexentry>
 
@@ -56,7 +65,7 @@
 
 <indexentry>
   <primaryie>DATA_REGISTRATION_STATE,
-    <ulink url="x1318.html#AEN1404" role="AEN1408">Data Registration State</ulink>
+    <ulink url="x1398.html#AEN1484" role="AEN1488">Data Registration State</ulink>
   </primaryie>
 </indexentry>
 
@@ -65,13 +74,13 @@
 
 <indexentry>
   <primaryie>efs_open(),
-    <ulink url="x1703.html#AEN1705" role="AEN1710">EFS API</ulink>
+    <ulink url="x1820.html#AEN1822" role="AEN1827">EFS API</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>ESN,
-    <ulink url="x265.html#AEN294" role="AEN296">ESN/MEID/IMEI</ulink>
+    <ulink url="x237.html#AEN266" role="AEN268">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
@@ -80,7 +89,7 @@
 
 <indexentry>
   <primaryie>FDN,
-    <ulink url="x265.html#AEN913" role="AEN918">FDN</ulink>
+    <ulink url="x237.html#AEN885" role="AEN890">FDN</ulink>
   </primaryie>
 </indexentry>
 
@@ -89,7 +98,7 @@
 
 <indexentry>
   <primaryie>GET_CURRENT_CALLS,
-    <ulink url="x1019.html#AEN1220" role="AEN1230">MO Call</ulink>
+    <ulink url="x991.html#AEN1261" role="AEN1271">MO Call</ulink>
   </primaryie>
 </indexentry>
 
@@ -98,7 +107,7 @@
 
 <indexentry>
   <primaryie>IMEI,
-    <ulink url="x265.html#AEN294" role="AEN300">ESN/MEID/IMEI</ulink>
+    <ulink url="x237.html#AEN266" role="AEN272">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
@@ -107,19 +116,19 @@
 
 <indexentry>
   <primaryie>MCC,
-    <ulink url="x265.html#AEN380" role="AEN382">MCC/MNC/PLMN</ulink>
+    <ulink url="x237.html#AEN352" role="AEN354">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>MEID,
-    <ulink url="x265.html#AEN294" role="AEN298">ESN/MEID/IMEI</ulink>
+    <ulink url="x237.html#AEN266" role="AEN270">ESN/MEID/IMEI</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>MNC,
-    <ulink url="x265.html#AEN380" role="AEN384">MCC/MNC/PLMN</ulink>
+    <ulink url="x237.html#AEN352" role="AEN356">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -128,13 +137,13 @@
 
 <indexentry>
   <primaryie>NITZ,
-    <ulink url="x265.html#AEN430" role="AEN432">NITZ</ulink>
+    <ulink url="x237.html#AEN402" role="AEN404">NITZ</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>nv_items_enum_type,
-    <ulink url="x1748.html" role="AEN1755">NV Item</ulink>
+    <ulink url="x1865.html" role="AEN1872">NV Item</ulink>
   </primaryie>
 </indexentry>
 
@@ -143,7 +152,7 @@
 
 <indexentry>
   <primaryie>OPERATOR,
-    <ulink url="x1019.html#AEN1187" role="AEN1191">Network Operator Name</ulink>
+    <ulink url="x991.html#AEN1228" role="AEN1232">Network Operator Name</ulink>
   </primaryie>
 </indexentry>
 
@@ -152,7 +161,7 @@
 
 <indexentry>
   <primaryie>PLMN,
-    <ulink url="x265.html#AEN380" role="AEN386">MCC/MNC/PLMN</ulink>
+    <ulink url="x237.html#AEN352" role="AEN358">MCC/MNC/PLMN</ulink>
   </primaryie>
 </indexentry>
 
@@ -160,20 +169,32 @@
 <indexdiv><title>R</title>
 
 <indexentry>
+  <primaryie>RadioTechnology,
+    <ulink url="x991.html#AEN1038" role="AEN1042">Radio Technology</ulink>
+  </primaryie>
+</indexentry>
+
+<indexentry>
+  <primaryie>RADIO_POWER,
+    <ulink url="x991.html#AEN1365" role="AEN1375">Overview of Airplan mode</ulink>
+  </primaryie>
+</indexentry>
+
+<indexentry>
   <primaryie>rex_sleep(),
-    <ulink url="x265.html#AEN284" role="AEN286">Timer</ulink>
+    <ulink url="x237.html#AEN256" role="AEN258">Timer</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>RIL_RadioState,
-    <ulink url="x79.html#AEN81" role="AEN96">Phone Creation</ulink>
+    <ulink url="x115.html#AEN117" role="AEN132">Phone Creation</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>RSSI,
-    <ulink url="x265.html#AEN617" role="AEN624">RSSI</ulink>
+    <ulink url="x237.html#AEN589" role="AEN596">RSSI</ulink>
   </primaryie>
 </indexentry>
 
@@ -182,13 +203,13 @@
 
 <indexentry>
   <primaryie>SETUP_DATA_CALL,
-    <ulink url="x1318.html#AEN1322" role="AEN1326">Setup Data Call</ulink>
+    <ulink url="x1398.html#AEN1402" role="AEN1406">Setup Data Call</ulink>
   </primaryie>
 </indexentry>
 
 <indexentry>
   <primaryie>sys_mode,
-    <ulink url="x1019.html#AEN1073" role="AEN1088">QualComm Registration Component</ulink>
+    <ulink url="x991.html#AEN1047" role="AEN1062">QualComm Registration Component</ulink>
   </primaryie>
 </indexentry>
 
@@ -197,7 +218,7 @@
 
 <indexentry>
   <primaryie>time_get_secs(),
-    <ulink url="x265.html#AEN284" role="AEN289">Timer</ulink>
+    <ulink url="x237.html#AEN256" role="AEN261">Timer</ulink>
   </primaryie>
 </indexentry>
 
@@ -206,7 +227,7 @@
 
 <indexentry>
   <primaryie>VOICE_REGISTRATION_STATE,
-    <ulink url="x1019.html#AEN1030" role="AEN1036">Registration State</ulink>
+    <ulink url="x991.html#AEN1002" role="AEN1008">Registration State</ulink>
   </primaryie>
 </indexentry>
 

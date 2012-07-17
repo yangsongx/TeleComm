@@ -92,7 +92,9 @@
             <glossentry>
                 <glossterm>QMI</glossterm>
                 <glossdef>
-                    <para><emphasis><trademark class='registered'>QualComm</trademark> MSM<trademark></trademark> Interface</emphasis></para>
+                    <para><emphasis><trademark class='registered'>QualComm</trademark> MSM<trademark></trademark> Interface</emphasis>,
+                    or <emphasis><trademark class='registered'>QualComm</trademark> Message<trademark></trademark> Interface</emphasis>,
+                    a message protocol used by QualComm.</para>
                 </glossdef>
             </glossentry>
         </glossdiv>
@@ -158,6 +160,13 @@
                 <glossterm>WDS</glossterm>
                 <glossdef>
                     <para><emphasis>Wireless Data Service</emphasis></para>
+                </glossdef>
+            </glossentry>
+            
+            <glossentry>
+                <glossterm>WMS</glossterm>
+                <glossdef>
+                    <para><emphasis>Wireless Message Service</emphasis></para>
                 </glossdef>
             </glossentry>
         </glossdiv>

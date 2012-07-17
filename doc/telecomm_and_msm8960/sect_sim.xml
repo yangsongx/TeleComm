@@ -34,6 +34,7 @@
     
     <sect2>
         <title>SIM Detection</title>
+        
         <para>As QXDM needs USB system initialized, while the UIM init in parallel, we usually unable to 
         see these SIM init log in QXDM.</para>
         

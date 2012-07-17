@@ -3,8 +3,23 @@
     <!-- Protocol Introduction -->
     <sect2>
         <title>Protocol Introduction</title>
-        <para>The 3gpp protocol for SMS is <emphasis>24.040</emphasis>.</para>
         
+        <para>The 3gpp protocol for SMS is <emphasis>24.040</emphasis>.</para>
+        <table frame="topbot">
+                <title>3GPP for SMS</title>
+                <tgroup cols="2">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <thead>
+                    <row><entry>Protocole</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>TS24.011</entry><entry>Point-to-Point (PP) Short Message Service (SMS) support on mobile radio interface</entry></row>
+                    <row><entry>TS24.040</entry><entry>SMS</entry></row>
+                    
+                </tbody>
+                </tgroup>
+            </table>
         
         <sect3>
             <title>PDU</title>
@@ -25,7 +40,9 @@
                     <row><entry>Msg Type</entry><entry>Note</entry></row>
                 </thead>
                 <tbody>
-                    <row><entry>TELESERVICE_WMT 4098</entry><entry>Single SMS message</entry></row>
+                    <row><entry>TELESERVICE_WMT  4098</entry><entry>WMT, Single SMS message</entry></row>
+                    <row><entry>TELESERVICE_VMN  4099</entry><entry>Voice Mail Notification</entry></row>
+                    <row><entry>TELESERVICE_WAP  4100</entry><entry>Wireless Application Protocol</entry></row>
                     <row><entry>TELESERVICE_WEMT 4101</entry><entry>EMS(multi-page SMS)</entry></row>
                 </tbody>
                 </tgroup>
@@ -87,6 +104,7 @@
     <!-- QualComm SMS Component -->
     <sect2>
         <title>QualComm SMS Component</title>
+        
         <para>SMS is a part of CM, as it using voice call's service.</para>
         <table frame="topbot">
             <title>SMS in CM Components</title>
@@ -103,8 +121,21 @@
         </tgroup>
         </table>
         
+        <para>In order to wrap the lower CM be independent, QualComm introduced an upper WMS layer, which would let
+        app client be transparent with the SMS feature.</para>
+        
+        <informalexample>
+                    <programlisting><![CDATA[
+  +---------+
+  |  W M S  |
+  +---------+   +-----------+
+       |________|  CM SMS   |
+                |           |
+                +-----------+]]></programlisting>
+                </informalexample>
+        <!-- CM SMS Event -->
         <sect3>
-            <title>SMS Event</title>
+            <title>CM SMS Event</title>
              <para>QualComm using <userinput>cm_sms_event_e_type</userinput> enum as the SMS event.</para>
             
             <table frame="topbot">
@@ -160,7 +191,21 @@
         <sect3>
             <title>MO SMS</title>
             
-            <para>Sending a SMS, the SMS events got in BP is:</para>
+            <para>For a MO SMS, BP flow logic is like this:</para>
+            
+            <example>
+                <title>BP Draft Logic for MO SMS</title>
+                <programlisting><![CDATA[  Client(AP)  +--------------------------+ 
+  ----------> | WMS (WMS_MSG_EVENT_SEND) |
+              +--------------------------+
+                    | wmscm.c : cm_mm_call_cmd_orig()  +--------------+
+                    +--------------------------------->| CM Component |
+                        (cm_call_type - SMS)           +--------------+]]></programlisting>
+            </example>
+            
+            <para>Each time of a MO SMS would be a <userinput>CM_SMS_EVENT_MO_MSG</userinput> event in CM.
+            Next, there's a <userinput>CM_SMS_EVENT_MO_STATUS</userinput>, to indicate current MO status is OK, or not.</para>
+            The CM SMS events are invovled for the MO SMS, are like this:</para>
             
             <informalexample>
                     <programlisting><![CDATA[
@@ -169,8 +214,8 @@
          o     CM_SMS_EVENT_MT_MSG(3)]]></programlisting>
                 </informalexample>
                 
-            <para>Each time user send a SMS, BP would receive <userinput>CM_SMS_EVENT_MO_MSG</userinput>.</para>
-            <para>Next, there's a <userinput>CM_SMS_EVENT_MO_STATUS</userinput>, to indicate current MO status is OK, or not.</para>
+           
+            <para>The WMS would handle the MO status in <userinput>wms_msg_mc_mo_status_proc</userinput>:</para>
                 
             <example>
                 <title>Get MO SMS Status</title>
@@ -179,6 +224,7 @@
   if( msg_s_ptr->mc_msg.is_valid == FALSE ){
   }else if( msg_s_ptr->mc_msg.is_ack == TRUE ){
   }else{ /* a teleservice M.O. msg was sent */
+         /* == handle the MO status report here == */
     <userinput>MSG_HIGH("got MO status = %d", cmd_ptr->cmd.mc_mo_status.status);</userinput>
   }
 }</programlisting>
@@ -186,6 +232,7 @@
             
             <para>For GSM/WCDMA MO SMS, the OTA Log is different with CDMA's. Below is a sample, which failed
             send a <userinput>Hellow World</userinput> SMS to my <guimenu>13815882359</guimenu> phone:</para>
+            
             <example>
                 <title>GSM/WCDMA MO SMS OTA Log Sample</title>
                 <programlisting>OTA LOG  <userinput>SMS/CP Data</userinput>     Direction: MS To Network, Length: 37

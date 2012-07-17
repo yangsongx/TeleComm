@@ -112,7 +112,7 @@
                 <programlisting>sed -i 's/fetch=".*"/fetch="\/proj\/repo01\/mirror"/g' default.xml</programlisting>
             </informalexample>
         </sect2>
-        
+        <!-- System Build -->
         <sect2>
             <title>System Build</title>
             
@@ -132,13 +132,109 @@
             </listitem>
             </itemizedlist>
         </sect2>
-        
-         <sect2>
+        <!-- Debugging and Logging -->
+        <sect2>
+            <title>Debugging and Logging</title>
+            
+            <para>The auto logging collection is useful for debugging.</para>
+            
+            <para>For Tegra arch, like Hubble, we can adding log script in <filename>init.xxx.rc</filename> to do this.</para>
+            
+            <para>As development keep going, this method is obsoleted in later products. Now it will be controlled by
+            <userinput>persist.log.aplogd.enable</userinput> peroperty.</para>
+            
+            <para>If this property is 1, then logcat log is collected under <filename>/sdcard/logger/</filename> dir.</para>
+            
+            <para>If we don't want to collect these log, set the property to 0. After reboot, no log collected under
+            <filename>/sdcard/logger/</filename>.</para>
+            
+            <table frame="topbot">
+                <title>Auto Log Collecting</title>
+                <tgroup cols="2">
+                <thead>
+                    <row><entry>Property</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>persist.log.aplogd.enable</entry><entry>1-auto log in /sdcard/logger, 0-stop log</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            
+        </sect2>
+        <!-- Powerup Reason -->
+        <sect2>
             <title>Powerup Reason</title>
             
-            <para>arch/arm/include/asm/bootinfo.h:34:#define PU_REASON_USB_CABLE    0x00000010 /* Bit 4  */</para>
-            <para>motorola/system/core/mot_boot_mode/mot_boot_mode.c</para>
-            <para><filename>/proc/bootinfo</filename> contained boot up reason info.</para>
+            <para>Powerup reason is usually set by bootloader layer.</para>
+            
+            <example>
+                <title>Sample Power Reason definition</title>
+                <programlisting><userinput>bootable/bootloader/lk/include/dev/pmic.h</userinput>
+#define TIME_OF_DAY_ALARM 0x00000008 /* Bit 3  */
+#define USB_CABLE         0x00000010 /* Bit 4  */
+#define FACTORY_CABLE 0x00000020 /* Bit 5  */
+#define AIRPLANE_MODE 0x00000040 /* Bit 6  */
+#define PWR_KEY_PRESS         0x00000080 /* Bit 7  */
+#define CHARGER 0x00000100 /* Bit 8  */
+#define POWER_CUT 0x00000200 /* Bit 9  */
+#define REGRESSION_CABLE 0x00000400 /* Bit 10 */
+#define SYSTEM_RESTART         0x00000800 /* Bit 11 */
+#define MODEL_ASSEMBLY         0x00001000 /* Bit 12 */
+#define MODEL_ASSEMBLY_VOL 0x00002000 /* Bit 13 */
+#define SW_AP_RESET 0x00004000 /* Bit 14 */
+#define WDOG_AP_RESET 0x00008000 /* Bit 15 */
+#define CLKMON_CKIH_RESET 0x00010000 /* Bit 16 */
+#define AP_KERNEL_PANIC 0x00020000 /* Bit 17 */
+#define CPCAP_WDOG 0x00040000 /* Bit 18 */
+#define CIDTCMD 0x00080000 /* Bit 19 */
+#define HW_RESET 0x00100000 /* Bit 20 */
+#define BP_PANIC 0x00200000 /* Bit 21 */</programlisting>
+            </example>
+            
+            <para>The reason is sotred in <filename>/proc/bootinfo</filename>, below is the text data of this file:</para>
+            
+            <informalexample>
+                <programlisting>SERIAL : 0x20029ead8
+HW_REV : 0x8200
+POWERUPREASON : 0x00000010
+MBM_VERSION : 0x00001095
+BATTERY_STATUS_AT_BOOT : 0xffff
+CID_RECOVER_BOOT : 0xd7221fba</programlisting>
+            </informalexample>
+            
+            <para><filename>motorola/system/core/mot_boot_mode/mot_boot_mode.c</filename> is a sample util which parse
+            the power up info.</para>
+            
+            <para>We can parse the text, and extract out the POWERUPREASON value, below is a sample source code,
+            which will store the valu into a text string(<userinput>bootreason</userinput>):</para>
+            
+            <example>
+                <title>Sample Code to Get Power Reason</title>
+                <programlisting>void get_power_reason()
+{
+  int fd, n;
+  char data[BOOTINFO_BUF_LEN];
+  
+  fd = <userinput>open("/proc/bootinfo", O_RDONLY)</userinput>;
+  n = read(fd, data, sizeof(data) - 1);
+  data[n] = '\0';
+  pwrup_rsn = strstr(data, "POWERUPREASON");
+  if (pwrup_rsn) {
+      x = strstr(pwrup_rsn, ": ");
+      if (x) {
+          x += 2;
+          n = 0;
+          while (*x &amp;&amp; !isspace(*x)) {
+              bootreason[n++] = *x; 
+              x++;
+              if (n == (BUF_LEN - 1)) break;
+          }   
+          bootreason[n] = '\0';
+      }   
+  }   
+  // <userinput>Now, bootreason[] is text string of power reason!</userinput>
+}</programlisting>
+            </example>
         </sect2>
     </sect1>
     
@@ -233,87 +329,6 @@
                 
                 <para>Country Code for China is <userinput>86</userinput></para>
             </sect3>
-        </sect2>
-        <!-- Service State Poll -->
-        <sect2>
-            <title>Service State Poll</title>
-            
-            <para>Telephony always keep polling the serivice state(SS), it is the high, user-friendly format,
-            for current mobile phone's service state data.</para>
-            
-            <para>So, the icon(like <userinput>3g, 1X</userinput>)'s display info, can be found via the poll RIL log.</para>
-            
-            <sect3>
-                <title>GSM/WCDMA Service State Poll</title>
-                <para>Each time of a poll cycle, these state values(old V.S. new), were output in RIL log:</para>
-            
-            <example>
-                <title>GSM Service State Poll in RIL Log</title>
-                <programlisting>D/GSM Poll ServiceState done: oldSS=[..] newSS=[..]
-                              oldGprs=.. newGprs=..
-                              oldType=.. newType=..
-                              ...        ...</programlisting>
-            </example>
-            
-            <para>Above old/new SS value output may varies, in different Android version.</para>
-            
-            <para>But keep in mind this is high level of a user-view, on service state.</para>
-            
-            <para>The 1st field of <userinput>SS</userinput>, is a <emphasis>ServiceState</emphasis> class instance,
-            it's whole definition can be found in <emphasis>ServiceState::toString()</emphasis>. And it's also a moving
-            target, in different version, and different product(Motorola changing it as well).</para>
-            
-            <para>Below demo some fields value in the SS</para>
-            
-            <table frame="topbot">
-                <title>old/newSS fields' value</title>
-                <tgroup cols="3">
-                <colspec colwidth="1*" />
-                <colspec colwidth="2*" />
-                <colspec colwidth="3*" />
-                <thead>
-                    <row><entry>Field</entry><entry>Type</entry><entry>Note</entry></row>
-                </thead>
-                <tbody>
-                    <row><entry>1</entry><entry>state</entry><entry>0-(In Service), 1-(Out Of Service), 2-(Emergency Call)</entry></row>
-                    <row><entry>2</entry><entry>roam</entry><entry>true means Roaming.</entry></row>
-                    <row><entry>3</entry><entry>OperatorAlpha Long</entry><entry>Long Alpha(such as <userinput>US AT&amp;T</userinput>)</entry></row>
-                    <row><entry>4</entry><entry>OperatorAlpha Short</entry><entry>Short Alpha(such as <userinput>AT&amp;T</userinput>)</entry></row>
-                </tbody>
-                </tgroup>
-            </table>
-            </sect3>
-            <!-- CDMA Service State Poll -->
-            <sect3>
-                <title>CDMA Service State Poll</title>
-                
-                <para>For current Android evolution(4.0), the CDMA/LTE service state poll are both put under <filename>cdma/</filename> dir.</para>
-                
-                <itemizedlist>
-                <listitem>
-                    <para><filename>telephony/cdma/CdmaServiceStateTracker.java</filename>, CDMA's service state poll file.</para>
-                </listitem>
-                <listitem>
-                    <para><filename>telephony/cdma/CdmaLteServiceStateTracker.java</filename>. LTE/CDMA service state poll, as
-                    the Vanquish is for VZW, CDMA/LTE prefered, of course.</para>
-                </listitem>
-            
-                </itemizedlist>
-        
-                <para>The poll result is similar as GSM/WCDMA, it would output oldSS and newSS.</para>
-                
-                <example>
-                    <title>CdmaLteServiceStateTracker of Poll</title>
-                    <programlisting>protected void pollStateDone() {
-  ...
-  log("pollStateDone: oldSS=[" + ss + "] newSS=[" + newSS + "]");
-  ...
-  // The output would be like:
-  //<userinput>pollStateDone: oldSS=[1 home domestic...EvDo-rev.A:8] newSS=[0 ...]</userinput>
-}</programlisting>
-                </example>
-            </sect3>
-            
         </sect2>
         
         <!-- FTM and Tools -->

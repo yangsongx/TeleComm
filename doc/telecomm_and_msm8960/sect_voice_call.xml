@@ -61,12 +61,13 @@
       <userinput>== Now, reged with RADIO_TECH_EDGE(2), GSM only.</userinput></programlisting>
             </example>
         </sect3>
-        
+        <!-- Radio Technology -->
         <sect3>
             <title>Radio Technology</title>
             
             <para>The radio technology is usually for <emphasis>Data Call</emphasis> service.</para>
             
+                <indexterm><primary>RadioTechnology</primary></indexterm>
             <example id="exp.ril.radiotech">
                 <title>Radio Tech definition in RIL</title>
                 <programlisting>typedef enum {
@@ -86,6 +87,13 @@
         <!-- QualComm Registration Component -->
         <sect3>
             <title>QualComm Registration Component</title>
+            
+            <para>In QualComm code, the registration is called <emphasis>System Determination(SD)</emphasis>, and the <filename>sd.c</filename>
+            will take care about this.</para>
+            
+            
+            
+            
             <para><filename>modem/nas/reg/</filename> is component related with the registration.</para>
             <para>And QualComm added <userinput>=REG=</userinput> mark for those reg message, to ease the log search and filter.</para>
             
@@ -94,11 +102,15 @@
             <para>QualComm used <userinput>reg_state_service_state</userinput> global variable to indicate the registrate
             state.</para>
             
-            <para>This variable is an important struct, contained many useful reg info.</para>
+            <para>This variable is an important struct, contained many useful reg info. It can be got via reg_state_process_mmr_service_ind() function:</para>
             
             <example>
-                <title></title>
-                <programlisting></programlisting>
+                <title>Reg State Global Variable Assignment</title>
+                <programlisting>reg_state_p_type reg_state_process_mmr_service_ind(mmr_service_ind_s_type* msg_p)
+{
+ ...
+ <userinput>reg_state_service_state = msg_p->service_state;</userinput>
+}</programlisting>
             </example>
             
             <para>There's a <emphasis>sys_mode</emphasis> for current registrate network.</para>
@@ -133,6 +145,88 @@ GMM/Attach Complete</programlisting>
             </example>
             
         </sect3>
+        
+      
+    </sect2>
+    
+    <!-- Service State Poll -->
+    <sect2>
+        <title>Service State Poll</title>
+        
+        <para>Telephony always keep polling the serivice state(SS), it is the high, user-friendly format,
+        for current mobile phone's service state data.</para>
+        
+        <para>So, the icon(like <userinput>3g, 1X</userinput>)'s display info, can be found via the poll RIL log.</para>
+            <sect3>
+                <title>GSM/WCDMA Service State Poll</title>
+                <para>Each time of a poll cycle, these state values(old V.S. new), were output in RIL log:</para>
+            
+            <example>
+                <title>GSM Service State Poll in RIL Log</title>
+                <programlisting>D/GSM Poll ServiceState done: oldSS=[..] newSS=[..]
+                              oldGprs=.. newGprs=..
+                              oldType=.. newType=..
+                              ...        ...</programlisting>
+            </example>
+            
+            <para>Above old/new SS value output may varies, in different Android version.</para>
+            
+            <para>But keep in mind this is high level of a user-view, on service state.</para>
+            
+            <para>The 1st field of <userinput>SS</userinput>, is a <emphasis>ServiceState</emphasis> class instance,
+            it's whole definition can be found in <emphasis>ServiceState::toString()</emphasis>. And it's also a moving
+            target, in different version, and different product(Motorola changing it as well).</para>
+            
+            <para>Below demo some fields value in the SS</para>
+            
+            <table frame="topbot">
+                <title>old/newSS fields' value</title>
+                <tgroup cols="3">
+                <colspec colwidth="1*" />
+                <colspec colwidth="2*" />
+                <colspec colwidth="3*" />
+                <thead>
+                    <row><entry>Field</entry><entry>Type</entry><entry>Note</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>1</entry><entry>state</entry><entry>0-(In Service), 1-(Out Of Service), 2-(Emergency Call)</entry></row>
+                    <row><entry>2</entry><entry>roam</entry><entry>true means Roaming.</entry></row>
+                    <row><entry>3</entry><entry>OperatorAlpha Long</entry><entry>Long Alpha(such as <userinput>US AT&amp;T</userinput>)</entry></row>
+                    <row><entry>4</entry><entry>OperatorAlpha Short</entry><entry>Short Alpha(such as <userinput>AT&amp;T</userinput>)</entry></row>
+                </tbody>
+                </tgroup>
+            </table>
+            </sect3>
+            <!-- CDMA Service State Poll -->
+            <sect3>
+                <title>CDMA Service State Poll</title>
+                
+                <para>For current Android evolution(4.0), the CDMA/LTE service state poll are both put under <filename>cdma/</filename> dir.</para>
+                
+                <itemizedlist>
+                <listitem>
+                    <para><filename>telephony/cdma/CdmaServiceStateTracker.java</filename>, CDMA's service state poll file.</para>
+                </listitem>
+                <listitem>
+                    <para><filename>telephony/cdma/CdmaLteServiceStateTracker.java</filename>. LTE/CDMA service state poll, as
+                    the Vanquish is for VZW, CDMA/LTE prefered, of course.</para>
+                </listitem>
+            
+                </itemizedlist>
+        
+                <para>The poll result is similar as GSM/WCDMA, it would output oldSS and newSS.</para>
+                
+                <example>
+                    <title>CdmaLteServiceStateTracker of Poll</title>
+                    <programlisting>protected void pollStateDone() {
+  ...
+  log("pollStateDone: oldSS=[" + ss + "] newSS=[" + newSS + "]");
+  ...
+  // The output would be like:
+  //<userinput>pollStateDone: oldSS=[1 home domestic...EvDo-rev.A:8] newSS=[0 ...]</userinput>
+}</programlisting>
+                </example>
+            </sect3>        
     </sect2>
     
     <!-- Service Network -->
@@ -146,7 +240,7 @@ GMM/Attach Complete</programlisting>
             <para><emphasis>Prefer network mode</emphasis> can be choosed by user, to select a prefer network.</para>
             
             <para>RIL uses <userinput>SET_PREFERRED_NETWORK_TYPE</userinput> to set a pref network, the set value
-            is defined by RIL(which is not consistent with BP Modem):</para>
+            is defined by RIL(which may not be consistent with BP Modem):</para>
             
             <example>
                 <title>RIL prefer network mode value</title>
@@ -170,13 +264,16 @@ GMM/Attach Complete</programlisting>
             <para>Below is a snapshot from Vanquish(Android 4.0) UI, a global phone(support LTE, GSM and CDMA):</para>
             
             <figure>
-                <title>Prefer Networ Mode of Multi-Mode Phone</title>
+                <title>Prefer Network Mode of Multi-Mode Phone</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata scale="50" fileref="res/prefer_nwmode.png" />
                     </imageobject>
                 </mediaobject>
             </figure>
+            
+            <tip><para>Sometimes, Verizon may explictilty require Moto to remove <guimenu>CDMA Only</guimenu> item in the menu, that's why
+            no such menu item in some VZW's products.</para></tip>
             
             <para>RIL map above UI like this:</para>
             
@@ -193,6 +290,8 @@ GMM/Attach Complete</programlisting>
                 </tbody>
                 </tgroup>
             </table>
+            
+            
             
             <para>QualComm use <userinput>NV_PREF_MODE_I(10)</userinput> to indicate the prefer network mode.</para>
             
@@ -262,6 +361,14 @@ RILJ    : [0252]&lt; OPERATOR {CHN-UNICOM, CU-GSM, 46001}</programlisting>
             
         </sect3>
         
+        <!-- Manual Scan Network -->
+        <sect3>
+            <title>Manual Scan Network</title>
+            
+            <para>REQUEST_QUERY_AVAILABLE_NETWORKS is the RIL msg for the manual scan action.</para>
+            
+            <para>Moto raised a feature(<emphasis>34795</emphasis>), which would adding an text(like <userinput>2G,3G</userinput>) in the scan result string.</para>
+        </sect3>
     </sect2>
     
     <!-- MO Call -->
@@ -386,5 +493,64 @@ private Object responseCallList(Parcel p) {
         <para>For example, Verizon always has below service:</para>
         <para><userinput>*67</userinput> - Caller ID Selective Blocking, let you block your name 
         and number from being sent on calls as you make them by pressing <userinput>*67</userinput> before dialing.</para>
+    </sect2>
+    
+    <!-- Airplan Mode -->
+    <sect2>
+        <title>Airplan Mode</title>
+        
+            <indexterm><primary>Airplan Mode</primary></indexterm>
+        <para><emphasis>Airplan Mode</emphasis> is toggle the modem on/off, involves voice and data connection/disconnection.</para>
+        
+        <sect3>
+            <title>Overview of Airplan mode</title>
+            
+            <para>For Android system, each time user clicked the <guimenu>Airplan Mode</guimenu>, it would send out an <emphasis>Intent</emphasis>,
+            and RIL would try disconnect voice/data connection, and power off the modem.</para>
+            
+            <figure>
+            <title>A Logic Flow of Airplan On</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata scale="60" fileref="res/apm_on.png" />
+                </imageobject>
+            </mediaobject>
+            </figure>
+            
+                <indexterm><primary>RADIO_POWER</primary></indexterm>
+            <para>RIL's <userinput>RADIO_POWER</userinput> msg is used to turn on/off the modem. Usually, the request data is a bool value,
+            0 is off, non-0 is on. There's no response field for this msg.</para>
+            
+            <example>
+                <title>Radio On/Off RIL Log</title>
+                <programlisting>D/RILC    (  245): [4583]> RADIO_POWER (0) <userinput>Turn off the Modem</userinput>
+D/RILC    (  245): [4583]&lt; RADIO_POWER
+D/RILC    (  245): [4600]> RADIO_POWER (1) <userinput>This is turn on the modem</userinput>
+D/RILC    (  245): [4600]&lt; RADIO_POWER</programlisting>
+            </example>
+            
+        </sect3>
+        
+        <sect3>
+            <title>BP Handling the Airplan On/Off</title>
+            <para></para>
+        </sect3>
+    </sect2>
+    
+    <sect2>
+        <title>Checking Call Info in QXDM</title>
+        
+        <para>In QXDM, it contained a UI for these call info. It's in <guimenu>View</guimenu> -> <guimenu>Common</guimenu> ->
+        <guimenu>Status(Dynamic)</guimenu>. Then QXDM would poup a property grid UI, for current connected phone's call data
+        status.</para>
+        
+        <figure>
+            <title>QXDM Dynamic Call Info</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata scale="50" fileref="res/qxdm_status.png" />
+                </imageobject>
+            </mediaobject>
+        </figure>
     </sect2>
 </sect1>
